@@ -238,6 +238,42 @@ app.delete('/jugadores/:id', async (req, res) => {
 });
 
 // ==========================================
+//        MÓDULO DE TESORERÍA (PAGOS)
+// ==========================================
+
+// 1. Obtener el historial de pagos de un jugador específico
+app.get('/pagos/:jugador_id', async (req, res) => {
+  try {
+    const { jugador_id } = req.params;
+    const query = 'SELECT * FROM pagos WHERE jugador_id = $1 ORDER BY fecha_pago DESC';
+    const result = await pool.query(query, [jugador_id]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error al obtener pagos:', err.message);
+    res.status(500).send('Error interno del servidor');
+  }
+});
+
+// 2. Registrar un nuevo pago (Cobrar cuota)
+app.post('/pagos', async (req, res) => {
+  try {
+    const { jugador_id, fecha_pago, mes_correspondiente, monto, metodo, observaciones } = req.body;
+    
+    const query = `
+      INSERT INTO pagos (jugador_id, fecha_pago, mes_correspondiente, monto, metodo, observaciones)
+      VALUES ($1, $2, $3, $4, $5, $6) RETURNING *
+    `;
+    const values = [jugador_id, fecha_pago, mes_correspondiente, monto, metodo, observaciones];
+    
+    await pool.query(query, values);
+    res.json({ mensaje: '¡Pago registrado con éxito!' });
+  } catch (err) {
+    console.error('Error al registrar pago:', err.message);
+    res.status(500).send('Error al guardar el pago');
+  }
+});
+
+// ==========================================
 //        MÓDULO DE ASISTENCIA (DT / PROFE)
 // ==========================================
 

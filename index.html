@@ -10,13 +10,32 @@
         .card-categoria { transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; border-radius: 12px; }
         .card-categoria:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
         .badge-rama { font-size: 0.8em; }
+
+        /* Ajuste responsivo para los botones del menú */
+        @media (max-width: 768px) {
+            .botonera-mobile {
+                width: 100%;
+                margin-top: 10px;
+            }
+            .btn-responsivo {
+                flex: 1 1 45% !important; /* Magia: ocupan mitad y mitad. Si queda uno solo en la fila, se estira al 100% */
+                margin: 0 !important; /* Borra los márgenes de PC */
+                text-align: center;
+                font-size: 0.85rem;
+                padding: 0.4rem 0.2rem;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 5px; /* Separación entre el ícono y el texto */
+            }
+        }
     </style>
 </head>
 <body class="bg-light">
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="#">🏀 Club Atlético Sol de Mayo Basquet</a>
+            <a class="navbar-brand fw-bold" href="#">🏀 Club Sol de Mayo Basquet</a>
             <div class="d-flex align-items-center text-white">
                 <span class="me-3">Hola, <strong id="usuario-nombre">...</strong></span>
                 <button onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm">
@@ -27,9 +46,10 @@
     </nav>
 
     <div class="container pb-5">
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-            <div class="d-flex align-items-center gap-3">
-                <h1 id="titulo-pantalla" class="mb-0">Plantel por Categorías</h1>
+        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-center mb-4 gap-3">
+            
+            <div class="d-flex justify-content-center align-items-center gap-3">
+                <h1 id="titulo-pantalla" class="mb-0">Categorías</h1>
                 
                 <select id="filtro-rama" class="form-select bg-primary text-white fw-bold border-0 shadow-sm w-auto" onchange="renderizarCategorias()">
                     <option value="Todos">Ambas Ramas 🏀</option>
@@ -38,15 +58,21 @@
                 </select>
             </div>
             
-            <a href="alta.html" class="btn btn-success shadow-sm">
-                <i class="bi bi-person-plus-fill"></i> Nuevo Jugador
-            </a>
-            <a href="asistencia.html" class="btn btn-primary shadow-sm me-2">
-                <i class="bi bi-clipboard-check"></i> Asistencia
-            </a>
-            <a href="registro.html" id="btn-crear-usuario" class="btn btn-warning shadow-sm me-2 text-dark fw-bold">
-                <i class="bi bi-person-badge"></i> Nuevo Empleado
-            </a>
+            <div class="d-flex flex-wrap justify-content-center gap-2 botonera-mobile">
+                <a href="alta.html" class="btn btn-success shadow-sm btn-responsivo">
+                    <i class="bi bi-person-plus-fill"></i> Nuevo Jugador
+                </a>
+                <a href="asistencia.html" class="btn btn-primary shadow-sm btn-responsivo">
+                    <i class="bi bi-clipboard-check"></i> Asistencia
+                </a>
+                <a href="registro.html" id="btn-crear-usuario" class="btn btn-warning shadow-sm text-dark fw-bold btn-responsivo">
+                    <i class="bi bi-person-badge"></i> Nuevo Empleado
+                </a>
+                <a href="pagos.html" id="btn-tesoreria" class="btn btn-success shadow-sm fw-bold btn-responsivo" style="background-color: #198754;">
+                    <i class="bi bi-cash-coin"></i> Tesorería
+                </a>
+            </div>
+
         </div>
         
         <div id="vista-categorias" class="row g-4">
@@ -121,7 +147,7 @@
         function renderizarCategorias() {
             document.getElementById('vista-jugadores').style.display = 'none';
             document.getElementById('vista-categorias').style.display = 'flex';
-            document.getElementById('titulo-pantalla').innerText = 'Plantel por Categorías';
+            document.getElementById('titulo-pantalla').innerText = 'Categorías';
 
             const ramaFiltro = document.getElementById('filtro-rama').value;
             const contenedor = document.getElementById('vista-categorias');
@@ -238,6 +264,12 @@
             if (btnNuevoJugador) {
                 btnNuevoJugador.style.display = 'none';
             }
+        }
+
+        // 3. Si es Cuerpo Técnico, escondemos la Bóveda de Pagos (Tesorería)
+        if (rolUsuario === 'Cuerpo Tecnico') {
+            const btnTesoreria = document.getElementById('btn-tesoreria');
+            if (btnTesoreria) btnTesoreria.style.display = 'none';
         }
 
     </script>
