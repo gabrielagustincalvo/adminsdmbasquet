@@ -6,6 +6,10 @@
     <title>Tesorería - Gestión Club 🏀</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    
     <style>
         body { background-color: #f8f9fa; }
         .card-tesoreria { border-radius: 15px; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); }
@@ -40,9 +44,7 @@
                             
                             <div class="mb-3">
                                 <label class="form-label text-muted fw-bold small">Seleccionar Jugador</label>
-                                <select id="p-jugador" class="form-select border-success fw-bold" required onchange="cargarHistorial()">
-                                    <option value="" selected disabled>Elegí un jugador...</option>
-                                    </select>
+                                <select id="p-jugador" class="form-select border-success fw-bold" required></select>
                             </div>
 
                             <div class="row">
@@ -111,11 +113,12 @@
                                         <th>Fecha</th>
                                         <th>Monto</th>
                                         <th>Método</th>
+                                        <th>Acción</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabla-historial">
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted py-5">
+                                        <td colspan="5" class="text-center text-muted py-5">
                                             <i class="bi bi-arrow-left-circle fs-3 d-block mb-2"></i>
                                             Seleccioná un jugador para ver sus pagos
                                         </td>
@@ -131,79 +134,103 @@
     </div>
 
     <script>
-        // 1. SEGURIDAD: Bloquear a profes (Cuerpo Técnico)
+        // 1. SEGURIDAD
         const rolUsuario = sessionStorage.getItem('usuarioRol');
         if (!rolUsuario || rolUsuario === 'Cuerpo Tecnico') {
             alert('Acceso Denegado: Solo administración puede ingresar a Tesorería.');
             window.location.href = 'index.html';
         }
 
-        // Poner la fecha de hoy por defecto
         document.getElementById('p-fecha').valueAsDate = new Date();
 
-        // 2. CARGAR LISTA DE JUGADORES EN EL SELECTOR
+        // 2. CARGAR JUGADORES BLINDADO
         async function cargarJugadoresSelect() {
             try {
                 const respuesta = await fetch('http://localhost:3000/jugadores');
                 const jugadores = await respuesta.json();
                 
-                // Ordenar alfabéticamente
                 jugadores.sort((a, b) => a.apellido.localeCompare(b.apellido));
 
                 const select = document.getElementById('p-jugador');
-                jugadores.forEach(jugador => {
-                    const option = document.createElement('option');
-                    option.value = jugador.id;
-                    option.text = `${jugador.apellido}, ${jugador.nombre} - ${jugador.rama || 'Masc'}`;
-                    select.appendChild(option);
+
+                // Iniciamos el buscador vacío
+                const buscador = new Choices(select, {
+                    searchEnabled: true,
+                    searchPlaceholderValue: '🔍 Buscar apellido...',
+                    itemSelectText: 'Seleccionar',
+                    noResultsText: 'No se encontraron jugadores',
+                    shouldSort: false,
+                    searchFields: ['label'],
+                    fuseOptions: { threshold: 0.2, ignoreLocation: true }
                 });
+
+                // Armamos la lista asegurando que el ID sea texto (String)
+                const opciones = [
+                    { value: '', label: 'Elegí un jugador...', disabled: true, selected: true },
+                    ...jugadores.map(j => ({
+                        value: String(j.id), 
+                        label: `${j.apellido}, ${j.nombre} - ${j.rama || 'Masc'}`
+                    }))
+                ];
+
+                // Inyectamos y reemplazamos todo (true)
+                buscador.setChoices(opciones, 'value', 'label', true);
+
+                // Escuchamos el cambio de jugador para cargar su historial
+                select.addEventListener('change', cargarHistorial);
+
             } catch (error) {
                 console.error('Error al cargar jugadores:', error);
             }
         }
 
-        // 3. CARGAR EL HISTORIAL CUANDO SE ELIGE UN JUGADOR
+        // 3. CARGAR HISTORIAL
         async function cargarHistorial() {
             const jugador_id = document.getElementById('p-jugador').value;
             if (!jugador_id) return;
 
             const tabla = document.getElementById('tabla-historial');
-            tabla.innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-success" role="status"></div></td></tr>';
+            tabla.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-success"></div></td></tr>';
 
             try {
                 const respuesta = await fetch(`http://localhost:3000/pagos/${jugador_id}`);
                 const pagos = await respuesta.json();
 
                 if (pagos.length === 0) {
-                    tabla.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4 fw-bold">No registra pagos cargados.</td></tr>';
+                    tabla.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4 fw-bold">No registra pagos cargados.</td></tr>';
                     return;
                 }
 
                 tabla.innerHTML = '';
                 pagos.forEach(pago => {
-                    // Formatear fecha a DD/MM/YYYY
                     const fechaObj = new Date(pago.fecha_pago);
-                    // Sumamos un día para corregir el desfase de zona horaria de JS
                     fechaObj.setMinutes(fechaObj.getMinutes() + fechaObj.getTimezoneOffset());
                     const fechaFormat = fechaObj.toLocaleDateString('es-AR');
+                    const montoFormat = `$${Number(pago.monto).toLocaleString('es-AR')}`;
 
                     const fila = `
                         <tr>
                             <td class="px-4 fw-bold text-primary">${pago.mes_correspondiente}</td>
                             <td class="text-muted small">${fechaFormat}</td>
-                            <td class="fw-bold text-success">$${Number(pago.monto).toLocaleString('es-AR')}</td>
+                            <td class="fw-bold text-success">${montoFormat}</td>
                             <td><span class="badge bg-secondary">${pago.metodo}</span></td>
+                            <td>
+                                <button type="button" class="btn btn-outline-dark btn-sm shadow-sm" title="Imprimir Recibo" 
+                                    onclick="imprimirRecibo('${pago.mes_correspondiente}', '${fechaFormat}', '${montoFormat}', '${pago.metodo}')">
+                                    <i class="bi bi-printer-fill"></i>
+                                </button>
+                            </td>
                         </tr>
                     `;
                     tabla.innerHTML += fila;
                 });
             } catch (error) {
                 console.error('Error al cargar historial:', error);
-                tabla.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">Error al cargar datos.</td></tr>';
+                tabla.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Error de conexión.</td></tr>';
             }
         }
 
-        // 4. GUARDAR UN PAGO NUEVO
+        // 4. GUARDAR PAGO
         document.getElementById('form-pago').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -224,22 +251,65 @@
                 });
 
                 if (respuesta.ok) {
-                    alert('✅ ¡Pago registrado exitosamente!');
-                    // Limpiar monto y observaciones, dejar jugador y mes por si se carga otro
+                    alert('✅ ¡Pago guardado!');
                     document.getElementById('p-monto').value = '';
                     document.getElementById('p-observaciones').value = '';
-                    // Recargar la tablita del costado
                     cargarHistorial();
                 } else {
-                    alert('❌ Error al guardar el pago.');
+                    alert('❌ Error al guardar.');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('No se pudo conectar con el servidor.');
             }
         });
 
-        // Iniciar pantalla
+        // 5. IMPRIMIR RECIBO
+        function imprimirRecibo(mes, fecha, monto, metodo) {
+            const selectJugador = document.getElementById('p-jugador');
+            const textoCompleto = selectJugador.options[selectJugador.selectedIndex].text;
+            const nombreJugador = textoCompleto.split(' - ')[0]; 
+
+            const ventana = window.open('', '_blank', 'width=800,height=600');
+            const html = `
+                <html>
+                <head>
+                    <title>Recibo - Sol de Mayo</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+                        .recibo-box { border: 2px solid #198754; border-radius: 12px; padding: 30px; max-width: 500px; margin: 0 auto; }
+                        .header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 20px; margin-bottom: 20px; }
+                        .header h2 { margin: 0; color: #198754; }
+                        .detalle { font-size: 16px; line-height: 2; margin-top: 20px; }
+                        .monto { font-size: 28px; text-align: center; background: #e8f5e9; padding: 15px; border-radius: 8px; color: #198754; font-weight: bold; margin: 25px 0; border: 1px solid #c8e6c9;}
+                        .footer { text-align: center; margin-top: 40px; font-size: 13px; color: #777; border-top: 1px solid #eee; padding-top: 15px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="recibo-box">
+                        <div class="header">
+                            <h2>🏀 Club Atlético Sol de Mayo</h2>
+                            <p>COMPROBANTE OFICIAL DE PAGO</p>
+                        </div>
+                        <div class="detalle">
+                            <strong>Fecha:</strong> ${fecha}<br>
+                            <strong>Recibimos de:</strong> ${nombreJugador}<br>
+                            <strong>Concepto:</strong> Cuota ${mes}<br>
+                            <strong>Método:</strong> ${metodo}
+                        </div>
+                        <div class="monto">TOTAL: ${monto}</div>
+                        <div class="footer">¡Gracias por acompañar al club!</div>
+                    </div>
+                    <script>
+                        window.onload = function() { window.print(); }
+                    <\/script>
+                </body>
+                </html>
+            `;
+            ventana.document.write(html);
+            ventana.document.close();
+        }
+
+        // Iniciar
         cargarJugadoresSelect();
     </script>
 </body>
