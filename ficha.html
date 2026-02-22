@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha del Jugador - Gestión Club 🏀</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        @media print {
+            /* 1. Ocultamos lo que no sirve para el papel */
+            nav, .botonera-acciones, .solo-pantalla { display: none !important; }
+            
+            /* 2. Forzamos colores exactos y fondo blanco puro */
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            html, body { background-color: white !important; height: auto !important; margin: 0 !important; padding: 0 !important; }
+            
+            /* 3. Eliminamos márgenes y rellenos de los contenedores para que no quede el cuadro gris abajo */
+            .container, #area-pdf {
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background-color: transparent !important;
+            }
+            
+            /* 4. Estilo final de la tarjeta impresa (borde negro y sin margen inferior) */
+            .card {
+                border: 2px solid #000 !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                margin-bottom: 0 !important; /* Clave para borrar el espacio gris */
+            }
+            
+            /* 5. Mostramos los títulos de impresión */
+            .solo-impresion { display: block !important; }
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">🏀 Club Atlético Sol de Mayo Basquet</a>
+            <div class="d-flex align-items-center text-white">
+                <a href="index.html" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Volver al Plantel
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                
+                <div id="area-pdf" class="p-2 bg-white rounded">
+                    <div class="solo-impresion text-center mb-3 mt-3">
+                        <h2 class="fw-bold text-dark">🏥 Ficha Médica de Emergencia</h2>
+                        <p class="mb-0 text-muted">Club Atlético - Básquet</p>
+                    </div>
+
+                    <div class="card shadow-sm border-0 mb-4">
+                        
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                            <h5 class="mb-0"><i class="bi bi-person-vcard"></i> Ficha Personal</h5>
+                            <span id="f-rama" class="badge bg-light text-primary fs-6 px-3 py-2 rounded-pill shadow-sm">...</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-center align-items-center mb-4 gap-3">
+                            <h2 id="f-nombre-completo" class="fw-bold text-dark mb-0">Cargando...</h2>
+                            
+                            <button onclick="window.location.href='editar.html?id=' + idJugador" class="btn btn-outline-secondary btn-sm rounded-circle botonera-acciones" title="Editar Jugador">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            
+                            <button onclick="eliminarJugador()" class="btn btn-outline-danger btn-sm rounded-circle botonera-acciones" title="Eliminar Jugador">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-4">
+                                    <div class="p-3 bg-light rounded border text-center">
+                                        <small class="text-muted d-block text-uppercase fw-bold">DNI</small>
+                                        <strong id="f-dni" class="fs-5">-</strong>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-3 bg-light rounded border text-center">
+                                        <small class="text-muted d-block text-uppercase fw-bold">Nacimiento</small>
+                                        <strong id="f-fecha" class="fs-5">-</strong>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-3 bg-light rounded border text-center">
+                                        <small class="text-muted d-block text-uppercase fw-bold">Celular</small>
+                                        <strong id="f-telefono" class="fs-5">-</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h5 class="text-secondary border-bottom pb-2 mt-4"><i class="bi bi-telephone-fill text-danger"></i> Contacto de Emergencia</h5>
+                                <div class="mb-4 p-3 bg-light rounded border">
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Nombre del contacto</small>
+                                            <strong id="f-emergencia-nombre" class="fs-6">-</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Teléfono de emergencia</small>
+                                            <strong id="f-emergencia-tel" class="fs-6">-</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            <h5 class="text-secondary border-bottom pb-2 mt-4"><i class="bi bi-heart-pulse-fill text-danger"></i> Historial Médico</h5>
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="p-3 bg-danger bg-opacity-10 rounded border border-danger text-center h-100">
+                                        <small class="text-danger fw-bold d-block text-uppercase">Grupo Sanguíneo</small>
+                                        <strong id="f-grupo" class="fs-3">-</strong>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 bg-warning bg-opacity-10 rounded border border-warning text-center h-100">
+                                        <small class="text-warning text-darken fw-bold d-block text-uppercase" style="color: #b38000!important;">Alergias</small>
+                                        <strong id="f-alergias" class="fs-5">-</strong>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="p-3 bg-light rounded border">
+                                        <small class="text-muted fw-bold d-block mb-1">Lesiones Previas:</small>
+                                        <p id="f-lesiones" class="mb-0">-</p>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="p-3 bg-light rounded border">
+                                        <small class="text-muted fw-bold d-block mb-1">Cirugías:</small>
+                                        <p id="f-cirugias" class="mb-0">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+                
+                <h5 class="text-secondary border-bottom pb-2 mt-4 solo-pantalla"><i class="bi bi-calendar-check-fill text-success"></i> Seguimiento de Asistencia</h5>
+                    <div class="row g-3 mb-4 solo-pantalla">
+                        
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded border border-info shadow-sm">
+                                <h6 class="text-info fw-bold mb-2"><i class="bi bi-bar-chart-line-fill"></i> Reporte General</h6>
+                                <p id="f-reporte-texto" class="mb-0 text-dark">Cargando métricas de asistencia...</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mt-3">
+                            <label class="form-label fw-bold text-muted small">Buscar asistencia de un día específico:</label>
+                            <div class="input-group shadow-sm">
+                                <input type="date" id="buscador-fecha-asis" class="form-control border-secondary">
+                                <button class="btn btn-secondary fw-bold" onclick="buscarAsistenciaPorDia()">
+                                    <i class="bi bi-search"></i> Buscar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mt-3">
+                            <label class="form-label fw-bold text-muted small">Estado del jugador en esa fecha:</label>
+                            <div id="resultado-busqueda-dia" class="p-2 border border-secondary rounded bg-white text-center d-flex flex-column justify-content-center" style="min-height: 38px;">
+                                <span class="text-muted small">Seleccioná una fecha para ver el estado.</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                <div id="botonera" class="mt-2 text-center d-flex justify-content-center gap-3 flex-wrap botonera-acciones">
+                    <button onclick="window.print()" class="btn btn-secondary shadow-sm px-4">
+                        <i class="bi bi-printer"></i> Imprimir
+                    </button>
+                    <button onclick="generarPDFyWhatsApp()" class="btn btn-success shadow-sm px-4">
+                        <i class="bi bi-whatsapp"></i> Enviar PDF
+                    </button>
+                    <button onclick="compartirEmail()" class="btn btn-primary shadow-sm px-4">
+                        <i class="bi bi-envelope"></i> Correo
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (!sessionStorage.getItem('usuarioLogueado')) {
+            window.location.href = 'login.html';
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const idJugador = urlParams.get('id');
+        let jugadorActual = null;
+        let historialAsistencia = [];
+
+        async function cargarFicha() {
+            try {
+                const respuesta = await fetch(`http://localhost:3000/jugadores/${idJugador}`);
+                jugadorActual = await respuesta.json();
+
+                document.getElementById('f-nombre-completo').innerText = `${jugadorActual.nombre} ${jugadorActual.apellido}`;
+                document.getElementById('f-dni').innerText = jugadorActual.dni;
+                
+                if(jugadorActual.fecha_nacimiento){
+                    const fecha = new Date(jugadorActual.fecha_nacimiento);
+                    fecha.setMinutes(fecha.getMinutes() + fecha.getTimezoneOffset()); 
+                    document.getElementById('f-fecha').innerText = fecha.toLocaleDateString('es-AR');
+                }
+                
+                document.getElementById('f-telefono').innerText = jugadorActual.telefono || '-';
+                document.getElementById('f-emergencia-nombre').innerText = jugadorActual.contacto_emergencia_nombre || '-';
+                document.getElementById('f-emergencia-tel').innerText = jugadorActual.contacto_emergencia_tel || '-';
+                
+                document.getElementById('f-grupo').innerText = jugadorActual.grupo_sanguineo || 'No espec.';
+                document.getElementById('f-alergias').innerText = jugadorActual.alergias || 'Ninguna';
+                document.getElementById('f-lesiones').innerText = jugadorActual.lesiones || 'Ninguna';
+                document.getElementById('f-cirugias').innerText = jugadorActual.cirugias || 'Ninguna';
+                
+                const rama = jugadorActual.rama || 'Masculino';
+                const badgeRama = document.getElementById('f-rama');
+                badgeRama.innerText = rama;
+                
+                if (rama === 'Femenino') {
+                    badgeRama.classList.replace('text-primary', 'text-danger');
+                }
+
+                // --- CARGAR HISTORIAL Y ARMAR REPORTE ---
+                try {
+                    const resAsis = await fetch(`http://localhost:3000/asistencia/jugador/${idJugador}`);
+                    historialAsistencia = await resAsis.json();
+                    generarReporteAsistencia(); // Llamamos a la función que arma el texto
+                } catch (e) {
+                    console.error('No se pudo cargar la asistencia', e);
+                    document.getElementById('f-reporte-texto').innerText = 'No se pudo cargar el reporte estadístico.';
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo cargar la ficha del jugador.');
+            }
+        }
+
+        // --- LÓGICA DE PDF Y WHATSAPP ---
+        function generarPDFyWhatsApp() {
+            if(!jugadorActual) return;
+
+            // 1. Mostramos el título especial de impresión
+            const titulosImpresion = document.querySelectorAll('.solo-impresion');
+            titulosImpresion.forEach(el => el.style.display = 'block');
+
+            // 2. OCULTAMOS el bloque de asistencia (y todo lo que sea "solo-pantalla")
+            const elementosPantalla = document.querySelectorAll('.solo-pantalla');
+            elementosPantalla.forEach(el => el.style.display = 'none');
+
+            // Apuntamos al "area-pdf" que contiene toda la ficha
+            const elemento = document.getElementById('area-pdf');
+            
+            // Opciones de configuración del archivo PDF
+            const opciones = {
+                margin:       0.5,
+                filename:     `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true }, 
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Creamos el PDF, y cuando termina de descargarse...
+            html2pdf().set(opciones).from(elemento).save().then(() => {
+                
+                // 3. Volvemos a dejar la pantalla como estaba (ocultamos título, mostramos asistencia)
+                titulosImpresion.forEach(el => el.style.display = 'none');
+                elementosPantalla.forEach(el => el.style.display = ''); // Las comillas vacías devuelven la visibilidad normal
+
+                // Armamos el mensaje para WhatsApp
+                setTimeout(() => {
+                    alert('📄 ¡El PDF de la ficha médica (sin asistencia) ya se descargó!\n\nSe va a abrir WhatsApp. Solo tenés que buscar a la persona, darle a "Adjuntar documento" y mandarle el archivo descargado.');
+                    
+                    const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}. Te la adjunto en formato PDF.`;
+                    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+                    window.open(url, '_blank');
+                }, 500); 
+            });
+        }
+
+        // --- LÓGICA DE CORREO ---
+        function compartirEmail() {
+            if(!jugadorActual) return;
+            const asunto = `Ficha Médica de Emergencia - ${jugadorActual.nombre} ${jugadorActual.apellido}`;
+            const cuerpo = `Hola,\n\nTe escribo para compartir la ficha médica oficial del jugador/a ${jugadorActual.nombre} ${jugadorActual.apellido}.\n\nPor favor, responde este correo para coordinar el envío del archivo PDF adjunto o descárgalo directamente desde el sistema.\n\nSaludos.`;
+            const url = `mailto:?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+            window.location.href = url;
+        }
+
+        if (idJugador) {
+            cargarFicha();
+        } else {
+            alert('No se especificó un jugador.');
+            window.location.href = 'index.html';
+        }
+
+        // --- LÓGICA DE ELIMINAR ---
+        async function eliminarJugador() {
+            // 1. Cartel de seguridad (devuelve true si aprieta Aceptar, false si aprieta Cancelar)
+            const confirmacion = confirm(`⚠️ ATENCIÓN: ¿Estás seguro de que querés ELIMINAR definitivamente a ${jugadorActual.nombre} ${jugadorActual.apellido} del club? Esta acción no se puede deshacer.`);
+            
+            if (!confirmacion) {
+                return; // Si el profe se arrepintió, frenamos todo acá
+            }
+
+            try {
+                // 2. Le mandamos la orden DELETE al servidor
+                const respuesta = await fetch(`http://localhost:3000/jugadores/${idJugador}`, {
+                    method: 'DELETE'
+                });
+
+                if (respuesta.ok) {
+                    alert('Jugador eliminado del sistema.');
+                    window.location.href = 'index.html'; // Lo mandamos de vuelta al inicio
+                } else {
+                    alert('Hubo un error al intentar eliminar al jugador.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo conectar con el servidor.');
+            }
+        }
+
+        // --- LÓGICA DE PERMISOS (ROLES) ---
+        const rolUsuario = sessionStorage.getItem('usuarioRol');
+        if (rolUsuario === 'Cuerpo Tecnico') {
+            // Buscamos los botones de editar y eliminar y los escondemos
+            const btnEditar = document.querySelector('button[onclick*="editar.html"]');
+            const btnEliminar = document.querySelector('button[onclick="eliminarJugador()"]');
+            
+            if (btnEditar) btnEditar.style.display = 'none';
+            if (btnEliminar) btnEliminar.style.display = 'none';
+        }
+
+        // --- FUNCIONES DEL PANEL DE ASISTENCIA ---
+        function generarReporteAsistencia() {
+            if (historialAsistencia.length === 0) {
+                document.getElementById('f-reporte-texto').innerHTML = 'El jugador aún no tiene registros de asistencia en el sistema.';
+                return;
+            }
+
+            // Contadores
+            let totalBasquet = 0, presentesBasquet = 0;
+            let totalFisico = 0, presentesFisico = 0;
+
+            historialAsistencia.forEach(a => {
+                if (a.tipo_entrenamiento === 'Basquet') {
+                    totalBasquet++;
+                    if (a.estado === 'Presente') presentesBasquet++;
+                } else if (a.tipo_entrenamiento === 'Fisico') {
+                    totalFisico++;
+                    if (a.estado === 'Presente') presentesFisico++;
+                }
+            });
+
+            // Cálculos de porcentajes (evitando dividir por cero)
+            const porcBasquet = totalBasquet > 0 ? Math.round((presentesBasquet/totalBasquet)*100) : 0;
+            const porcFisico = totalFisico > 0 ? Math.round((presentesFisico/totalFisico)*100) : 0;
+
+            // Armado del texto formal
+            const reporteStr = `Hasta la fecha, el jugador estuvo presente en <strong>${presentesBasquet} de ${totalBasquet}</strong> prácticas de Básquet en cancha (<strong>${porcBasquet}%</strong> de asistencia) y en <strong>${presentesFisico} de ${totalFisico}</strong> sesiones de preparación Física (<strong>${porcFisico}%</strong> de asistencia).`;
+
+            document.getElementById('f-reporte-texto').innerHTML = reporteStr;
+        }
+
+        function buscarAsistenciaPorDia() {
+            const fechaBuscada = document.getElementById('buscador-fecha-asis').value;
+            const contenedorRes = document.getElementById('resultado-busqueda-dia');
+
+            if (!fechaBuscada) {
+                contenedorRes.innerHTML = '<span class="text-danger small">Por favor elegí una fecha del calendario.</span>';
+                return;
+            }
+
+            // Buscamos si en el historial hay registros para ese día exacto
+            const registrosDelDia = historialAsistencia.filter(a => {
+                // a.fecha viene de la base de datos en formato completo (ej: 2026-02-21T00:00:00.000Z)
+                // Usamos split('T')[0] para quedarnos solo con el "YYYY-MM-DD" y poder compararlo
+                const fechaCorta = a.fecha.split('T')[0];
+                return fechaCorta === fechaBuscada;
+            });
+
+            if (registrosDelDia.length === 0) {
+                contenedorRes.innerHTML = '<span class="text-muted small">El jugador no tiene registros cargados ese día.</span>';
+                return;
+            }
+
+            // Si hay registros (puede haber uno de físico y otro de básquet el mismo día), los dibujamos
+            let htmlResultado = '';
+            registrosDelDia.forEach(reg => {
+                let badgeClass = 'bg-danger';
+                if (reg.estado === 'Presente') badgeClass = 'bg-success';
+                if (reg.estado === 'Justificado') badgeClass = 'bg-warning text-dark';
+                
+                const icono = reg.tipo_entrenamiento === 'Basquet' ? '🏀 Básquet' : '🏋️ Físico';
+                htmlResultado += `<div class="mb-1 fw-bold">${icono}: <span class="badge ${badgeClass} ms-2 px-3 py-1 fs-6">${reg.estado}</span></div>`;
+            });
+
+            contenedorRes.innerHTML = htmlResultado;
+        }
+
+    </script>
+</body>
+</html>

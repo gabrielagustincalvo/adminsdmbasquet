@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistencia - Gestión Club 🏀</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light pb-5">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">🏀 Club Atlético</a>
+            <div class="d-flex align-items-center text-white">
+                <a href="index.html" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-success text-white py-3">
+                <h4 class="mb-0 text-center"><i class="bi bi-clipboard-check"></i> Tomar Asistencia</h4>
+            </div>
+            <div class="card-body p-4">
+                
+                <div class="row g-3 mb-4 border-bottom pb-4">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-muted">Fecha</label>
+                        <input type="date" id="filtro-fecha" class="form-control bg-light" required>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-muted">Práctica</label>
+                        <select id="filtro-tipo" class="form-select bg-light fw-bold text-primary" required>
+                            <option value="Basquet">🏀 Básquet (Cancha)</option>
+                            <option value="Fisico">🏋️ Físico (Gimnasio)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-muted">Rama</label>
+                        <select id="filtro-rama" class="form-select bg-light">
+                            <option value="Todos">Ambas Ramas</option>
+                            <option value="Femenino">Femenino</option>
+                            <option value="Masculino">Masculino</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-muted">Categoría</label>
+                        <select id="filtro-categoria" class="form-select bg-light">
+                            <option value="">Seleccionar...</option>
+                            <option value="Escuelita">Escuelita</option>
+                            <option value="Pre Mini">Pre Mini</option>
+                            <option value="Mini (U11)">Mini (U11)</option>
+                            <option value="Infantiles (U13)">Infantiles (U13)</option>
+                            <option value="Cadetes (U15)">Cadetes (U15)</option>
+                            <option value="Juveniles (U17)">Juveniles (U17)</option>
+                            <option value="Liga Próximo (U21)">Liga Próximo (U21)</option>
+                            <option value="Primera">Primera</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 mt-3 text-center">
+                        <button onclick="cargarPlanilla()" class="btn btn-primary btn-lg px-5 fw-bold shadow-sm">
+                            <i class="bi bi-search"></i> Cargar Plantel
+                        </button>
+                    </div>
+                </div>
+
+                <div id="zona-lista" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-dark mb-0" id="titulo-lista-jugadores">Jugadores Encontrados</h5>
+                        <span class="badge bg-secondary fs-6" id="contador-jugadores">0</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle border">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Jugador</th>
+                                    <th class="text-center">Asistencia</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-asistencia">
+                                </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button onclick="guardarAsistencia()" class="btn btn-success btn-lg shadow fw-bold">
+                            <i class="bi bi-save-fill"></i> Guardar Planilla del Día
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // SEGURIDAD
+        if (!sessionStorage.getItem('usuarioLogueado')) window.location.href = 'login.html';
+
+        // Variables Globales
+        let todosLosJugadores = [];
+        let asistenciaDelDia = [];
+
+        // Poner la fecha de hoy por defecto al entrar
+        document.getElementById('filtro-fecha').valueAsDate = new Date();
+
+        function obtenerCategoria(fechaNacimiento) {
+            if (!fechaNacimiento) return 'Sin Fecha';
+            const anio = new Date(fechaNacimiento).getFullYear();
+            if (anio >= 2019 && anio <= 2022) return 'Escuelita';
+            if (anio === 2018 || anio === 2017) return 'Pre Mini';
+            if (anio === 2016 || anio === 2015) return 'Mini (U11)';
+            if (anio === 2014 || anio === 2013) return 'Infantiles (U13)';
+            if (anio === 2012 || anio === 2011) return 'Cadetes (U15)';
+            if (anio === 2010 || anio === 2009) return 'Juveniles (U17)';
+            if (anio >= 2005 && anio <= 2008) return 'Liga Próximo (U21)';
+            if (anio <= 2004) return 'Primera';
+            return 'Otras';
+        }
+
+        async function cargarPlanilla() {
+            const fechaSeleccionada = document.getElementById('filtro-fecha').value;
+            const categoriaSeleccionada = document.getElementById('filtro-categoria').value;
+            const ramaSeleccionada = document.getElementById('filtro-rama').value;
+            const tipoSeleccionado = document.getElementById('filtro-tipo').value;
+
+            if (!fechaSeleccionada || !categoriaSeleccionada) {
+                alert('Por favor, selecciona una fecha y una categoría primero.');
+                return;
+            }
+
+            try {
+                // Traemos TODOS los jugadores
+                const resJugadores = await fetch('http://localhost:3000/jugadores');
+                todosLosJugadores = await resJugadores.json();
+
+                // Traemos la ASISTENCIA de esa fecha Y TIPO específico
+                const resAsistencia = await fetch(`http://localhost:3000/asistencia/${fechaSeleccionada}/${tipoSeleccionado}`);
+                asistenciaDelDia = await resAsistencia.json();
+
+                // Filtramos a los jugadores
+                const plantelFiltrado = todosLosJugadores.filter(jugador => {
+                    const ramaJugador = jugador.rama || 'Masculino';
+                    const coincideRama = (ramaSeleccionada === 'Todos' || ramaJugador === ramaSeleccionada);
+                    const coincideCat = (obtenerCategoria(jugador.fecha_nacimiento) === categoriaSeleccionada);
+                    return coincideRama && coincideCat;
+                });
+
+                dibujarTabla(plantelFiltrado, tipoSeleccionado);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Hubo un error al buscar los datos.');
+            }
+        }
+
+        function dibujarTabla(plantel, tipoSeleccionado) {
+            document.getElementById('zona-lista').style.display = 'block';
+            document.getElementById('contador-jugadores').innerText = `${plantel.length} jugadores`;
+            
+            // Cambiar el título para que el profe sepa qué está tomando
+            const textoTipo = tipoSeleccionado === 'Basquet' ? '🏀 Básquet' : '🏋️ Físico';
+            document.getElementById('titulo-lista-jugadores').innerText = `Asistencia: ${textoTipo}`;
+            
+            const tabla = document.getElementById('lista-asistencia');
+            tabla.innerHTML = '';
+
+            if(plantel.length === 0) {
+                tabla.innerHTML = '<tr><td colspan="2" class="text-center text-muted py-4">No hay jugadores en esta categoría.</td></tr>';
+                return;
+            }
+
+            plantel.forEach(jugador => {
+                const registroPrevio = asistenciaDelDia.find(a => a.jugador_id === jugador.id);
+                const estado = registroPrevio ? registroPrevio.estado : 'Ausente'; 
+
+                const fila = `
+                    <tr>
+                        <td>
+                            <div class="fw-bold">${jugador.apellido}, ${jugador.nombre}</div>
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group shadow-sm" role="group">
+                                <input type="radio" class="btn-check" name="asis_${jugador.id}" id="ausente_${jugador.id}" value="Ausente" autocomplete="off" ${estado === 'Ausente' ? 'checked' : ''}>
+                                <label class="btn btn-outline-danger fw-bold px-3" for="ausente_${jugador.id}">A</label>
+
+                                <input type="radio" class="btn-check" name="asis_${jugador.id}" id="presente_${jugador.id}" value="Presente" autocomplete="off" ${estado === 'Presente' ? 'checked' : ''}>
+                                <label class="btn btn-outline-success fw-bold px-3" for="presente_${jugador.id}">P</label>
+                                
+                                <input type="radio" class="btn-check" name="asis_${jugador.id}" id="justificado_${jugador.id}" value="Justificado" autocomplete="off" ${estado === 'Justificado' ? 'checked' : ''}>
+                                <label class="btn btn-outline-warning fw-bold px-3" for="justificado_${jugador.id}">J</label>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tabla.innerHTML += fila;
+            });
+        }
+
+        async function guardarAsistencia() {
+            const fecha = document.getElementById('filtro-fecha').value;
+            const tipo = document.getElementById('filtro-tipo').value;
+            const paqueteAsistencia = [];
+
+            const seleccionados = document.querySelectorAll('input[type="radio"]:checked');
+            
+            seleccionados.forEach(radio => {
+                const jugadorId = radio.name.split('_')[1];
+                const estado = radio.value;
+                
+                paqueteAsistencia.push({
+                    jugador_id: jugadorId,
+                    fecha: fecha,
+                    tipo_entrenamiento: tipo, // Guardamos el tipo de práctica
+                    estado: estado
+                });
+            });
+
+            if(paqueteAsistencia.length === 0) return;
+
+            try {
+                const respuesta = await fetch('http://localhost:3000/asistencia', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(paqueteAsistencia)
+                });
+
+                if (respuesta.ok) {
+                    alert(`¡Planilla de ${tipo === 'Basquet' ? 'Básquet' : 'Físico'} guardada perfectamente!`);
+                } else {
+                    alert('Error al guardar la planilla en el servidor.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo conectar con el servidor.');
+            }
+        }
+    </script>
+</body>
+</html>

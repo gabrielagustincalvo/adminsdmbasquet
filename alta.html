@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Jugador - Gestión Club 🏀</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">🏀 Club Atlético Sol de Mayo Basquet</a>
+            <div class="d-flex align-items-center text-white">
+                <a href="index.html" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Volver al Plantel
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0"><i class="bi bi-person-plus-fill"></i> Inscribir Nuevo Jugador</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="form-alta">
+                            
+                            <h5 class="text-primary border-bottom pb-2 mb-3">Datos Personales</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nombre</label>
+                                    <input type="text" id="nombre" class="form-control" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Apellido</label>
+                                    <input type="text" id="apellido" class="form-control" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">DNI</label>
+                                    <input type="text" id="dni" class="form-control" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Fecha de Nacimiento</label>
+                                    <input type="date" id="fecha_nacimiento" class="form-control" required>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label text-success fw-bold">Rama</label>
+                                    <select id="rama" class="form-select border-success" required>
+                                        <option value="Masculino">Masculino</option>
+                                        <option value="Femenino">Femenino</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Teléfono / Celular (Opcional)</label>
+                                    <input type="text" id="telefono" class="form-control" placeholder="Ej: 2920123456">
+                                </div>
+                            </div>
+
+                            <h5 class="text-primary border-bottom pb-2 mb-3 mt-4">Contacto de Emergencia</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nombre del Contacto</label>
+                                    <input type="text" id="contacto_nombre" class="form-control" placeholder="Ej: Madre, Padre, Tutor">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Teléfono de Emergencia</label>
+                                    <input type="text" id="contacto_tel" class="form-control">
+                                </div>
+                            </div>
+
+                            <h5 class="text-primary border-bottom pb-2 mb-3 mt-4">Historial Médico</h5>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Grupo Sanguíneo</label>
+                                    <select id="grupo_sanguineo" class="form-select">
+                                        <option value="">Seleccionar...</option>
+                                        <option value="0+">0+</option>
+                                        <option value="0-">0-</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-8 mb-3">
+                                    <label class="form-label">Alergias</label>
+                                    <input type="text" id="alergias" class="form-control" placeholder="Ej: Penicilina, Ninguna">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">¿Tuvo lesiones anteriores? (Detalle)</label>
+                                <textarea id="lesiones" class="form-control" rows="2" placeholder="Ej: Esguince de tobillo derecho en 2023..."></textarea>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">¿Cirugías previas?</label>
+                                <textarea id="cirugias" class="form-control" rows="2" placeholder="Ej: Operación de meniscos..."></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="index.html" class="btn btn-secondary me-md-2">Cancelar</a>
+                                <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Guardar Jugador</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Verificamos que el profe haya iniciado sesión
+        if (!sessionStorage.getItem('usuarioLogueado')) {
+            window.location.href = 'login.html';
+        }
+
+        // 2. ¿Qué pasa cuando apretamos "Guardar"?
+        document.getElementById('form-alta').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Evita que la página se recargue
+
+            // Armamos la "caja" con todos los datos, ¡INCLUYENDO LA RAMA!
+            const datosJugador = {
+                nombre: document.getElementById('nombre').value,
+                apellido: document.getElementById('apellido').value,
+                dni: document.getElementById('dni').value,
+                fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
+                rama: document.getElementById('rama').value, // <-- Este es el dato nuevo
+                telefono: document.getElementById('telefono').value,
+                contacto_emergencia_nombre: document.getElementById('contacto_nombre').value,
+                contacto_emergencia_tel: document.getElementById('contacto_tel').value,
+                grupo_sanguineo: document.getElementById('grupo_sanguineo').value,
+                alergias: document.getElementById('alergias').value,
+                lesiones: document.getElementById('lesiones').value,
+                cirugias: document.getElementById('cirugias').value
+            };
+
+            try {
+                // Enviamos los datos al cerebro (Backend)
+                const respuesta = await fetch('http://localhost:3000/jugadores', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datosJugador)
+                });
+
+                if (respuesta.ok) {
+                    alert('¡Jugador inscripto con éxito! 🏀');
+                    window.location.href = 'index.html'; // Volvemos al plantel
+                } else {
+                    alert('Hubo un error al guardar el jugador. Verificá la conexión con el servidor.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo conectar con el servidor.');
+            }
+        });
+    </script>
+</body>
+</html>

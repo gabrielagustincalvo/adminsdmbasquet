@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Club 🏀</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>body { background-color: #1e3c72; height: 100vh; display: flex; align-items: center; justify-content: center; }</style>
+</head>
+<body>
+    <div class="card p-4 shadow-lg" style="width: 350px;">
+        <h3 class="text-center mb-3">🏀 Login</h3>
+        <form id="form-login">
+            <div class="mb-3">
+                <label>Usuario</label>
+                <input type="text" id="usuario" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label>Contraseña</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+            <div class="text-center mt-3">
+                <a href="recuperar.html" class="text-danger small fw-bold text-decoration-none">
+                    ¿Olvidaste tu contraseña o usuario?
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('form-login').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const usuario = document.getElementById('usuario').value;
+            const password = document.getElementById('password').value;
+
+            const res = await fetch('http://localhost:3000/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuario, password })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                // Guardamos la "llave" en el navegador
+                sessionStorage.setItem('usuarioLogueado', data.usuario.nombre);
+                sessionStorage.setItem('usuarioRol', data.usuario.rol);
+                window.location.href = 'index.html';
+            } else {
+                alert('❌ ' + data.mensaje);
+            }
+        });
+    </script>
+</body>
+</html>
