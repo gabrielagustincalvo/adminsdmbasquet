@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Staff - Gestión Club 🏀</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">🏀 Club Atlético Sol de Mayo Basquet</a>
+            <div class="d-flex align-items-center text-white">
+                <a href="index.html" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-dark text-white">
+                        <h4 class="mb-0"><i class="bi bi-person-gear"></i> Editar Datos del Staff</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="form-editar-empleado">
+                            
+                            <h5 class="text-primary border-bottom pb-2 mb-3">Datos Personales</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nombre</label>
+                                    <input type="text" id="nombre" class="form-control" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Apellido</label>
+                                    <input type="text" id="apellido" class="form-control" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">DNI</label>
+                                    <input type="text" id="dni" class="form-control" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Fecha de Nacimiento</label>
+                                    <input type="date" id="fecha_nacimiento" class="form-control" required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Teléfono / Celular</label>
+                                    <input type="text" id="telefono" class="form-control">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Dirección (Opcional)</label>
+                                    <input type="text" id="direccion" class="form-control">
+                                </div>
+                            </div>
+
+                            <h5 class="text-primary border-bottom pb-2 mb-3 mt-4">Contacto de Emergencia</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nombre del Contacto</label>
+                                    <input type="text" id="contacto_nombre" class="form-control">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Teléfono de Emergencia</label>
+                                    <input type="text" id="contacto_tel" class="form-control">
+                                </div>
+                            </div>
+
+                            <h5 class="text-primary border-bottom pb-2 mb-3 mt-4">Historial Médico</h5>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Grupo Sanguíneo</label>
+                                    <select id="grupo_sanguineo" class="form-select">
+                                        <option value="">Seleccionar...</option>
+                                        <option value="0+">0+</option><option value="0-">0-</option>
+                                        <option value="A+">A+</option><option value="A-">A-</option>
+                                        <option value="B+">B+</option><option value="B-">B-</option>
+                                        <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-8 mb-3">
+                                    <label class="form-label">Alergias</label>
+                                    <input type="text" id="alergias" class="form-control">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Lesiones anteriores</label>
+                                <textarea id="lesiones" class="form-control" rows="2"></textarea>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">Cirugías previas</label>
+                                <textarea id="cirugias" class="form-control" rows="2"></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-secondary me-md-2" onclick="window.location.href='ficha-empleado.html?id=' + idEmpleado">Cancelar</button>
+                                <button type="submit" class="btn btn-dark fw-bold"><i class="bi bi-save"></i> Guardar Cambios</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (!sessionStorage.getItem('usuarioLogueado')) window.location.href = 'login.html';
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const idEmpleado = urlParams.get('id');
+
+        // 1. Apenas entra, buscamos los datos y llenamos los casilleros
+        async function cargarDatosParaEditar() {
+            try {
+                // Apuntamos a la ruta de empleados
+                const respuesta = await fetch(`http://localhost:3000/empleados/${idEmpleado}`);
+                const empleado = await respuesta.json();
+
+                if (respuesta.status === 404) {
+                    alert('Empleado no encontrado.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                document.getElementById('nombre').value = empleado.nombre || '';
+                document.getElementById('apellido').value = empleado.apellido || '';
+                document.getElementById('dni').value = empleado.dni || '';
+                document.getElementById('telefono').value = empleado.telefono || '';
+                document.getElementById('direccion').value = empleado.direccion || '';
+                
+                // Formatear la fecha para el input type="date"
+                if (empleado.fecha_nacimiento) {
+                    const fecha = new Date(empleado.fecha_nacimiento);
+                    document.getElementById('fecha_nacimiento').value = fecha.toISOString().split('T')[0];
+                }
+
+                document.getElementById('contacto_nombre').value = empleado.contacto_emergencia_nombre || '';
+                document.getElementById('contacto_tel').value = empleado.contacto_emergencia_tel || '';
+                document.getElementById('grupo_sanguineo').value = empleado.grupo_sanguineo || '';
+                document.getElementById('alergias').value = empleado.alergias !== 'Ninguna' ? empleado.alergias : '';
+                document.getElementById('lesiones').value = empleado.lesiones !== 'Ninguna' ? empleado.lesiones : '';
+                document.getElementById('cirugias').value = empleado.cirugias !== 'Ninguna' ? empleado.cirugias : '';
+
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+                alert('No se pudo cargar la información del staff.');
+            }
+        }
+
+        if (idEmpleado) cargarDatosParaEditar();
+
+        // 2. Cuando aprieta "Guardar Cambios", mandamos el PUT al servidor
+        document.getElementById('form-editar-empleado').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const datosActualizados = {
+                nombre: document.getElementById('nombre').value,
+                apellido: document.getElementById('apellido').value,
+                dni: document.getElementById('dni').value,
+                fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
+                telefono: document.getElementById('telefono').value,
+                direccion: document.getElementById('direccion').value,
+                contacto_emergencia_nombre: document.getElementById('contacto_nombre').value,
+                contacto_emergencia_tel: document.getElementById('contacto_tel').value,
+                grupo_sanguineo: document.getElementById('grupo_sanguineo').value,
+                alergias: document.getElementById('alergias').value || 'Ninguna',
+                lesiones: document.getElementById('lesiones').value || 'Ninguna',
+                cirugias: document.getElementById('cirugias').value || 'Ninguna'
+            };
+
+            try {
+                // Usamos el método PUT hacia la ruta de empleados
+                const respuesta = await fetch(`http://localhost:3000/empleados/${idEmpleado}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datosActualizados)
+                });
+
+                if (respuesta.ok) {
+                    alert('¡Datos del staff actualizados con éxito! 📋');
+                    window.location.href = `ficha-empleado.html?id=${idEmpleado}`; 
+                } else {
+                    alert('Error al actualizar.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo conectar con el servidor.');
+            }
+        });
+    </script>
+</body>
+</html>

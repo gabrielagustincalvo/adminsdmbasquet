@@ -71,12 +71,16 @@
                 <a href="pagos.html" id="btn-tesoreria" class="btn btn-success shadow-sm fw-bold btn-responsivo" style="background-color: #198754;">
                     <i class="bi bi-cash-coin"></i> Tesorería
                 </a>
+
+                <button onclick="verStaff()" class="btn btn-info shadow-sm text-dark fw-bold btn-responsivo">
+                    <i class="bi bi-person-lines-fill"></i> Staff
+                </button>
+
             </div>
 
         </div>
         
-        <div id="vista-categorias" class="row g-4">
-            </div>
+        <div id="vista-categorias" class="row g-4"></div>
 
         <div id="vista-jugadores" style="display: none;">
             <button class="btn btn-secondary mb-3 shadow-sm" onclick="volverACategorias()">
@@ -101,6 +105,29 @@
                 </div>
             </div>
         </div>
+
+        <div id="vista-staff" style="display: none;">
+            <button class="btn btn-secondary mb-3 shadow-sm" onclick="volverACategorias()">
+                <i class="bi bi-arrow-left"></i> Volver a Categorías
+            </button>
+            
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Rol</th>
+                                <th>Teléfono</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-staff">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -115,6 +142,7 @@
         }
 
         let todosLosJugadores = [];
+        let todosLosEmpleados = [];
 
         // 2. LÓGICA DE CATEGORÍAS (Tus reglas exactas)
         function obtenerCategoria(fechaNacimiento) {
@@ -140,6 +168,17 @@
                 renderizarCategorias();
             } catch (error) {
                 console.error('Error:', error);
+            }
+        }
+
+        // A. CARGAR EMPLEADOS DESDE EL SERVIDOR
+
+        async function cargarEmpleados() {
+            try {
+                const respuesta = await fetch('http://localhost:3000/empleados');
+                todosLosEmpleados = await respuesta.json();
+            } catch (error) {
+                console.error('Error al cargar empleados:', error);
             }
         }
 
@@ -243,31 +282,65 @@
             });
         }
 
+        function verStaff() {
+            // Ocultamos las otras vistas y mostramos la del staff
+            document.getElementById('vista-categorias').style.display = 'none';
+            document.getElementById('vista-jugadores').style.display = 'none';
+            document.getElementById('vista-staff').style.display = 'block';
+            document.getElementById('titulo-pantalla').innerText = 'Directorio del Staff';
+
+            const tabla = document.getElementById('lista-staff');
+            tabla.innerHTML = '';
+
+            todosLosEmpleados.forEach(emp => {
+                // Le damos un color distinto a la etiqueta según el rol
+                let badgeClass = 'bg-info text-dark';
+                if (emp.rol === 'Admin Principal') badgeClass = 'bg-dark text-white';
+                if (emp.rol === 'Cuerpo Tecnico') badgeClass = 'bg-warning text-dark';
+
+                const fila = `
+                    <tr>
+                        <td>
+                            <div class="fw-bold">${emp.nombre} ${emp.apellido}</div>
+                            <div class="text-muted small">DNI: ${emp.dni || '-'}</div>
+                        </td>
+                        <td><span class="badge ${badgeClass}">${emp.rol}</span></td>
+                        <td>${emp.telefono || '-'}</td>
+                        <td>
+                            <a href="ficha-empleado.html?id=${emp.id}" class="btn btn-outline-dark btn-sm">
+                                <i class="bi bi-person-vcard"></i> Ficha
+                            </a>
+                        </td>
+                    </tr>
+                `;
+                tabla.innerHTML += fila;
+            });
+        }
+
         function volverACategorias() {
+            document.getElementById('vista-staff').style.display = 'none'; // <--- Línea nueva
             renderizarCategorias();
         }
 
         cargarJugadores();
+        cargarEmpleados();
 
         // --- LÓGICA DE PERMISOS (ROLES) ---
         const rolUsuario = sessionStorage.getItem('usuarioRol');
+
+        // 1. Escondemos botón de Nuevo Empleado a CUALQUIERA que no sea el Jefe
+        const btnCrearUsuario = document.getElementById('btn-crear-usuario');
+        if (btnCrearUsuario && rolUsuario !== 'Admin Principal') {
+            btnCrearUsuario.style.display = 'none';
+        }
         
-        // 1. Si NO es el Admin Principal, escondemos el botón amarillo de Crear Empleados
-        if (rolUsuario !== 'Admin Principal') {
-            const btnCrearUsuario = document.getElementById('btn-crear-usuario');
-            if (btnCrearUsuario) btnCrearUsuario.style.display = 'none';
-        }
-
-        // 2. Si es Cuerpo Técnico, escondemos además el botón verde de Alta de Jugadores
+        // Si es Cuerpo Técnico, le escondemos el resto de las herramientas administrativas
         if (rolUsuario === 'Cuerpo Tecnico') {
+            // 2. Escondemos botón de Alta de Jugadores
             const btnNuevoJugador = document.querySelector('a[href="alta.html"]');
-            if (btnNuevoJugador) {
-                btnNuevoJugador.style.display = 'none';
-            }
-        }
+            if (btnNuevoJugador) btnNuevoJugador.style.display = 'none';
 
-        // 3. Si es Cuerpo Técnico, escondemos la Bóveda de Pagos (Tesorería)
-        if (rolUsuario === 'Cuerpo Tecnico') {
+            // 3. Escondemos botón de Tesorería
             const btnTesoreria = document.getElementById('btn-tesoreria');
             if (btnTesoreria) btnTesoreria.style.display = 'none';
         }

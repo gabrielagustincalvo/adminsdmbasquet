@@ -30,14 +30,23 @@ app.get('/', (req, res) => {
 
 // 1. RUTA DE REGISTRO COMPLETO
 app.post('/registro', async (req, res) => {
-  const { nombre, apellido, dni, direccion, telefono, correo, usuario, password, rol } = req.body;
+  const { nombre, apellido, dni, direccion, telefono, correo, usuario, password, rol, rolCreador } = req.body;
+
+  // ==========================================
+  // BARRERA DE SEGURIDAD DEFINITIVA
+  // ==========================================
+  // Si el que manda la petición NO es Admin Principal, bloqueamos la acción.
+  if (rolCreador !== 'Admin Principal') {
+      return res.status(403).json({ 
+          mensaje: 'Acceso Denegado: Operación reservada exclusivamente para el Administrador Principal.' 
+      });
+  }
+  // ==========================================
 
   try {
-    // Generamos la encriptación de la contraseña
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Guardamos todos los datos en la nueva tabla
     const query = `
       INSERT INTO usuarios (nombre, apellido, dni, direccion, telefono, correo, usuario, password, rol) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, nombre, usuario, rol
@@ -273,6 +282,41 @@ app.post('/pagos', async (req, res) => {
   }
 });
 
+// 3. Obtener el total recaudado y la cantidad de cuotas pagadas (Estadísticas generales)
+app.get('/pagos-totales', async (req, res) => {
+  try {
+    // Le pedimos a la base de datos que cuente las filas y sume la columna monto
+    const query = 'SELECT COUNT(*) as cantidad, SUM(monto) as total FROM pagos';
+    const result = await pool.query(query);
+    
+    // Devolvemos el resultado (si no hay nada, devuelve 0)
+    res.json({
+      cantidad: result.rows[0].cantidad || 0,
+      total: result.rows[0].total || 0
+    });
+  } catch (err) {
+    console.error('Error al obtener totales de pagos:', err.message);
+    res.status(500).send('Error interno del servidor');
+  }
+});
+
+// 4. Obtener TODOS los pagos (Historial global con nombres)
+app.get('/pagos-todos', async (req, res) => {
+  try {
+    const query = `
+      SELECT p.*, j.nombre, j.apellido 
+      FROM pagos p 
+      JOIN jugadores j ON p.jugador_id = j.id 
+      ORDER BY p.fecha_pago DESC
+    `;
+    const result = await pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error al obtener todos los pagos:', err.message);
+    res.status(500).send('Error interno del servidor');
+  }
+});
+
 // ==========================================
 //        MÓDULO DE ASISTENCIA (DT / PROFE)
 // ==========================================
@@ -329,6 +373,93 @@ app.post('/asistencia', async (req, res) => {
   } catch (err) {
     console.error('Error al guardar asistencia:', err.message);
     res.status(500).send('Error al guardar la asistencia');
+  }
+});
+
+// ==========================================
+//        MÓDULO DE STAFF / EMPLEADOS
+// ==========================================
+
+// 1. Obtener la lista de todo el personal (SIN enviar las contraseñas)
+app.get('/empleados', async (req, res) => {
+  try {
+    // Traemos todos los datos médicos y personales, pero excluimos usuario y password
+    const query = `
+      SELECT id, nombre, apellido, dni, direccion, telefono, correo, rol, 
+             fecha_nacimiento, contacto_emergencia_nombre, contacto_emergencia_tel, 
+             grupo_sanguineo, alergias, lesiones, cirugias 
+      FROM usuarios 
+      ORDER BY rol, nombre ASC
+    `;
+    const result = await pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error al obtener la lista de empleados:', err.message);
+    res.status(500).send('Error interno del servidor');
+  }
+});
+
+// 2. Obtener un empleado específico para armar su Ficha Médica
+app.get('/empleados/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const query = `
+      SELECT id, nombre, apellido, dni, direccion, telefono, correo, rol, 
+             fecha_nacimiento, contacto_emergencia_nombre, contacto_emergencia_tel, 
+             grupo_sanguineo, alergias, lesiones, cirugias 
+      FROM usuarios 
+      WHERE id = $1
+    `;
+    const result = await pool.query(query, [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ mensaje: 'Empleado no encontrado' });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error al obtener la ficha del empleado:', err.message);
+    res.status(500).send('Error interno del servidor');
+  }
+});
+
+// 3. ACTUALIZAR (Editar) los datos médicos y personales de un empleado
+app.put('/empleados/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { 
+        nombre, apellido, dni, fecha_nacimiento, telefono, direccion,
+        contacto_emergencia_nombre, contacto_emergencia_tel,
+        grupo_sanguineo, alergias, lesiones, cirugias 
+    } = req.body;
+
+    const query = `
+      UPDATE usuarios 
+      SET nombre = $1, apellido = $2, dni = $3, fecha_nacimiento = $4, 
+          telefono = $5, direccion = $6, contacto_emergencia_nombre = $7, 
+          contacto_emergencia_tel = $8, grupo_sanguineo = $9, 
+          alergias = $10, lesiones = $11, cirugias = $12
+      WHERE id = $13 RETURNING *
+    `;
+    
+    const values = [
+        nombre, apellido, dni, fecha_nacimiento, telefono, direccion,
+        contacto_emergencia_nombre, contacto_emergencia_tel,
+        grupo_sanguineo || null, alergias || 'Ninguna', 
+        lesiones || 'Ninguna', cirugias || 'Ninguna', 
+        id 
+    ];
+
+    const result = await pool.query(query, values);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ mensaje: 'Empleado no encontrado' });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error al actualizar el empleado:', err.message);
+    res.status(500).send('Error interno al guardar los cambios.');
   }
 });
 

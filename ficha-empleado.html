@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha del Staff - Gestión Club 🏀</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        @media print {
+            nav, .botonera-acciones, .solo-pantalla { display: none !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            html, body { background-color: white !important; height: auto !important; margin: 0 !important; padding: 0 !important; }
+            .container, #area-pdf {
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background-color: transparent !important;
+            }
+            .card {
+                border: 2px solid #000 !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                margin-bottom: 0 !important; 
+            }
+            .solo-impresion { display: block !important; }
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">🏀 Club Atlético Sol de Mayo Basquet</a>
+            <div class="d-flex align-items-center text-white">
+                <a href="index.html" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                
+                <div id="area-pdf" class="p-2 bg-white rounded">
+                    <div class="solo-impresion text-center mb-3 mt-3" style="display: none;">
+                        <h2 class="fw-bold text-dark">🏥 Ficha Médica de Emergencia (STAFF)</h2>
+                        <p class="mb-0 text-muted">Club Atlético - Básquet</p>
+                    </div>
+
+                    <div class="card shadow-sm border-0 mb-4">
+                        
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+                            <h5 class="mb-0"><i class="bi bi-person-badge"></i> Ficha de Personal</h5>
+                            <span id="f-rol" class="badge bg-warning text-dark fs-6 px-3 py-2 rounded-pill shadow-sm">...</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-center align-items-center mb-4 gap-3 mt-4">
+                            <h2 id="f-nombre-completo" class="fw-bold text-dark mb-0">Cargando...</h2>
+                            
+                            <button onclick="window.location.href='editar-empleado.html?id=' + idEmpleado" class="btn btn-outline-secondary btn-sm rounded-circle botonera-acciones" title="Editar Staff">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            
+                            <button onclick="eliminarEmpleado()" class="btn btn-outline-danger btn-sm rounded-circle botonera-acciones" title="Eliminar Staff">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                            
+                            <div class="row g-3 mb-4 px-3">
+                                <div class="col-4">
+                                    <div class="p-3 bg-light rounded border text-center">
+                                        <small class="text-muted d-block text-uppercase fw-bold">DNI</small>
+                                        <strong id="f-dni" class="fs-5">-</strong>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-3 bg-light rounded border text-center">
+                                        <small class="text-muted d-block text-uppercase fw-bold">Nacimiento</small>
+                                        <strong id="f-fecha" class="fs-5">-</strong>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-3 bg-light rounded border text-center">
+                                        <small class="text-muted d-block text-uppercase fw-bold">Celular</small>
+                                        <strong id="f-telefono" class="fs-5">-</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="px-3">
+                                <h5 class="text-secondary border-bottom pb-2 mt-4"><i class="bi bi-telephone-fill text-danger"></i> Contacto de Emergencia</h5>
+                                <div class="mb-4 p-3 bg-light rounded border">
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Nombre del contacto</small>
+                                            <strong id="f-emergencia-nombre" class="fs-6">-</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Teléfono de emergencia</small>
+                                            <strong id="f-emergencia-tel" class="fs-6">-</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h5 class="text-secondary border-bottom pb-2 mt-4"><i class="bi bi-heart-pulse-fill text-danger"></i> Historial Médico</h5>
+                                <div class="row g-3 pb-4">
+                                    <div class="col-6">
+                                        <div class="p-3 bg-danger bg-opacity-10 rounded border border-danger text-center h-100">
+                                            <small class="text-danger fw-bold d-block text-uppercase">Grupo Sanguíneo</small>
+                                            <strong id="f-grupo" class="fs-3">-</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-3 bg-warning bg-opacity-10 rounded border border-warning text-center h-100">
+                                            <small class="text-warning text-darken fw-bold d-block text-uppercase" style="color: #b38000!important;">Alergias</small>
+                                            <strong id="f-alergias" class="fs-5">-</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="p-3 bg-light rounded border">
+                                            <small class="text-muted fw-bold d-block mb-1">Lesiones Previas:</small>
+                                            <p id="f-lesiones" class="mb-0">-</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="p-3 bg-light rounded border">
+                                            <small class="text-muted fw-bold d-block mb-1">Cirugías:</small>
+                                            <p id="f-cirugias" class="mb-0">-</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                </div> 
+                
+                <div id="botonera" class="mt-2 text-center d-flex justify-content-center gap-3 flex-wrap botonera-acciones">
+                    <button onclick="window.print()" class="btn btn-secondary shadow-sm px-4">
+                        <i class="bi bi-printer"></i> Imprimir
+                    </button>
+                    <button onclick="generarPDFyWhatsApp()" class="btn btn-success shadow-sm px-4">
+                        <i class="bi bi-whatsapp"></i> Enviar PDF
+                    </button>
+                    <button onclick="compartirEmail()" class="btn btn-primary shadow-sm px-4">
+                        <i class="bi bi-envelope"></i> Correo
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (!sessionStorage.getItem('usuarioLogueado')) {
+            window.location.href = 'login.html';
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const idEmpleado = urlParams.get('id');
+        let empleadoActual = null;
+
+        async function cargarFicha() {
+            try {
+                // Buscamos en la nueva ruta de empleados
+                const respuesta = await fetch(`http://localhost:3000/empleados/${idEmpleado}`);
+                empleadoActual = await respuesta.json();
+
+                if(respuesta.status === 404) {
+                    alert('Empleado no encontrado.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                document.getElementById('f-nombre-completo').innerText = `${empleadoActual.nombre} ${empleadoActual.apellido}`;
+                document.getElementById('f-dni').innerText = empleadoActual.dni || '-';
+                
+                if(empleadoActual.fecha_nacimiento){
+                    const fecha = new Date(empleadoActual.fecha_nacimiento);
+                    fecha.setMinutes(fecha.getMinutes() + fecha.getTimezoneOffset()); 
+                    document.getElementById('f-fecha').innerText = fecha.toLocaleDateString('es-AR');
+                } else {
+                    document.getElementById('f-fecha').innerText = '-';
+                }
+                
+                document.getElementById('f-telefono').innerText = empleadoActual.telefono || '-';
+                document.getElementById('f-emergencia-nombre').innerText = empleadoActual.contacto_emergencia_nombre || '-';
+                document.getElementById('f-emergencia-tel').innerText = empleadoActual.contacto_emergencia_tel || '-';
+                
+                document.getElementById('f-grupo').innerText = empleadoActual.grupo_sanguineo || 'No espec.';
+                document.getElementById('f-alergias').innerText = empleadoActual.alergias || 'Ninguna';
+                document.getElementById('f-lesiones').innerText = empleadoActual.lesiones || 'Ninguna';
+                document.getElementById('f-cirugias').innerText = empleadoActual.cirugias || 'Ninguna';
+                
+                // Mostrar el ROL en lugar de la Rama
+                const rol = empleadoActual.rol || 'Empleado';
+                const badgeRol = document.getElementById('f-rol');
+                badgeRol.innerText = rol;
+                
+                if (rol === 'Admin Principal') {
+                    badgeRol.classList.replace('bg-warning', 'bg-dark');
+                    badgeRol.classList.replace('text-dark', 'text-white');
+                } else if (rol === 'Administrativo') {
+                    badgeRol.classList.replace('bg-warning', 'bg-info');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo cargar la ficha del staff.');
+            }
+        }
+
+        // --- LÓGICA DE PDF Y WHATSAPP ---
+        function generarPDFyWhatsApp() {
+            if(!empleadoActual) return;
+
+            const titulosImpresion = document.querySelectorAll('.solo-impresion');
+            titulosImpresion.forEach(el => el.style.display = 'block');
+
+            const elemento = document.getElementById('area-pdf');
+            
+            const opciones = {
+                margin:       0.5,
+                filename:     `Ficha_Medica_Staff_${empleadoActual.apellido}_${empleadoActual.nombre}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true }, 
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opciones).from(elemento).save().then(() => {
+                titulosImpresion.forEach(el => el.style.display = 'none');
+
+                setTimeout(() => {
+                    alert('📄 ¡El PDF de la ficha médica se descargó!\n\nSe va a abrir WhatsApp para que lo compartas.');
+                    
+                    const texto = `Hola! Te envío la ficha médica y de contacto de ${empleadoActual.nombre} ${empleadoActual.apellido} (Staff del Club). Te la adjunto en formato PDF.`;
+                    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+                    window.open(url, '_blank');
+                }, 500); 
+            });
+        }
+
+        // --- LÓGICA DE CORREO ---
+        function compartirEmail() {
+            if(!empleadoActual) return;
+            const asunto = `Ficha Médica Staff - ${empleadoActual.nombre} ${empleadoActual.apellido}`;
+            const cuerpo = `Hola,\n\nTe comparto la ficha médica oficial del integrante del staff ${empleadoActual.nombre} ${empleadoActual.apellido}.\n\nPor favor, responde este correo para coordinar el envío del archivo PDF adjunto.\n\nSaludos.`;
+            const url = `mailto:?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+            window.location.href = url;
+        }
+
+        if (idEmpleado) {
+            cargarFicha();
+        } else {
+            alert('No se especificó un miembro del staff.');
+            window.location.href = 'index.html';
+        }
+
+        // --- LÓGICA DE ELIMINAR STAFF ---
+        async function eliminarEmpleado() {
+            // 1. Barrera de seguridad: Solo el Admin Principal puede borrar staff
+            const rolUsuario = sessionStorage.getItem('usuarioRol');
+            if (rolUsuario !== 'Admin Principal') {
+                alert('⛔ Acceso Denegado: Solo el Administrador Principal puede eliminar a un miembro del staff.');
+                return;
+            }
+
+            // 2. Confirmación
+            const confirmacion = confirm(`⚠️ ATENCIÓN: ¿Estás seguro de que querés ELIMINAR definitivamente a ${empleadoActual.nombre} ${empleadoActual.apellido} del sistema?`);
+            
+            if (!confirmacion) return;
+
+            try {
+                // Mandamos la orden DELETE al servidor
+                const respuesta = await fetch(`http://localhost:3000/empleados/${idEmpleado}`, {
+                    method: 'DELETE'
+                });
+
+                if (respuesta.ok) {
+                    alert('Miembro del staff eliminado del sistema.');
+                    window.location.href = 'index.html'; 
+                } else {
+                    const data = await respuesta.json();
+                    alert('Error: ' + (data.mensaje || 'No se pudo eliminar al empleado.'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo conectar con el servidor.');
+            }
+        }
+    </script>
+</body>
+</html>

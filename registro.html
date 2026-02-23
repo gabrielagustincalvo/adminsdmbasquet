@@ -90,7 +90,9 @@
 
                             <div class="mb-4">
                                 <label class="form-label text-success fw-bold small">Asignar Nivel de Permisos (Rol)</label>
-                                <select id="r-rol" class="form-select border-success fw-bold bg-light">
+                                <select id="r-rol" class="form-select border-success fw-bold bg-light" required>
+                                    <option value="" selected disabled>--- Seleccionar Rol ---</option>
+                                    
                                     <option value="Admin Principal">👑 Admin Principal (Dueño del Sistema)</option>
                                     <option value="Administrativo">Administrativo (Puede gestionar, NO crea usuarios)</option>
                                     <option value="Cuerpo Tecnico">Cuerpo Técnico (Solo Lectura y Asistencia)</option>
@@ -106,12 +108,16 @@
     </div>
 
     <script>
-        // 1. SEGURIDAD BLINDADA: Solo el Admin Principal puede ver esta pantalla
+        // 1. SEGURIDAD Y PERMISOS DE CREACIÓN (Bloqueo Total)
         const rolUsuario = sessionStorage.getItem('usuarioRol');
+        
+        // Si el usuario no es el Admin Principal, lo rebotamos al inicio automáticamente
         if (rolUsuario !== 'Admin Principal') {
-            alert('Acceso Denegado: Solo el Administrador Principal puede crear usuarios.');
+            alert('⛔ Acceso Denegado: Solo el Administrador Principal puede dar de alta a nuevos integrantes del staff.');
             window.location.href = 'index.html';
         }
+
+        // (Como solo entra el Admin Principal, ya no hace falta ocultar ni deshabilitar ninguna opción del select)
 
         // 2. LÓGICA DE CONTRASEÑA
         const inputPassword = document.getElementById('r-password');
@@ -159,7 +165,8 @@
                 correo: document.getElementById('r-correo').value,
                 usuario: document.getElementById('r-usuario').value,
                 password: password,
-                rol: document.getElementById('r-rol').value
+                rol: document.getElementById('r-rol').value,
+                rolCreador: rolUsuario // <--- AGREGAR ESTO PARA AVISARLE AL BACKEND QUIÉN ES
             };
 
             try {

@@ -31,12 +31,42 @@
     </nav>
 
     <div class="container">
+        
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 12px; border-left: 5px solid #0d6efd !important;">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3 text-primary">
+                            <i class="bi bi-receipt fs-3"></i>
+                        </div>
+                        <div>
+                            <p class="text-muted mb-0 fw-bold small text-uppercase">Total Cuotas Cobradas</p>
+                            <h3 class="mb-0 fw-bold text-dark" id="stat-cuotas">--</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 12px; border-left: 5px solid #198754 !important;">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3 text-success">
+                            <i class="bi bi-cash-stack fs-3"></i>
+                        </div>
+                        <div>
+                            <p class="text-muted mb-0 fw-bold small text-uppercase">Recaudación Global</p>
+                            <h3 class="mb-0 fw-bold text-success" id="stat-recaudacion">$ --</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             
-            <div class="col-lg-5 mb-4">
+            <div class="col-lg-4 mb-4">
                 <div class="card border-0 card-tesoreria h-100">
                     <div class="card-header bg-success text-white text-center py-3" style="border-radius: 15px 15px 0 0;">
-                        <h4 class="mb-0 fw-bold">Registrar Nuevo Cobro</h4>
+                        <h5 class="mb-0 fw-bold">Registrar Cobro</h5>
                     </div>
                     
                     <div class="card-body p-4">
@@ -66,7 +96,7 @@
                                     </select>
                                 </div>
                                 <div class="col-6 mb-3">
-                                    <label class="form-label text-muted fw-bold small">Fecha de Pago</label>
+                                    <label class="form-label text-muted fw-bold small">Fecha</label>
                                     <input type="date" id="p-fecha" class="form-control bg-light" required>
                                 </div>
                             </div>
@@ -77,18 +107,18 @@
                                     <input type="number" id="p-monto" class="form-control border-success text-end fw-bold" required placeholder="Ej: 5000" min="0">
                                 </div>
                                 <div class="col-6 mb-3">
-                                    <label class="form-label text-muted fw-bold small">Método de Pago</label>
+                                    <label class="form-label text-muted fw-bold small">Método</label>
                                     <select id="p-metodo" class="form-select bg-light" required>
                                         <option value="Efectivo">Efectivo 💵</option>
-                                        <option value="Transferencia">Transferencia 📱</option>
-                                        <option value="MercadoPago">MercadoPago 💳</option>
+                                        <option value="Transferencia">Transf. 📱</option>
+                                        <option value="MercadoPago">MP 💳</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div class="mb-4">
-                                <label class="form-label text-muted fw-bold small">Observaciones (Opcional)</label>
-                                <input type="text" id="p-observaciones" class="form-control bg-light" placeholder="Ej: Dejó seña, pagó hermano, etc.">
+                                <label class="form-label text-muted fw-bold small">Observaciones</label>
+                                <input type="text" id="p-observaciones" class="form-control bg-light" placeholder="Ej: Dejó seña">
                             </div>
 
                             <button type="submit" class="btn btn-success w-100 fw-bold btn-lg shadow-sm">
@@ -99,17 +129,21 @@
                 </div>
             </div>
 
-            <div class="col-lg-7 mb-4">
+            <div class="col-lg-8 mb-4">
                 <div class="card border-0 card-tesoreria h-100">
-                    <div class="card-header bg-dark text-white py-3" style="border-radius: 15px 15px 0 0;">
-                        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Historial de Pagos</h5>
+                    <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center" style="border-radius: 15px 15px 0 0;">
+                        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Libro Mayor de Pagos</h5>
+                        <span class="badge bg-light text-dark shadow-sm" style="cursor: pointer;" onclick="document.getElementById('p-jugador').closest('.choices').querySelector('.choices__item').click();">
+                            <i class="bi bi-arrow-clockwise"></i> Ver Todos
+                        </span>
                     </div>
                     <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
+                        <div class="table-responsive" style="max-height: 550px; overflow-y: auto;">
+                            <table class="table table-hover align-middle mb-0" style="min-width: 600px;">
+                                <thead class="table-light sticky-top">
                                     <tr>
-                                        <th class="px-4">Mes Abonado</th>
+                                        <th class="ps-3">Jugador</th>
+                                        <th>Mes</th>
                                         <th>Fecha</th>
                                         <th>Monto</th>
                                         <th>Método</th>
@@ -118,9 +152,8 @@
                                 </thead>
                                 <tbody id="tabla-historial">
                                     <tr>
-                                        <td colspan="5" class="text-center text-muted py-5">
-                                            <i class="bi bi-arrow-left-circle fs-3 d-block mb-2"></i>
-                                            Seleccioná un jugador para ver sus pagos
+                                        <td colspan="6" class="text-center py-5">
+                                            <div class="spinner-border text-success"></div>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -153,7 +186,6 @@
 
                 const select = document.getElementById('p-jugador');
 
-                // Iniciamos el buscador vacío
                 const buscador = new Choices(select, {
                     searchEnabled: true,
                     searchPlaceholderValue: '🔍 Buscar apellido...',
@@ -164,19 +196,16 @@
                     fuseOptions: { threshold: 0.2, ignoreLocation: true }
                 });
 
-                // Armamos la lista asegurando que el ID sea texto (String)
                 const opciones = [
-                    { value: '', label: 'Elegí un jugador...', disabled: true, selected: true },
+                    { value: '', label: 'Todos los jugadores (Ver historial global)', selected: true },
                     ...jugadores.map(j => ({
                         value: String(j.id), 
                         label: `${j.apellido}, ${j.nombre} - ${j.rama || 'Masc'}`
                     }))
                 ];
 
-                // Inyectamos y reemplazamos todo (true)
                 buscador.setChoices(opciones, 'value', 'label', true);
 
-                // Escuchamos el cambio de jugador para cargar su historial
                 select.addEventListener('change', cargarHistorial);
 
             } catch (error) {
@@ -184,20 +213,34 @@
             }
         }
 
-        // 3. CARGAR HISTORIAL
+        // 3. CARGAR ESTADÍSTICAS GLOBALES
+        async function cargarTotales() {
+            try {
+                const respuesta = await fetch('http://localhost:3000/pagos-totales');
+                const datos = await respuesta.json();
+
+                document.getElementById('stat-cuotas').innerText = datos.cantidad;
+                document.getElementById('stat-recaudacion').innerText = `$${Number(datos.total).toLocaleString('es-AR')}`;
+            } catch (error) {
+                console.error('Error estadísticas:', error);
+            }
+        }
+
+        // 4. CARGAR HISTORIAL (GLOBAL O INDIVIDUAL)
         async function cargarHistorial() {
             const jugador_id = document.getElementById('p-jugador').value;
-            if (!jugador_id) return;
-
             const tabla = document.getElementById('tabla-historial');
-            tabla.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-success"></div></td></tr>';
+            tabla.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-success"></div></td></tr>';
 
             try {
-                const respuesta = await fetch(`http://localhost:3000/pagos/${jugador_id}`);
+                // Si hay jugador elegido, busca ese. Si está en "Todos...", busca el global.
+                const urlFetch = jugador_id ? `http://localhost:3000/pagos/${jugador_id}` : 'http://localhost:3000/pagos-todos';
+                
+                const respuesta = await fetch(urlFetch);
                 const pagos = await respuesta.json();
 
                 if (pagos.length === 0) {
-                    tabla.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4 fw-bold">No registra pagos cargados.</td></tr>';
+                    tabla.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4 fw-bold">No hay pagos registrados aún.</td></tr>';
                     return;
                 }
 
@@ -208,15 +251,26 @@
                     const fechaFormat = fechaObj.toLocaleDateString('es-AR');
                     const montoFormat = `$${Number(pago.monto).toLocaleString('es-AR')}`;
 
+                    // Lógica para saber qué nombre poner en la tabla y en el recibo
+                    let nombreMostrar = '';
+                    if (pago.apellido && pago.nombre) {
+                        nombreMostrar = `${pago.apellido}, ${pago.nombre}`; // Viene de la ruta global
+                    } else if (jugador_id) {
+                        // Viene de la ruta individual, lo sacamos del selector
+                        const selectJugador = document.getElementById('p-jugador');
+                        nombreMostrar = selectJugador.options[selectJugador.selectedIndex].text.split(' - ')[0];
+                    }
+
                     const fila = `
                         <tr>
-                            <td class="px-4 fw-bold text-primary">${pago.mes_correspondiente}</td>
+                            <td class="ps-3 fw-bold text-dark small">${nombreMostrar}</td>
+                            <td class="fw-bold text-primary">${pago.mes_correspondiente}</td>
                             <td class="text-muted small">${fechaFormat}</td>
                             <td class="fw-bold text-success">${montoFormat}</td>
                             <td><span class="badge bg-secondary">${pago.metodo}</span></td>
                             <td>
                                 <button type="button" class="btn btn-outline-dark btn-sm shadow-sm" title="Imprimir Recibo" 
-                                    onclick="imprimirRecibo('${pago.mes_correspondiente}', '${fechaFormat}', '${montoFormat}', '${pago.metodo}')">
+                                    onclick="imprimirRecibo('${pago.mes_correspondiente}', '${fechaFormat}', '${montoFormat}', '${pago.metodo}', '${nombreMostrar}')">
                                     <i class="bi bi-printer-fill"></i>
                                 </button>
                             </td>
@@ -225,17 +279,23 @@
                     tabla.innerHTML += fila;
                 });
             } catch (error) {
-                console.error('Error al cargar historial:', error);
-                tabla.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Error de conexión.</td></tr>';
+                console.error('Error historial:', error);
+                tabla.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">Error de conexión.</td></tr>';
             }
         }
 
-        // 4. GUARDAR PAGO
+        // 5. GUARDAR PAGO
         document.getElementById('form-pago').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const jugadorId = document.getElementById('p-jugador').value;
+            if(!jugadorId) {
+                alert('⚠️ Por favor, seleccioná a un jugador de la lista antes de guardar el pago.');
+                return;
+            }
+
             const nuevoPago = {
-                jugador_id: document.getElementById('p-jugador').value,
+                jugador_id: jugadorId,
                 mes_correspondiente: document.getElementById('p-mes').value,
                 fecha_pago: document.getElementById('p-fecha').value,
                 monto: document.getElementById('p-monto').value,
@@ -251,9 +311,10 @@
                 });
 
                 if (respuesta.ok) {
-                    alert('✅ ¡Pago guardado!');
+                    // alert('✅ ¡Pago guardado!'); // Opcional, lo podemos sacar para que sea más fluido
                     document.getElementById('p-monto').value = '';
                     document.getElementById('p-observaciones').value = '';
+                    cargarTotales();
                     cargarHistorial();
                 } else {
                     alert('❌ Error al guardar.');
@@ -263,12 +324,8 @@
             }
         });
 
-        // 5. IMPRIMIR RECIBO
-        function imprimirRecibo(mes, fecha, monto, metodo) {
-            const selectJugador = document.getElementById('p-jugador');
-            const textoCompleto = selectJugador.options[selectJugador.selectedIndex].text;
-            const nombreJugador = textoCompleto.split(' - ')[0]; 
-
+        // 6. IMPRIMIR RECIBO (Actualizado para recibir el nombre por parámetro)
+        function imprimirRecibo(mes, fecha, monto, metodo, nombreJugador) {
             const ventana = window.open('', '_blank', 'width=800,height=600');
             const html = `
                 <html>
@@ -309,8 +366,10 @@
             ventana.document.close();
         }
 
-        // Iniciar
+        // Iniciar todo al entrar a la página
         cargarJugadoresSelect();
+        cargarTotales();
+        cargarHistorial(); // Esto fuerza a cargar la tabla global apenas entrás
     </script>
 </body>
 </html>
