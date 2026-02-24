@@ -62,7 +62,7 @@
                 <a href="alta.html" class="btn btn-success shadow-sm btn-responsivo">
                     <i class="bi bi-person-plus-fill"></i> Nuevo Jugador
                 </a>
-                <a href="asistencia.html" class="btn btn-primary shadow-sm btn-responsivo">
+                <a href="asistencia.html" id="btn-asistencia" class="btn btn-primary shadow-sm btn-responsivo">
                     <i class="bi bi-clipboard-check"></i> Asistencia
                 </a>
                 <a href="registro.html" id="btn-crear-usuario" class="btn btn-warning shadow-sm text-dark fw-bold btn-responsivo">
@@ -184,6 +184,8 @@
 
         // 4. DIBUJAR TARJETAS
         function renderizarCategorias() {
+            sessionStorage.setItem('ultimaVista', 'categorias'); // <--- LÍNEA NUEVA
+
             document.getElementById('vista-jugadores').style.display = 'none';
             document.getElementById('vista-categorias').style.display = 'flex';
             document.getElementById('titulo-pantalla').innerText = 'Categorías';
@@ -238,6 +240,9 @@
 
         // 5. MOSTRAR TABLA DE UNA CATEGORÍA
         function verJugadores(categoriaSeleccionada) {
+            sessionStorage.setItem('ultimaVista', 'jugadores'); // <--- LÍNEA NUEVA
+            sessionStorage.setItem('ultimaCategoria', categoriaSeleccionada); // <--- LÍNEA NUEVA
+
             document.getElementById('vista-categorias').style.display = 'none';
             document.getElementById('vista-jugadores').style.display = 'block';
             
@@ -283,6 +288,8 @@
         }
 
         function verStaff() {
+            sessionStorage.setItem('ultimaVista', 'staff'); // <--- LÍNEA NUEVA
+
             // Ocultamos las otras vistas y mostramos la del staff
             document.getElementById('vista-categorias').style.display = 'none';
             document.getElementById('vista-jugadores').style.display = 'none';
@@ -322,11 +329,47 @@
             renderizarCategorias();
         }
 
-        cargarJugadores();
-        cargarEmpleados();
+        // --- 3. INICIALIZAR EL PANEL (Carga datos y cura la amnesia) ---
+        async function inicializarPanel() {
+            try {
+                // 1. Traemos jugadores y staff al mismo tiempo
+                const resJug = await fetch('http://localhost:3000/jugadores');
+                todosLosJugadores = await resJug.json();
+
+                const resEmp = await fetch('http://localhost:3000/empleados');
+                todosLosEmpleados = await resEmp.json();
+
+                // 2. Leemos la memoria del navegador
+                const vista = sessionStorage.getItem('ultimaVista');
+                const cat = sessionStorage.getItem('ultimaCategoria');
+
+                // 3. Restauramos la pantalla exacta en la que estaba
+                if (vista === 'staff') {
+                    verStaff();
+                } else if (vista === 'jugadores' && cat) {
+                    // Importante: llamamos primero a renderizarCategorias oculto para que 
+                    // se arme bien la estructura de fondo, y luego mostramos la tabla
+                    renderizarCategorias(); 
+                    verJugadores(cat);
+                } else {
+                    renderizarCategorias(); // Pantalla por defecto
+                }
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+            }
+        }
+
+        // Ejecutamos la carga inteligente al abrir la página
+        inicializarPanel();
 
         // --- LÓGICA DE PERMISOS (ROLES) ---
         const rolUsuario = sessionStorage.getItem('usuarioRol');
+
+        // NUEVO: Ocultamos el botón de Asistencia a los Administrativos
+        if (rolUsuario === 'Administrativo') {
+            const btnAsistencia = document.getElementById('btn-asistencia');
+            if (btnAsistencia) btnAsistencia.style.display = 'none';
+        }
 
         // 1. Escondemos botón de Nuevo Empleado a CUALQUIERA que no sea el Jefe
         const btnCrearUsuario = document.getElementById('btn-crear-usuario');

@@ -13,8 +13,8 @@
         <div class="container">
             <a class="navbar-brand fw-bold" href="index.html">🏀 Club Atlético Sol de Mayo Basquet</a>
             <div class="d-flex align-items-center text-white">
-                <a href="index.html" class="btn btn-outline-light btn-sm">
-                    <i class="bi bi-arrow-left"></i> Volver al Inicio
+                <a href="javascript:history.back()" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Volver
                 </a>
             </div>
         </div>
@@ -132,6 +132,21 @@
                     return;
                 }
 
+                // ==========================================
+                // CANDADO DE SEGURIDAD EN LA PANTALLA
+                // ==========================================
+                const rolUsuario = sessionStorage.getItem('usuarioRol');
+                const nombreLogueado = sessionStorage.getItem('usuarioLogueado');
+
+                // Si NO es el jefe y está intentando editar a OTRO usuario, lo pateamos al inicio
+                if (rolUsuario !== 'Admin Principal' && empleado.nombre !== nombreLogueado) {
+                    alert('⛔ Acceso Denegado: Solo podés editar tu propia ficha personal.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                // ==========================================
+
+                // A partir de acá sigue tu código normal llenando los casilleros:
                 document.getElementById('nombre').value = empleado.nombre || '';
                 document.getElementById('apellido').value = empleado.apellido || '';
                 document.getElementById('dni').value = empleado.dni || '';

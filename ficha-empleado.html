@@ -37,7 +37,7 @@
         <div class="container">
             <a class="navbar-brand fw-bold" href="index.html">🏀 Club Atlético Sol de Mayo Basquet</a>
             <div class="d-flex align-items-center text-white">
-                <a href="index.html" class="btn btn-outline-light btn-sm">
+                <a href="javascript:history.back()" class="btn btn-outline-light btn-sm">
                     <i class="bi bi-arrow-left"></i> Volver
                 </a>
             </div>
@@ -207,6 +207,25 @@
                     badgeRol.classList.replace('text-dark', 'text-white');
                 } else if (rol === 'Administrativo') {
                     badgeRol.classList.replace('bg-warning', 'bg-info');
+                }
+
+                // ==========================================
+                // BARRERA VISUAL: EDITAR Y ELIMINAR
+                // ==========================================
+                const rolUsuario = sessionStorage.getItem('usuarioRol');
+                const nombreLogueado = sessionStorage.getItem('usuarioLogueado');
+                
+                const btnEditar = document.querySelector('button[title="Editar Staff"]');
+                const btnEliminar = document.querySelector('button[title="Eliminar Staff"]');
+
+                // 1. Ocultar botón Eliminar si NO es el jefe
+                if (rolUsuario !== 'Admin Principal' && btnEliminar) {
+                    btnEliminar.style.display = 'none';
+                }
+
+                // 2. Ocultar botón Editar si NO es el jefe Y NO es su propia ficha
+                if (rolUsuario !== 'Admin Principal' && empleadoActual.nombre !== nombreLogueado && btnEditar) {
+                    btnEditar.style.display = 'none';
                 }
 
             } catch (error) {

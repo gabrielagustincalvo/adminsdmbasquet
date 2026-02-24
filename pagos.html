@@ -9,6 +9,7 @@
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <style>
         body { background-color: #f8f9fa; }
@@ -23,8 +24,8 @@
                 <i class="bi bi-cash-coin"></i> Tesorería del Club
             </a>
             <div class="d-flex align-items-center text-white">
-                <a href="index.html" class="btn btn-outline-light btn-sm">
-                    <i class="bi bi-arrow-left"></i> Volver al Inicio
+                <a href="javascript:history.back()" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Volver
                 </a>
             </div>
         </div>
@@ -110,8 +111,8 @@
                                     <label class="form-label text-muted fw-bold small">Método</label>
                                     <select id="p-metodo" class="form-select bg-light" required>
                                         <option value="Efectivo">Efectivo 💵</option>
-                                        <option value="Transferencia">Transf. 📱</option>
-                                        <option value="MercadoPago">MP 💳</option>
+                                        <option value="Transferencia">Transferencia 📱</option>
+                                        <option value="MercadoPago">MercadoPago 💳</option>
                                     </select>
                                 </div>
                             </div>
@@ -166,11 +167,75 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalEditarPago" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square"></i> Editar Pago Registrado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-editar-pago">
+                        <input type="hidden" id="edit-pago-id">
+                        
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label text-muted small fw-bold">Mes</label>
+                                <select id="edit-mes" class="form-select bg-light" required>
+                                    <option value="Enero">Enero</option><option value="Febrero">Febrero</option>
+                                    <option value="Marzo">Marzo</option><option value="Abril">Abril</option>
+                                    <option value="Mayo">Mayo</option><option value="Junio">Junio</option>
+                                    <option value="Julio">Julio</option><option value="Agosto">Agosto</option>
+                                    <option value="Septiembre">Septiembre</option><option value="Octubre">Octubre</option>
+                                    <option value="Noviembre">Noviembre</option><option value="Diciembre">Diciembre</option>
+                                </select>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label text-muted small fw-bold">Fecha</label>
+                                <input type="date" id="edit-fecha" class="form-control bg-light" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label text-muted small fw-bold">Monto ($)</label>
+                                <input type="number" id="edit-monto" class="form-control border-warning fw-bold text-end" required min="1">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label text-muted small fw-bold">Método</label>
+                                <select id="edit-metodo" class="form-select bg-light" required>
+                                    <option value="Efectivo">Efectivo 💵</option>
+                                    <option value="Transferencia">Transf. 📱</option>
+                                    <option value="MercadoPago">MP 💳</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Observaciones</label>
+                            <input type="text" id="edit-observaciones" class="form-control bg-light">
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-dark fw-bold">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // 1. SEGURIDAD
+        // 1. SEGURIDAD BLINDADA (ROLES)
+        if (!sessionStorage.getItem('usuarioLogueado')) {
+            window.location.href = 'login.html';
+        }
+
         const rolUsuario = sessionStorage.getItem('usuarioRol');
-        if (!rolUsuario || rolUsuario === 'Cuerpo Tecnico') {
-            alert('Acceso Denegado: Solo administración puede ingresar a Tesorería.');
+        
+        // Bloqueamos el acceso al Cuerpo Técnico por privacidad financiera
+        if (rolUsuario === 'Cuerpo Tecnico') {
+            alert('⛔ Acceso Denegado: La sección de Tesorería es exclusiva para el personal administrativo.');
             window.location.href = 'index.html';
         }
 
@@ -269,10 +334,20 @@
                             <td class="fw-bold text-success">${montoFormat}</td>
                             <td><span class="badge bg-secondary">${pago.metodo}</span></td>
                             <td>
-                                <button type="button" class="btn btn-outline-dark btn-sm shadow-sm" title="Imprimir Recibo" 
-                                    onclick="imprimirRecibo('${pago.mes_correspondiente}', '${fechaFormat}', '${montoFormat}', '${pago.metodo}', '${nombreMostrar}')">
-                                    <i class="bi bi-printer-fill"></i>
-                                </button>
+                                <div class="btn-group shadow-sm">
+                                    <button type="button" class="btn btn-outline-dark btn-sm" title="Imprimir" 
+                                        onclick="imprimirRecibo('${pago.mes_correspondiente}', '${fechaFormat}', '${montoFormat}', '${pago.metodo}', '${nombreMostrar}')">
+                                        <i class="bi bi-printer-fill"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" title="Editar Pago" 
+                                        onclick="abrirModalEditar(${pago.id}, '${pago.mes_correspondiente}', '${pago.fecha_pago}', ${pago.monto}, '${pago.metodo}', '${pago.observaciones || ''}')">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" title="Anular Pago" 
+                                        onclick="eliminarPago(${pago.id})">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -288,9 +363,17 @@
         document.getElementById('form-pago').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            // Validamos que haya un jugador
             const jugadorId = document.getElementById('p-jugador').value;
             if(!jugadorId) {
                 alert('⚠️ Por favor, seleccioná a un jugador de la lista antes de guardar el pago.');
+                return;
+            }
+
+            // NUEVA BARRERA: Validamos que el monto sea un número real y positivo
+            const montoIngresado = parseFloat(document.getElementById('p-monto').value);
+            if(isNaN(montoIngresado) || montoIngresado <= 0) {
+                alert('⚠️ El monto a cobrar debe ser mayor a $0.');
                 return;
             }
 
@@ -311,16 +394,20 @@
                 });
 
                 if (respuesta.ok) {
-                    // alert('✅ ¡Pago guardado!'); // Opcional, lo podemos sacar para que sea más fluido
+                    // Muestra el aviso temporal y luego recarga las estadísticas
+                    alert(`✅ ¡Pago registrado con éxito!`);
+                    
                     document.getElementById('p-monto').value = '';
                     document.getElementById('p-observaciones').value = '';
+                    
                     cargarTotales();
-                    cargarHistorial();
+                    cargarHistorial(); 
                 } else {
-                    alert('❌ Error al guardar.');
+                    alert('❌ Ocurrió un error al guardar el pago en la base de datos.');
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error de conexión:', error);
+                alert('❌ No se pudo conectar con el servidor.');
             }
         });
 
@@ -364,6 +451,80 @@
             `;
             ventana.document.write(html);
             ventana.document.close();
+        }
+
+        // 7. ABRIR MODAL Y CARGAR DATOS PARA EDITAR
+        function abrirModalEditar(id, mes, fechaIso, monto, metodo, observaciones) {
+            document.getElementById('edit-pago-id').value = id;
+            document.getElementById('edit-mes').value = mes;
+            
+            // Transformamos la fecha que viene de la base de datos al formato del input (YYYY-MM-DD)
+            const fechaOk = new Date(fechaIso).toISOString().split('T')[0];
+            document.getElementById('edit-fecha').value = fechaOk;
+            
+            document.getElementById('edit-monto').value = monto;
+            document.getElementById('edit-metodo').value = metodo;
+            document.getElementById('edit-observaciones').value = observaciones;
+
+            const modal = new bootstrap.Modal(document.getElementById('modalEditarPago'));
+            modal.show();
+        }
+
+        // 8. ENVIAR CAMBIOS AL SERVIDOR
+        document.getElementById('form-editar-pago').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-pago-id').value;
+
+            const pagoActualizado = {
+                mes_correspondiente: document.getElementById('edit-mes').value,
+                fecha_pago: document.getElementById('edit-fecha').value,
+                monto: document.getElementById('edit-monto').value,
+                metodo: document.getElementById('edit-metodo').value,
+                observaciones: document.getElementById('edit-observaciones').value
+            };
+
+            try {
+                const respuesta = await fetch(`http://localhost:3000/pagos/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(pagoActualizado)
+                });
+
+                if (respuesta.ok) {
+                    alert('✅ Pago actualizado correctamente.');
+                    bootstrap.Modal.getInstance(document.getElementById('modalEditarPago')).hide();
+                    cargarTotales();
+                    cargarHistorial();
+                } else {
+                    alert('❌ Error al actualizar el pago.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // 9. ELIMINAR / ANULAR PAGO
+        async function eliminarPago(id) {
+            // Mini barrera de seguridad: solo permitimos anular pagos a quien tenga autoridad
+            const confirmacion = confirm('⚠️ ATENCIÓN: ¿Estás seguro de que querés ANULAR este pago? Esta acción restará el dinero de la recaudación total.');
+            
+            if (!confirmacion) return;
+
+            try {
+                const respuesta = await fetch(`http://localhost:3000/pagos/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (respuesta.ok) {
+                    alert('🗑️ Pago anulado correctamente.');
+                    cargarTotales();
+                    cargarHistorial();
+                } else {
+                    alert('❌ Hubo un error al intentar anular el pago.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
 
         // Iniciar todo al entrar a la página

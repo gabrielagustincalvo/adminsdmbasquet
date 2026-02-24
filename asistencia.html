@@ -13,7 +13,7 @@
         <div class="container">
             <a class="navbar-brand fw-bold" href="index.html">🏀 Club Atlético Sol de Mayo Basquet</a>
             <div class="d-flex align-items-center text-white">
-                <a href="index.html" class="btn btn-outline-light btn-sm">
+                <a href="javascript:history.back()" class="btn btn-outline-light btn-sm">
                     <i class="bi bi-arrow-left"></i> Volver
                 </a>
             </div>
@@ -103,8 +103,19 @@
     </div>
 
     <script>
-        // SEGURIDAD
-        if (!sessionStorage.getItem('usuarioLogueado')) window.location.href = 'login.html';
+        // ==========================================
+        // CANDADO DE SEGURIDAD (ROLES)
+        // ==========================================
+        if (!sessionStorage.getItem('usuarioLogueado')) {
+            window.location.href = 'login.html';
+        }
+        
+        const rolUsuario = sessionStorage.getItem('usuarioRol');
+        if (rolUsuario === 'Administrativo') {
+            alert('⛔ Acceso Denegado: Solo el Cuerpo Técnico o el Administrador Principal pueden tomar asistencia.');
+            window.location.href = 'index.html';
+        }
+        // ==========================================
 
         // Variables Globales
         let todosLosJugadores = [];
@@ -213,6 +224,12 @@
 
             const seleccionados = document.querySelectorAll('input[type="radio"]:checked');
             
+            // BARRERA: Si no hay nadie listado, no hacemos nada
+            if(seleccionados.length === 0) {
+                alert('⚠️ No hay jugadores en la lista para guardar asistencia. Cargá un plantel primero.');
+                return; 
+            }
+            
             seleccionados.forEach(radio => {
                 const jugadorId = radio.name.split('_')[1];
                 const estado = radio.value;
@@ -220,12 +237,10 @@
                 paqueteAsistencia.push({
                     jugador_id: jugadorId,
                     fecha: fecha,
-                    tipo_entrenamiento: tipo, // Guardamos el tipo de práctica
+                    tipo_entrenamiento: tipo,
                     estado: estado
                 });
             });
-
-            if(paqueteAsistencia.length === 0) return;
 
             try {
                 const respuesta = await fetch('http://localhost:3000/asistencia', {

@@ -85,13 +85,14 @@ app.post('/login', async (req, res) => {
       return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
     }
 
-    // C. Si todo coincide, le damos luz verde y le mandamos su ROL para que el Frontend sepa qué mostrarle
+   // Agregamos la bandera debe_cambiar_pass para que el frontend sepa qué hacer
     res.json({ 
       mensaje: 'Login exitoso', 
       usuario: {
         id: usuarioDB.id,
         nombre: usuarioDB.nombre,
-        rol: usuarioDB.rol // <--- ¡Esto es clave para los permisos después!
+        rol: usuarioDB.rol,
+        debe_cambiar_pass: usuarioDB.debe_cambiar_pass // <--- NUEVO
       } 
     });
   } catch (err) {
@@ -99,6 +100,25 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ mensaje: 'Error interno del servidor al iniciar sesión' });
   }
 });
+
+// 2.5 RUTA PARA CAMBIO DE CONTRASEÑA OBLIGATORIO (Primer Ingreso)
+app.post('/cambiar-password-obligatorio', async (req, res) => {
+  const { id, nuevaPassword } = req.body;
+  try {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(nuevaPassword, salt);
+
+    // Actualizamos la clave y le quitamos la etiqueta de "debe cambiar" (lo pasamos a FALSE)
+    const query = 'UPDATE usuarios SET password = $1, debe_cambiar_pass = FALSE WHERE id = $2';
+    await pool.query(query, [hashedPassword, id]);
+
+    res.json({ mensaje: 'Contraseña actualizada correctamente. Bienvenido al sistema.' });
+  } catch (err) {
+    console.error('Error al forzar cambio de clave:', err.message);
+    res.status(500).json({ mensaje: 'Error al actualizar la contraseña.' });
+  }
+});
+
 // -----------------------------------------------------
 
 // 3. RUTA PARA RECUPERAR CONTRASEÑA
@@ -317,6 +337,47 @@ app.get('/pagos-todos', async (req, res) => {
   }
 });
 
+// 5. Editar un pago existente
+app.put('/pagos/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { mes_correspondiente, fecha_pago, monto, metodo, observaciones } = req.body;
+    
+    const query = `
+      UPDATE pagos 
+      SET mes_correspondiente = $1, fecha_pago = $2, monto = $3, metodo = $4, observaciones = $5
+      WHERE id = $6 RETURNING *
+    `;
+    const values = [mes_correspondiente, fecha_pago, monto, metodo, observaciones, id];
+    
+    const result = await pool.query(query, values);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ mensaje: 'Pago no encontrado' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error al editar pago:', err.message);
+    res.status(500).send('Error al guardar los cambios del pago');
+  }
+});
+
+// 6. Eliminar un pago (Anular recibo)
+app.delete('/pagos/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('DELETE FROM pagos WHERE id = $1 RETURNING *', [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ mensaje: 'Pago no encontrado' });
+    }
+    res.json({ mensaje: 'Pago anulado correctamente' });
+  } catch (err) {
+    console.error('Error al eliminar pago:', err.message);
+    res.status(500).send('Error al eliminar el pago');
+  }
+});
+
 // ==========================================
 //        MÓDULO DE ASISTENCIA (DT / PROFE)
 // ==========================================
@@ -460,6 +521,90 @@ app.put('/empleados/:id', async (req, res) => {
   } catch (err) {
     console.error('Error al actualizar el empleado:', err.message);
     res.status(500).send('Error interno al guardar los cambios.');
+  }
+});
+
+// ==========================================
+//        MÓDULO DE KINESIOLOGÍA
+// ==========================================
+
+// 1. Traer el historial kinesiológico de un jugador específico
+app.get('/kinesiologia/:jugador_id', async (req, res) => {
+  try {
+    const { jugador_id } = req.params;
+    // Buscamos los registros y los ordenamos por fecha de más nuevo a más viejo
+    const query = `
+      SELECT id, fecha, lesion_motivo, tratamiento, observaciones, profesional_nombre 
+      FROM registros_kine 
+      WHERE jugador_id = $1 
+      ORDER BY fecha DESC, id DESC
+    `;
+    const result = await pool.query(query, [jugador_id]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error al obtener el historial de kinesiología:', err.message);
+    res.status(500).send('Error interno del servidor');
+  }
+});
+
+// 2. Guardar una nueva sesión de kinesiología
+app.post('/kinesiologia', async (req, res) => {
+  try {
+    const { jugador_id, fecha, lesion_motivo, tratamiento, observaciones, profesional_nombre } = req.body;
+    
+    const query = `
+      INSERT INTO registros_kine (jugador_id, fecha, lesion_motivo, tratamiento, observaciones, profesional_nombre) 
+      VALUES ($1, $2, $3, $4, $5, $6) 
+      RETURNING *
+    `;
+    const values = [jugador_id, fecha, lesion_motivo, tratamiento, observaciones, profesional_nombre];
+    
+    const result = await pool.query(query, values);
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error al guardar el registro kinesiológico:', err.message);
+    res.status(500).send('Error al guardar el registro');
+  }
+});
+
+// 3. Editar un registro kinesiológico
+app.put('/kinesiologia/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { fecha, lesion_motivo, tratamiento, observaciones } = req.body;
+
+    const query = `
+      UPDATE registros_kine 
+      SET fecha = $1, lesion_motivo = $2, tratamiento = $3, observaciones = $4
+      WHERE id = $5 RETURNING *
+    `;
+    const values = [fecha, lesion_motivo, tratamiento, observaciones, id];
+
+    const result = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ mensaje: 'Registro no encontrado' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error al editar registro kinesiológico:', err.message);
+    res.status(500).send('Error interno al editar');
+  }
+});
+
+// 4. Eliminar un registro kinesiológico
+app.delete('/kinesiologia/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('DELETE FROM registros_kine WHERE id = $1 RETURNING *', [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ mensaje: 'Registro no encontrado' });
+    }
+    res.json({ mensaje: 'Registro eliminado correctamente' });
+  } catch (err) {
+    console.error('Error al eliminar registro kinesiológico:', err.message);
+    res.status(500).send('Error interno al eliminar');
   }
 });
 

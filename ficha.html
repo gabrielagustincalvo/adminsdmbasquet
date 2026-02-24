@@ -8,34 +8,21 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <style>
         @media print {
-            /* 1. Ocultamos lo que no sirve para el papel */
             nav, .botonera-acciones, .solo-pantalla { display: none !important; }
-            
-            /* 2. Forzamos colores exactos y fondo blanco puro */
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             html, body { background-color: white !important; height: auto !important; margin: 0 !important; padding: 0 !important; }
-            
-            /* 3. Eliminamos márgenes y rellenos de los contenedores para que no quede el cuadro gris abajo */
             .container, #area-pdf {
-                max-width: 100% !important;
-                width: 100% !important;
-                padding: 0 !important;
-                margin: 0 !important;
+                max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important;
                 background-color: transparent !important;
             }
-            
-            /* 4. Estilo final de la tarjeta impresa (borde negro y sin margen inferior) */
             .card {
-                border: 2px solid #000 !important;
-                box-shadow: none !important;
-                page-break-inside: avoid;
-                margin-bottom: 0 !important; /* Clave para borrar el espacio gris */
+                border: 2px solid #000 !important; box-shadow: none !important; page-break-inside: avoid;
+                margin-bottom: 0 !important; 
             }
-            
-            /* 5. Mostramos los títulos de impresión */
             .solo-impresion { display: block !important; }
         }
     </style>
@@ -46,8 +33,8 @@
         <div class="container">
             <a class="navbar-brand fw-bold" href="index.html">🏀 Club Atlético Sol de Mayo Basquet</a>
             <div class="d-flex align-items-center text-white">
-                <a href="index.html" class="btn btn-outline-light btn-sm">
-                    <i class="bi bi-arrow-left"></i> Volver al Plantel
+                <a href="javascript:history.back()" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Volver
                 </a>
             </div>
         </div>
@@ -70,78 +57,75 @@
                             <span id="f-rama" class="badge bg-light text-primary fs-6 px-3 py-2 rounded-pill shadow-sm">...</span>
                         </div>
                         
-                        <div class="d-flex justify-content-center align-items-center mb-4 gap-3">
+                        <div class="d-flex justify-content-center align-items-center mb-4 gap-3 mt-3">
                             <h2 id="f-nombre-completo" class="fw-bold text-dark mb-0">Cargando...</h2>
-                            
                             <button onclick="window.location.href='editar.html?id=' + idJugador" class="btn btn-outline-secondary btn-sm rounded-circle botonera-acciones" title="Editar Jugador">
                                 <i class="bi bi-pencil"></i>
                             </button>
-                            
                             <button onclick="eliminarJugador()" class="btn btn-outline-danger btn-sm rounded-circle botonera-acciones" title="Eliminar Jugador">
                                 <i class="bi bi-trash3"></i>
                             </button>
                         </div>
                             
-                            <div class="row g-3 mb-4">
-                                <div class="col-4">
-                                    <div class="p-3 bg-light rounded border text-center">
-                                        <small class="text-muted d-block text-uppercase fw-bold">DNI</small>
-                                        <strong id="f-dni" class="fs-5">-</strong>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="p-3 bg-light rounded border text-center">
-                                        <small class="text-muted d-block text-uppercase fw-bold">Nacimiento</small>
-                                        <strong id="f-fecha" class="fs-5">-</strong>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="p-3 bg-light rounded border text-center">
-                                        <small class="text-muted d-block text-uppercase fw-bold">Celular</small>
-                                        <strong id="f-telefono" class="fs-5">-</strong>
-                                    </div>
+                        <div class="row g-3 mb-4 px-3">
+                            <div class="col-4">
+                                <div class="p-3 bg-light rounded border text-center">
+                                    <small class="text-muted d-block text-uppercase fw-bold">DNI</small>
+                                    <strong id="f-dni" class="fs-5">-</strong>
                                 </div>
                             </div>
-
-                            <h5 class="text-secondary border-bottom pb-2 mt-4"><i class="bi bi-telephone-fill text-danger"></i> Contacto de Emergencia</h5>
-                                <div class="mb-4 p-3 bg-light rounded border">
-                                    <div class="row g-3">
-                                        <div class="col-6">
-                                            <small class="text-muted d-block">Nombre del contacto</small>
-                                            <strong id="f-emergencia-nombre" class="fs-6">-</strong>
-                                        </div>
-                                        <div class="col-6">
-                                            <small class="text-muted d-block">Teléfono de emergencia</small>
-                                            <strong id="f-emergencia-tel" class="fs-6">-</strong>
-                                        </div>
-                                    </div>
+                            <div class="col-4">
+                                <div class="p-3 bg-light rounded border text-center">
+                                    <small class="text-muted d-block text-uppercase fw-bold">Nacimiento</small>
+                                    <strong id="f-fecha" class="fs-5">-</strong>
                                 </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-3 bg-light rounded border text-center">
+                                    <small class="text-muted d-block text-uppercase fw-bold">Celular</small>
+                                    <strong id="f-telefono" class="fs-5">-</strong>
+                                </div>
+                            </div>
+                        </div>
 
-                            <h5 class="text-secondary border-bottom pb-2 mt-4"><i class="bi bi-heart-pulse-fill text-danger"></i> Historial Médico</h5>
+                        <h5 class="text-secondary border-bottom pb-2 mt-4 px-3"><i class="bi bi-telephone-fill text-danger"></i> Contacto de Emergencia</h5>
+                        <div class="mb-4 p-3 mx-3 bg-light rounded border">
                             <div class="row g-3">
                                 <div class="col-6">
-                                    <div class="p-3 bg-danger bg-opacity-10 rounded border border-danger text-center h-100">
-                                        <small class="text-danger fw-bold d-block text-uppercase">Grupo Sanguíneo</small>
-                                        <strong id="f-grupo" class="fs-3">-</strong>
-                                    </div>
+                                    <small class="text-muted d-block">Nombre del contacto</small>
+                                    <strong id="f-emergencia-nombre" class="fs-6">-</strong>
                                 </div>
                                 <div class="col-6">
-                                    <div class="p-3 bg-warning bg-opacity-10 rounded border border-warning text-center h-100">
-                                        <small class="text-warning text-darken fw-bold d-block text-uppercase" style="color: #b38000!important;">Alergias</small>
-                                        <strong id="f-alergias" class="fs-5">-</strong>
-                                    </div>
+                                    <small class="text-muted d-block">Teléfono de emergencia</small>
+                                    <strong id="f-emergencia-tel" class="fs-6">-</strong>
                                 </div>
-                                <div class="col-12">
-                                    <div class="p-3 bg-light rounded border">
-                                        <small class="text-muted fw-bold d-block mb-1">Lesiones Previas:</small>
-                                        <p id="f-lesiones" class="mb-0">-</p>
-                                    </div>
+                            </div>
+                        </div>
+
+                        <h5 class="text-secondary border-bottom pb-2 mt-4 px-3"><i class="bi bi-heart-pulse-fill text-danger"></i> Historial Médico</h5>
+                        <div class="row g-3 px-3 mb-4">
+                            <div class="col-6">
+                                <div class="p-3 bg-danger bg-opacity-10 rounded border border-danger text-center h-100">
+                                    <small class="text-danger fw-bold d-block text-uppercase">Grupo Sanguíneo</small>
+                                    <strong id="f-grupo" class="fs-3">-</strong>
                                 </div>
-                                <div class="col-12">
-                                    <div class="p-3 bg-light rounded border">
-                                        <small class="text-muted fw-bold d-block mb-1">Cirugías:</small>
-                                        <p id="f-cirugias" class="mb-0">-</p>
-                                    </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 bg-warning bg-opacity-10 rounded border border-warning text-center h-100">
+                                    <small class="text-warning text-darken fw-bold d-block text-uppercase" style="color: #b38000!important;">Alergias</small>
+                                    <strong id="f-alergias" class="fs-5">-</strong>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-3 bg-light rounded border">
+                                    <small class="text-muted fw-bold d-block mb-1">Lesiones Previas:</small>
+                                    <p id="f-lesiones" class="mb-0">-</p>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-3 bg-light rounded border">
+                                    <small class="text-muted fw-bold d-block mb-1">Cirugías:</small>
+                                    <p id="f-cirugias" class="mb-0">-</p>
                                 </div>
                             </div>
                         </div>
@@ -149,32 +133,56 @@
                 </div> 
                 
                 <h5 class="text-secondary border-bottom pb-2 mt-4 solo-pantalla"><i class="bi bi-calendar-check-fill text-success"></i> Seguimiento de Asistencia</h5>
-                    <div class="row g-3 mb-4 solo-pantalla">
-                        
-                        <div class="col-12">
-                            <div class="p-3 bg-light rounded border border-info shadow-sm">
-                                <h6 class="text-info fw-bold mb-2"><i class="bi bi-bar-chart-line-fill"></i> Reporte General</h6>
-                                <p id="f-reporte-texto" class="mb-0 text-dark">Cargando métricas de asistencia...</p>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 mt-3">
-                            <label class="form-label fw-bold text-muted small">Buscar asistencia de un día específico:</label>
-                            <div class="input-group shadow-sm">
-                                <input type="date" id="buscador-fecha-asis" class="form-control border-secondary">
-                                <button class="btn btn-secondary fw-bold" onclick="buscarAsistenciaPorDia()">
-                                    <i class="bi bi-search"></i> Buscar
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 mt-3">
-                            <label class="form-label fw-bold text-muted small">Estado del jugador en esa fecha:</label>
-                            <div id="resultado-busqueda-dia" class="p-2 border border-secondary rounded bg-white text-center d-flex flex-column justify-content-center" style="min-height: 38px;">
-                                <span class="text-muted small">Seleccioná una fecha para ver el estado.</span>
-                            </div>
+                <div class="row g-3 mb-4 solo-pantalla">
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded border border-info shadow-sm">
+                            <h6 class="text-info fw-bold mb-2"><i class="bi bi-bar-chart-line-fill"></i> Reporte General</h6>
+                            <p id="f-reporte-texto" class="mb-0 text-dark">Cargando métricas de asistencia...</p>
                         </div>
                     </div>
+                    <div class="col-md-6 mt-3">
+                        <label class="form-label fw-bold text-muted small">Buscar asistencia de un día específico:</label>
+                        <div class="input-group shadow-sm">
+                            <input type="date" id="buscador-fecha-asis" class="form-control border-secondary">
+                            <button class="btn btn-secondary fw-bold" onclick="buscarAsistenciaPorDia()">
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mt-3">
+                        <label class="form-label fw-bold text-muted small">Estado del jugador en esa fecha:</label>
+                        <div id="resultado-busqueda-dia" class="p-2 border border-secondary rounded bg-white text-center d-flex flex-column justify-content-center" style="min-height: 38px;">
+                            <span class="text-muted small">Seleccioná una fecha para ver el estado.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="text-secondary border-bottom pb-2 mt-4 solo-pantalla d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-bandaid-fill text-primary"></i> Historial Kinesiológico</span>
+                    <button class="btn btn-sm btn-primary fw-bold" id="btn-agregar-kine" data-bs-toggle="modal" data-bs-target="#modalKine">
+                        <i class="bi bi-plus-lg"></i> Agregar Sesión
+                    </button>
+                </h5>
+                <div class="row g-3 mb-4 solo-pantalla">
+                    <div class="col-12">
+                        <div class="table-responsive bg-white rounded border shadow-sm" style="max-height: 250px; overflow-y: auto;">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Motivo / Lesión</th>
+                                        <th>Tratamiento</th>
+                                        <th>Profesional</th>
+                                        <th class="text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-kinesiologia">
+                                    <tr><td colspan="5" class="text-center text-muted py-3">Cargando historial...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
                     
                 <div id="botonera" class="mt-2 text-center d-flex justify-content-center gap-3 flex-wrap botonera-acciones">
                     <button onclick="window.print()" class="btn btn-secondary shadow-sm px-4">
@@ -192,7 +200,77 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalKine" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-bandaid"></i> Nuevo Registro Kinesiológico</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-kine">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Fecha de Sesión</label>
+                            <input type="date" id="k-fecha" class="form-control bg-light" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Motivo / Lesión</label>
+                            <input type="text" id="k-motivo" class="form-control border-primary" placeholder="Ej: Esguince tobillo derecho" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Tratamiento Realizado</label>
+                            <textarea id="k-tratamiento" class="form-control bg-light" rows="2" placeholder="Ej: Magnetoterapia, masajes..." required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Observaciones / Evolución (Opcional)</label>
+                            <textarea id="k-observaciones" class="form-control bg-light" rows="2" placeholder="Ej: Reposo por 48hs"></textarea>
+                        </div>
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary fw-bold">Guardar Registro</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalEditarKine" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square"></i> Editar Sesión de Kinesiología</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-editar-kine">
+                        <input type="hidden" id="edit-k-id">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Fecha de Sesión</label>
+                            <input type="date" id="edit-k-fecha" class="form-control bg-light" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Motivo / Lesión</label>
+                            <input type="text" id="edit-k-motivo" class="form-control border-warning" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Tratamiento Realizado</label>
+                            <textarea id="edit-k-tratamiento" class="form-control bg-light" rows="2" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Observaciones / Evolución (Opcional)</label>
+                            <textarea id="edit-k-observaciones" class="form-control bg-light" rows="2"></textarea>
+                        </div>
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-dark fw-bold">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // --- 1. SEGURIDAD ---
         if (!sessionStorage.getItem('usuarioLogueado')) {
             window.location.href = 'login.html';
         }
@@ -201,7 +279,9 @@
         const idJugador = urlParams.get('id');
         let jugadorActual = null;
         let historialAsistencia = [];
+        let historialKine = []; // Memoria global para kinesiologia
 
+        // --- 2. CARGAR FICHA PRINCIPAL ---
         async function cargarFicha() {
             try {
                 const respuesta = await fetch(`http://localhost:3000/jugadores/${idJugador}`);
@@ -228,190 +308,258 @@
                 const rama = jugadorActual.rama || 'Masculino';
                 const badgeRama = document.getElementById('f-rama');
                 badgeRama.innerText = rama;
-                
-                if (rama === 'Femenino') {
-                    badgeRama.classList.replace('text-primary', 'text-danger');
-                }
+                if (rama === 'Femenino') badgeRama.classList.replace('text-primary', 'text-danger');
 
-                // --- CARGAR HISTORIAL Y ARMAR REPORTE ---
+                // Cargar estadísticas
                 try {
                     const resAsis = await fetch(`http://localhost:3000/asistencia/jugador/${idJugador}`);
                     historialAsistencia = await resAsis.json();
-                    generarReporteAsistencia(); // Llamamos a la función que arma el texto
+                    generarReporteAsistencia(); 
                 } catch (e) {
-                    console.error('No se pudo cargar la asistencia', e);
                     document.getElementById('f-reporte-texto').innerText = 'No se pudo cargar el reporte estadístico.';
                 }
                 
             } catch (error) {
-                console.error('Error:', error);
                 alert('No se pudo cargar la ficha del jugador.');
             }
         }
 
-        // --- LÓGICA DE PDF Y WHATSAPP ---
-        function generarPDFyWhatsApp() {
-            if(!jugadorActual) return;
-
-            // 1. Mostramos el título especial de impresión
-            const titulosImpresion = document.querySelectorAll('.solo-impresion');
-            titulosImpresion.forEach(el => el.style.display = 'block');
-
-            // 2. OCULTAMOS el bloque de asistencia (y todo lo que sea "solo-pantalla")
-            const elementosPantalla = document.querySelectorAll('.solo-pantalla');
-            elementosPantalla.forEach(el => el.style.display = 'none');
-
-            // Apuntamos al "area-pdf" que contiene toda la ficha
-            const elemento = document.getElementById('area-pdf');
-            
-            // Opciones de configuración del archivo PDF
-            const opciones = {
-                margin:       0.5,
-                filename:     `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true }, 
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-
-            // Creamos el PDF, y cuando termina de descargarse...
-            html2pdf().set(opciones).from(elemento).save().then(() => {
-                
-                // 3. Volvemos a dejar la pantalla como estaba (ocultamos título, mostramos asistencia)
-                titulosImpresion.forEach(el => el.style.display = 'none');
-                elementosPantalla.forEach(el => el.style.display = ''); // Las comillas vacías devuelven la visibilidad normal
-
-                // Armamos el mensaje para WhatsApp
-                setTimeout(() => {
-                    alert('📄 ¡El PDF de la ficha médica (sin asistencia) ya se descargó!\n\nSe va a abrir WhatsApp. Solo tenés que buscar a la persona, darle a "Adjuntar documento" y mandarle el archivo descargado.');
-                    
-                    const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}. Te la adjunto en formato PDF.`;
-                    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
-                    window.open(url, '_blank');
-                }, 500); 
-            });
-        }
-
-        // --- LÓGICA DE CORREO ---
-        function compartirEmail() {
-            if(!jugadorActual) return;
-            const asunto = `Ficha Médica de Emergencia - ${jugadorActual.nombre} ${jugadorActual.apellido}`;
-            const cuerpo = `Hola,\n\nTe escribo para compartir la ficha médica oficial del jugador/a ${jugadorActual.nombre} ${jugadorActual.apellido}.\n\nPor favor, responde este correo para coordinar el envío del archivo PDF adjunto o descárgalo directamente desde el sistema.\n\nSaludos.`;
-            const url = `mailto:?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
-            window.location.href = url;
-        }
-
         if (idJugador) {
             cargarFicha();
+            cargarKinesiologia(); // Se carga al entrar
         } else {
             alert('No se especificó un jugador.');
             window.location.href = 'index.html';
         }
 
-        // --- LÓGICA DE ELIMINAR ---
-        async function eliminarJugador() {
-            // 1. Cartel de seguridad (devuelve true si aprieta Aceptar, false si aprieta Cancelar)
-            const confirmacion = confirm(`⚠️ ATENCIÓN: ¿Estás seguro de que querés ELIMINAR definitivamente a ${jugadorActual.nombre} ${jugadorActual.apellido} del club? Esta acción no se puede deshacer.`);
-            
-            if (!confirmacion) {
-                return; // Si el profe se arrepintió, frenamos todo acá
-            }
+        // --- 3. EXPORTAR Y ELIMINAR JUGADOR ---
+        function generarPDFyWhatsApp() {
+            if(!jugadorActual) return;
+            const titulosImpresion = document.querySelectorAll('.solo-impresion');
+            titulosImpresion.forEach(el => el.style.display = 'block');
+            const elementosPantalla = document.querySelectorAll('.solo-pantalla');
+            elementosPantalla.forEach(el => el.style.display = 'none');
 
-            try {
-                // 2. Le mandamos la orden DELETE al servidor
-                const respuesta = await fetch(`http://localhost:3000/jugadores/${idJugador}`, {
-                    method: 'DELETE'
-                });
+            const elemento = document.getElementById('area-pdf');
+            const opciones = {
+                margin: 0.5,
+                filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true }, 
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
 
-                if (respuesta.ok) {
-                    alert('Jugador eliminado del sistema.');
-                    window.location.href = 'index.html'; // Lo mandamos de vuelta al inicio
-                } else {
-                    alert('Hubo un error al intentar eliminar al jugador.');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('No se pudo conectar con el servidor.');
-            }
+            html2pdf().set(opciones).from(elemento).save().then(() => {
+                titulosImpresion.forEach(el => el.style.display = 'none');
+                elementosPantalla.forEach(el => el.style.display = ''); 
+                setTimeout(() => {
+                    alert('📄 ¡El PDF se descargó!\nSe va a abrir WhatsApp para que lo envíes.');
+                    const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
+                    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
+                }, 500); 
+            });
         }
 
-        // --- LÓGICA DE PERMISOS (ROLES) ---
+        function compartirEmail() {
+            if(!jugadorActual) return;
+            const asunto = `Ficha Médica - ${jugadorActual.nombre} ${jugadorActual.apellido}`;
+            const cuerpo = `Hola,\n\nAdjunto la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.\n\nSaludos.`;
+            window.location.href = `mailto:?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+        }
+
+        async function eliminarJugador() {
+            if (!confirm(`⚠️ ¿ELIMINAR definitivamente a ${jugadorActual.nombre} ${jugadorActual.apellido}?`)) return;
+            try {
+                const respuesta = await fetch(`http://localhost:3000/jugadores/${idJugador}`, { method: 'DELETE' });
+                if (respuesta.ok) {
+                    alert('Jugador eliminado.');
+                    window.location.href = 'index.html'; 
+                } else alert('Error al eliminar.');
+            } catch (error) { alert('No se pudo conectar.'); }
+        }
+
+        // --- 4. PERMISOS ---
         const rolUsuario = sessionStorage.getItem('usuarioRol');
         if (rolUsuario === 'Cuerpo Tecnico') {
-            // Buscamos los botones de editar y eliminar y los escondemos
             const btnEditar = document.querySelector('button[onclick*="editar.html"]');
             const btnEliminar = document.querySelector('button[onclick="eliminarJugador()"]');
-            
             if (btnEditar) btnEditar.style.display = 'none';
             if (btnEliminar) btnEliminar.style.display = 'none';
         }
+        if (rolUsuario === 'Administrativo') {
+            const btnAgregarKine = document.getElementById('btn-agregar-kine');
+            if (btnAgregarKine) btnAgregarKine.style.display = 'none';
+        }
 
-        // --- FUNCIONES DEL PANEL DE ASISTENCIA ---
+        // --- 5. ASISTENCIA ---
         function generarReporteAsistencia() {
             if (historialAsistencia.length === 0) {
-                document.getElementById('f-reporte-texto').innerHTML = 'El jugador aún no tiene registros de asistencia en el sistema.';
+                document.getElementById('f-reporte-texto').innerHTML = 'El jugador no tiene registros de asistencia.';
                 return;
             }
-
-            // Contadores
-            let totalBasquet = 0, presentesBasquet = 0;
-            let totalFisico = 0, presentesFisico = 0;
-
+            let tb=0, pb=0, tf=0, pf=0;
             historialAsistencia.forEach(a => {
-                if (a.tipo_entrenamiento === 'Basquet') {
-                    totalBasquet++;
-                    if (a.estado === 'Presente') presentesBasquet++;
-                } else if (a.tipo_entrenamiento === 'Fisico') {
-                    totalFisico++;
-                    if (a.estado === 'Presente') presentesFisico++;
-                }
+                if (a.tipo_entrenamiento === 'Basquet') { tb++; if (a.estado === 'Presente') pb++; }
+                else if (a.tipo_entrenamiento === 'Fisico') { tf++; if (a.estado === 'Presente') pf++; }
             });
-
-            // Cálculos de porcentajes (evitando dividir por cero)
-            const porcBasquet = totalBasquet > 0 ? Math.round((presentesBasquet/totalBasquet)*100) : 0;
-            const porcFisico = totalFisico > 0 ? Math.round((presentesFisico/totalFisico)*100) : 0;
-
-            // Armado del texto formal
-            const reporteStr = `Hasta la fecha, el jugador estuvo presente en <strong>${presentesBasquet} de ${totalBasquet}</strong> prácticas de Básquet en cancha (<strong>${porcBasquet}%</strong> de asistencia) y en <strong>${presentesFisico} de ${totalFisico}</strong> sesiones de preparación Física (<strong>${porcFisico}%</strong> de asistencia).`;
-
-            document.getElementById('f-reporte-texto').innerHTML = reporteStr;
+            const pBasquet = tb > 0 ? Math.round((pb/tb)*100) : 0;
+            const pFisico = tf > 0 ? Math.round((pf/tf)*100) : 0;
+            document.getElementById('f-reporte-texto').innerHTML = `Básquet: ${pb}/${tb} (${pBasquet}%). Físico: ${pf}/${tf} (${pFisico}%).`;
         }
 
         function buscarAsistenciaPorDia() {
             const fechaBuscada = document.getElementById('buscador-fecha-asis').value;
-            const contenedorRes = document.getElementById('resultado-busqueda-dia');
-
-            if (!fechaBuscada) {
-                contenedorRes.innerHTML = '<span class="text-danger small">Por favor elegí una fecha del calendario.</span>';
-                return;
-            }
-
-            // Buscamos si en el historial hay registros para ese día exacto
-            const registrosDelDia = historialAsistencia.filter(a => {
-                // a.fecha viene de la base de datos en formato completo (ej: 2026-02-21T00:00:00.000Z)
-                // Usamos split('T')[0] para quedarnos solo con el "YYYY-MM-DD" y poder compararlo
-                const fechaCorta = a.fecha.split('T')[0];
-                return fechaCorta === fechaBuscada;
-            });
-
-            if (registrosDelDia.length === 0) {
-                contenedorRes.innerHTML = '<span class="text-muted small">El jugador no tiene registros cargados ese día.</span>';
-                return;
-            }
-
-            // Si hay registros (puede haber uno de físico y otro de básquet el mismo día), los dibujamos
-            let htmlResultado = '';
+            const cont = document.getElementById('resultado-busqueda-dia');
+            if (!fechaBuscada) return cont.innerHTML = '<span class="text-danger small">Elegí una fecha.</span>';
+            const registrosDelDia = historialAsistencia.filter(a => a.fecha.split('T')[0] === fechaBuscada);
+            
+            if (registrosDelDia.length === 0) return cont.innerHTML = '<span class="text-muted small">Sin registros.</span>';
+            
+            let htmlRes = '';
             registrosDelDia.forEach(reg => {
-                let badgeClass = 'bg-danger';
-                if (reg.estado === 'Presente') badgeClass = 'bg-success';
-                if (reg.estado === 'Justificado') badgeClass = 'bg-warning text-dark';
-                
-                const icono = reg.tipo_entrenamiento === 'Basquet' ? '🏀 Básquet' : '🏋️ Físico';
-                htmlResultado += `<div class="mb-1 fw-bold">${icono}: <span class="badge ${badgeClass} ms-2 px-3 py-1 fs-6">${reg.estado}</span></div>`;
+                let badgeClass = reg.estado === 'Presente' ? 'bg-success' : (reg.estado === 'Justificado' ? 'bg-warning text-dark' : 'bg-danger');
+                const icono = reg.tipo_entrenamiento === 'Basquet' ? '🏀' : '🏋️';
+                htmlRes += `<div class="mb-1 fw-bold">${icono}: <span class="badge ${badgeClass} ms-2 px-3">${reg.estado}</span></div>`;
             });
-
-            contenedorRes.innerHTML = htmlResultado;
+            cont.innerHTML = htmlRes;
         }
 
+        // --- 6. KINESIOLOGÍA BLINDADA ---
+        document.getElementById('k-fecha').valueAsDate = new Date(); 
+
+        async function cargarKinesiologia() {
+            const tabla = document.getElementById('tabla-kinesiologia');
+            try {
+                const respuesta = await fetch(`http://localhost:3000/kinesiologia/${idJugador}`);
+                historialKine = await respuesta.json(); 
+
+                tabla.innerHTML = '';
+                if (historialKine.length === 0) {
+                    tabla.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">Sin historial kinesiológico.</td></tr>';
+                    return;
+                }
+
+                historialKine.forEach(reg => {
+                    const fechaObj = new Date(reg.fecha);
+                    fechaObj.setMinutes(fechaObj.getMinutes() + fechaObj.getTimezoneOffset());
+                    const fechaStr = fechaObj.toLocaleDateString('es-AR');
+                    const obsHtml = reg.observaciones ? `<br><small class="text-muted fst-italic">Obs: ${reg.observaciones}</small>` : '';
+
+                    let botonesAccion = `<td></td>`;
+                    if (sessionStorage.getItem('usuarioRol') !== 'Administrativo') {
+                        // El botón de editar ahora solo ejecuta JavaScript puro, sin data-bs-toggle
+                        botonesAccion = `
+                            <td class="text-center">
+                                <div class="btn-group shadow-sm">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" title="Editar Sesión" 
+                                        onclick="abrirEdicionKine(${reg.id})">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" title="Eliminar Sesión" 
+                                        onclick="eliminarKine(${reg.id})">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        `;
+                    }
+
+                    tabla.innerHTML += `
+                        <tr>
+                            <td class="fw-bold text-nowrap">${fechaStr}</td>
+                            <td class="text-danger fw-bold">${reg.lesion_motivo}</td>
+                            <td>${reg.tratamiento}${obsHtml}</td>
+                            <td class="text-muted small"><i class="bi bi-person-badge"></i> ${reg.profesional_nombre}</td>
+                            ${botonesAccion}
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                tabla.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-3">Error al cargar.</td></tr>';
+            }
+        }
+
+        // GUARDAR NUEVA SESIÓN
+        document.getElementById('form-kine').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nuevoReg = {
+                jugador_id: idJugador,
+                fecha: document.getElementById('k-fecha').value,
+                lesion_motivo: document.getElementById('k-motivo').value,
+                tratamiento: document.getElementById('k-tratamiento').value,
+                observaciones: document.getElementById('k-observaciones').value,
+                profesional_nombre: sessionStorage.getItem('usuarioLogueado') || 'Kinesiólogo'
+            };
+            try {
+                const res = await fetch('http://localhost:3000/kinesiologia', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevoReg)
+                });
+                if (res.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('modalKine')).hide();
+                    document.getElementById('form-kine').reset();
+                    document.getElementById('k-fecha').valueAsDate = new Date();
+                    cargarKinesiologia();
+                } else alert('❌ Error al guardar.');
+            } catch (error) { alert('❌ Error de servidor.'); }
+        });
+
+        // ABRIR VENTANA DE EDICIÓN
+        function abrirEdicionKine(id) {
+            const registro = historialKine.find(r => r.id === id);
+            if (!registro) return;
+
+            document.getElementById('edit-k-id').value = registro.id;
+            
+            // Convertimos la fecha de forma segura
+            if (registro.fecha) {
+                const d = new Date(registro.fecha);
+                d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                document.getElementById('edit-k-fecha').value = `${year}-${month}-${day}`;
+            }
+            
+            document.getElementById('edit-k-motivo').value = registro.lesion_motivo || '';
+            document.getElementById('edit-k-tratamiento').value = registro.tratamiento || '';
+            document.getElementById('edit-k-observaciones').value = registro.observaciones || '';
+
+            // Abrir modal de forma pura y dura
+            const modalEl = document.getElementById('modalEditarKine');
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modalInstance.show();
+        }
+
+        // GUARDAR CAMBIOS DE EDICIÓN
+        document.getElementById('form-editar-kine').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-k-id').value;
+            const act = {
+                fecha: document.getElementById('edit-k-fecha').value,
+                lesion_motivo: document.getElementById('edit-k-motivo').value,
+                tratamiento: document.getElementById('edit-k-tratamiento').value,
+                observaciones: document.getElementById('edit-k-observaciones').value
+            };
+            try {
+                const res = await fetch(`http://localhost:3000/kinesiologia/${id}`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(act)
+                });
+                if (res.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('modalEditarKine')).hide();
+                    cargarKinesiologia(); 
+                } else alert('❌ Error al actualizar.');
+            } catch (error) { alert('❌ Error de servidor.'); }
+        });
+
+        // ELIMINAR SESIÓN
+        async function eliminarKine(id) {
+            if (!confirm('⚠️ ¿ELIMINAR definitivamente esta sesión?')) return;
+            try {
+                const res = await fetch(`http://localhost:3000/kinesiologia/${id}`, { method: 'DELETE' });
+                if (res.ok) cargarKinesiologia(); 
+                else alert('❌ Error al eliminar.');
+            } catch (error) { console.error('Error:', error); }
+        }
     </script>
 </body>
 </html>
