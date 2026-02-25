@@ -3,12 +3,39 @@ const { Pool } = require('pg');
 const cors = require('cors');
 const bcrypt = require('bcryptjs'); // <--- Importante: Seguridad
 
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// <--- MODIFICACIÓN: Se movió la inicialización de 'app' hacia arriba para que el resto del código la reconozca.
 const app = express();
 const port = 3000;
 
 // Middleware
+// <--- MODIFICACIÓN: Se subieron los middlewares básicos para que atrapen el formato json y cors desde el principio.
 app.use(cors());
 app.use(express.json());
+
+// Crear la carpeta "uploads" automáticamente si no existe
+if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
+    fs.mkdirSync(path.join(__dirname, 'uploads'));
+}
+
+// Configurar cómo y dónde se guardan los archivos
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, 'uploads/'))
+  },
+  filename: function (req, file, cb) {
+    // Le agregamos la fecha al nombre para que nunca haya dos archivos llamados igual
+    cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '-'))
+  }
+});
+const upload = multer({ storage: storage });
+
+// Hacer que la carpeta uploads sea pública para poder ver los archivos desde la web
+// <--- MODIFICACIÓN: Al estar debajo de "const app = express();", esta línea ya no dará el error "Cannot access 'app' before initialization".
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Configuración de la Base de Datos
 const pool = new Pool({
@@ -263,6 +290,47 @@ app.delete('/jugadores/:id', async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Error al eliminar el jugador');
+  }
+});
+
+// 7. Ruta para SUBIR DOCUMENTOS (Apto Médico, DNI)
+app.post('/jugadores/:id/documentos', upload.fields([
+  { name: 'apto_medico', maxCount: 1 },
+  { name: 'dni_frente', maxCount: 1 },
+  { name: 'dni_dorso', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const { id } = req.params;
+    let queryUpdates = [];
+    let values = [];
+    let counter = 1;
+
+    // Detectamos qué archivos llegaron y preparamos la actualización SQL
+    if (req.files['apto_medico']) {
+      queryUpdates.push(`apto_medico = $${counter++}`);
+      values.push(req.files['apto_medico'][0].filename);
+    }
+    if (req.files['dni_frente']) {
+      queryUpdates.push(`dni_frente = $${counter++}`);
+      values.push(req.files['dni_frente'][0].filename);
+    }
+    if (req.files['dni_dorso']) {
+      queryUpdates.push(`dni_dorso = $${counter++}`);
+      values.push(req.files['dni_dorso'][0].filename);
+    }
+
+    if (queryUpdates.length === 0) {
+      return res.status(400).json({mensaje: "No se enviaron archivos."});
+    }
+
+    values.push(id);
+    const query = `UPDATE jugadores SET ${queryUpdates.join(', ')} WHERE id = $${counter} RETURNING *`;
+    
+    await pool.query(query, values);
+    res.json({ mensaje: 'Documentos guardados exitosamente.' });
+  } catch (err) {
+    console.error('Error al subir documentos:', err.message);
+    res.status(500).send('Error interno del servidor.');
   }
 });
 

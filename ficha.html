@@ -15,14 +15,8 @@
             nav, .botonera-acciones, .solo-pantalla { display: none !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             html, body { background-color: white !important; height: auto !important; margin: 0 !important; padding: 0 !important; }
-            .container, #area-pdf {
-                max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important;
-                background-color: transparent !important;
-            }
-            .card {
-                border: 2px solid #000 !important; box-shadow: none !important; page-break-inside: avoid;
-                margin-bottom: 0 !important; 
-            }
+            .container, #area-pdf { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; background-color: transparent !important; }
+            .card { border: 2px solid #000 !important; box-shadow: none !important; page-break-inside: avoid; margin-bottom: 0 !important; }
             .solo-impresion { display: block !important; }
         }
     </style>
@@ -31,10 +25,10 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="index.html">🏀 Club Atlético Sol de Mayo Basquet</a>
+            <a class="navbar-brand fw-bold" href="index.html">🏀 Club Sol de Mayo Basquet</a>
             <div class="d-flex align-items-center text-white">
-                <a href="javascript:history.back()" class="btn btn-outline-light btn-sm">
-                    <i class="bi bi-arrow-left"></i> Volver
+                <a href="index.html" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Volver al Panel
                 </a>
             </div>
         </div>
@@ -51,7 +45,6 @@
                     </div>
 
                     <div class="card shadow-sm border-0 mb-4">
-                        
                         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
                             <h5 class="mb-0"><i class="bi bi-person-vcard"></i> Ficha Personal</h5>
                             <span id="f-rama" class="badge bg-light text-primary fs-6 px-3 py-2 rounded-pill shadow-sm">...</span>
@@ -129,6 +122,29 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <h5 class="text-secondary border-bottom pb-2 mt-4 px-3 solo-pantalla"><i class="bi bi-folder-check text-warning"></i> Documentación Legal y Médica</h5>
+                        <div class="row g-3 px-3 mb-4 solo-pantalla">
+                            <div class="col-md-4">
+                                <div class="p-3 bg-light rounded border text-center h-100 shadow-sm">
+                                    <small class="fw-bold d-block mb-3 text-uppercase">Apto Médico</small>
+                                    <div id="doc-apto-box">Cargando...</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 bg-light rounded border text-center h-100 shadow-sm">
+                                    <small class="fw-bold d-block mb-3 text-uppercase">DNI Frente</small>
+                                    <div id="doc-dni-frente-box">Cargando...</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 bg-light rounded border text-center h-100 shadow-sm">
+                                    <small class="fw-bold d-block mb-3 text-uppercase">DNI Dorso</small>
+                                    <div id="doc-dni-dorso-box">Cargando...</div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div> 
                 
@@ -279,9 +295,66 @@
         const idJugador = urlParams.get('id');
         let jugadorActual = null;
         let historialAsistencia = [];
-        let historialKine = []; // Memoria global para kinesiologia
+        let historialKine = []; 
 
-        // --- 2. CARGAR FICHA PRINCIPAL ---
+        // --- 2. CARGAR FICHA Y DOCUMENTOS ---
+        
+        // Función auxiliar para dibujar los botones de documentos
+        function renderDoc(campoBD, nombreArchivoGuardado, idHtmlInput) {
+            if (nombreArchivoGuardado) {
+                return `
+                    <a href="http://localhost:3000/uploads/${nombreArchivoGuardado}" target="_blank" class="btn btn-sm btn-success w-100 mb-2 shadow-sm">
+                        <i class="bi bi-eye"></i> Ver Archivo
+                    </a>
+                    <label class="btn btn-outline-secondary btn-sm w-100 mb-0">
+                        <i class="bi bi-arrow-repeat"></i> Reemplazar
+                        <input type="file" id="${idHtmlInput}" class="d-none" accept=".pdf,.jpg,.jpeg,.png" onchange="subirDocumento('${campoBD}', this)">
+                    </label>
+                `;
+            } else {
+                return `
+                    <label class="btn btn-outline-primary btn-sm w-100 mb-2 shadow-sm">
+                        <i class="bi bi-upload"></i> Subir Archivo
+                        <input type="file" id="${idHtmlInput}" class="d-none" accept=".pdf,.jpg,.jpeg,.png" onchange="subirDocumento('${campoBD}', this)">
+                    </label>
+                    <span class="d-block small text-danger mt-1"><i class="bi bi-x-circle"></i> Faltante</span>
+                `;
+            }
+        }
+
+        // Lógica de subida (API Fetch con FormData)
+        async function subirDocumento(campoBD, inputElement) {
+            const file = inputElement.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append(campoBD, file);
+
+            try {
+                // Efecto visual de carga
+                const labelElement = inputElement.parentElement;
+                const originalHtml = labelElement.innerHTML;
+                labelElement.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Subiendo...';
+                labelElement.classList.add('disabled');
+
+                const res = await fetch(`http://localhost:3000/jugadores/${idJugador}/documentos`, {
+                    method: 'POST',
+                    body: formData // No ponemos "Content-Type", el navegador lo hace solo para archivos
+                });
+
+                if (res.ok) {
+                    cargarFicha(); // Refrescamos todo para mostrar el botón verde
+                } else {
+                    alert('❌ Error al subir el documento');
+                    labelElement.innerHTML = originalHtml;
+                    labelElement.classList.remove('disabled');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error de conexión con el servidor');
+            }
+        }
+
         async function cargarFicha() {
             try {
                 const respuesta = await fetch(`http://localhost:3000/jugadores/${idJugador}`);
@@ -310,6 +383,11 @@
                 badgeRama.innerText = rama;
                 if (rama === 'Femenino') badgeRama.classList.replace('text-primary', 'text-danger');
 
+                // DIBUJAMOS LOS DOCUMENTOS ADJUNTOS
+                document.getElementById('doc-apto-box').innerHTML = renderDoc('apto_medico', jugadorActual.apto_medico, 'file-apto');
+                document.getElementById('doc-dni-frente-box').innerHTML = renderDoc('dni_frente', jugadorActual.dni_frente, 'file-dni-f');
+                document.getElementById('doc-dni-dorso-box').innerHTML = renderDoc('dni_dorso', jugadorActual.dni_dorso, 'file-dni-d');
+
                 // Cargar estadísticas
                 try {
                     const resAsis = await fetch(`http://localhost:3000/asistencia/jugador/${idJugador}`);
@@ -326,7 +404,7 @@
 
         if (idJugador) {
             cargarFicha();
-            cargarKinesiologia(); // Se carga al entrar
+            cargarKinesiologia(); 
         } else {
             alert('No se especificó un jugador.');
             window.location.href = 'index.html';
@@ -424,7 +502,7 @@
             cont.innerHTML = htmlRes;
         }
 
-        // --- 6. KINESIOLOGÍA BLINDADA ---
+        // --- 6. KINESIOLOGÍA ---
         document.getElementById('k-fecha').valueAsDate = new Date(); 
 
         async function cargarKinesiologia() {
@@ -447,7 +525,6 @@
 
                     let botonesAccion = `<td></td>`;
                     if (sessionStorage.getItem('usuarioRol') !== 'Administrativo') {
-                        // El botón de editar ahora solo ejecuta JavaScript puro, sin data-bs-toggle
                         botonesAccion = `
                             <td class="text-center">
                                 <div class="btn-group shadow-sm">
@@ -509,8 +586,6 @@
             if (!registro) return;
 
             document.getElementById('edit-k-id').value = registro.id;
-            
-            // Convertimos la fecha de forma segura
             if (registro.fecha) {
                 const d = new Date(registro.fecha);
                 d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
@@ -519,12 +594,10 @@
                 const day = String(d.getDate()).padStart(2, '0');
                 document.getElementById('edit-k-fecha').value = `${year}-${month}-${day}`;
             }
-            
             document.getElementById('edit-k-motivo').value = registro.lesion_motivo || '';
             document.getElementById('edit-k-tratamiento').value = registro.tratamiento || '';
             document.getElementById('edit-k-observaciones').value = registro.observaciones || '';
 
-            // Abrir modal de forma pura y dura
             const modalEl = document.getElementById('modalEditarKine');
             const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
             modalInstance.show();

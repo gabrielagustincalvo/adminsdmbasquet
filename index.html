@@ -6,6 +6,7 @@
     <title>Gestión del Club 🏀</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .card-categoria { transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; border-radius: 12px; }
         .card-categoria:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
@@ -46,19 +47,19 @@
     </nav>
 
     <div class="container pb-5">
-        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-center mb-4 gap-3">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-center mb-4 gap-3">
             
-            <div class="d-flex justify-content-center align-items-center gap-3">
-                <h1 id="titulo-pantalla" class="mb-0">Categorías</h1>
+            <div class="d-flex flex-wrap justify-content-center justify-content-lg-start align-items-center gap-3">
+                <h2 id="titulo-pantalla" class="mb-0 fw-bold text-nowrap">Categorías</h2>
                 
-                <select id="filtro-rama" class="form-select bg-primary text-white fw-bold border-0 shadow-sm w-auto" onchange="renderizarCategorias()">
+                <select id="filtro-rama" class="form-select bg-primary text-white fw-bold border-0 shadow-sm w-auto" onchange="cargarDashboard(); procesarHash();">
                     <option value="Todos">Ambas Ramas 🏀</option>
                     <option value="Femenino">Femenino 🟣</option>
                     <option value="Masculino">Masculino 🔵</option>
                 </select>
             </div>
             
-            <div class="d-flex flex-wrap justify-content-center gap-2 botonera-mobile">
+            <div class="d-flex flex-wrap justify-content-center justify-content-lg-end gap-2 botonera-mobile">
                 <a href="alta.html" class="btn btn-success shadow-sm btn-responsivo">
                     <i class="bi bi-person-plus-fill"></i> Nuevo Jugador
                 </a>
@@ -72,18 +73,79 @@
                     <i class="bi bi-cash-coin"></i> Tesorería
                 </a>
 
-                <button onclick="verStaff()" class="btn btn-info shadow-sm text-dark fw-bold btn-responsivo">
+                <button onclick="window.location.hash = '#staff'" class="btn btn-info shadow-sm text-dark fw-bold btn-responsivo">
                     <i class="bi bi-person-lines-fill"></i> Staff
                 </button>
 
             </div>
 
         </div>
+
+        <div id="vista-dashboard" class="mb-5">
+            <h4 class="mb-4 fw-bold text-secondary"><i class="bi bi-graph-up-arrow"></i> Radiografía del Club</h4>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white border-0 shadow-sm h-100" style="border-radius: 15px;">
+                        <div class="card-body d-flex align-items-center">
+                            <i class="bi bi-people-fill fs-1 me-3 opacity-50"></i>
+                            <div>
+                                <h6 class="card-title text-uppercase fw-bold mb-0">Total Jugadores</h6>
+                                <h2 class="display-5 fw-bold mb-0" id="dash-jugadores">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4" id="tarjeta-recaudacion">
+                    <div class="card bg-success text-white border-0 shadow-sm h-100" style="border-radius: 15px;">
+                        <div class="card-body d-flex align-items-center">
+                            <i class="bi bi-piggy-bank-fill fs-1 me-3 opacity-50"></i>
+                            <div>
+                                <h6 class="card-title text-uppercase fw-bold mb-0">Recaudación</h6>
+                                <h2 class="display-6 fw-bold mb-0" id="dash-recaudacion">$0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card bg-dark text-white border-0 shadow-sm h-100" style="border-radius: 15px;">
+                        <div class="card-body d-flex align-items-center">
+                            <i class="bi bi-person-badge-fill fs-1 me-3 opacity-50"></i>
+                            <div>
+                                <h6 class="card-title text-uppercase fw-bold mb-0">Staff Técnico</h6>
+                                <h2 class="display-5 fw-bold mb-0" id="dash-staff">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 15px;">
+                        <h6 class="fw-bold text-center text-muted mb-3">Jugadores por Categoría</h6>
+                        <div style="position: relative; height: 320px; width: 100%;">
+                            <canvas id="graficoCategorias"></canvas> 
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 15px;">
+                        <h6 class="fw-bold text-center text-muted mb-3">Distribución por Rama</h6>
+                        <div style="position: relative; height: 320px; width: 100%; display: flex; justify-content: center;">
+                            <canvas id="graficoRamas"></canvas> 
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <div id="vista-categorias" class="row g-4"></div>
 
         <div id="vista-jugadores" style="display: none;">
-            <button class="btn btn-secondary mb-3 shadow-sm" onclick="volverACategorias()">
+            <button class="btn btn-secondary mb-3 shadow-sm" onclick="window.location.hash = '#categorias'">
                 <i class="bi bi-arrow-left"></i> Volver a Categorías
             </button>
             
@@ -107,7 +169,7 @@
         </div>
 
         <div id="vista-staff" style="display: none;">
-            <button class="btn btn-secondary mb-3 shadow-sm" onclick="volverACategorias()">
+            <button class="btn btn-secondary mb-3 shadow-sm" onclick="window.location.hash = '#categorias'">
                 <i class="bi bi-arrow-left"></i> Volver a Categorías
             </button>
             
@@ -138,6 +200,7 @@
 
         function cerrarSesion() {
             sessionStorage.removeItem('usuarioLogueado');
+            sessionStorage.removeItem('usuarioRol');
             window.location.href = 'login.html';
         }
 
@@ -160,35 +223,34 @@
             return 'Otras'; // Por si anotas a alguien nacido en 2023 en adelante
         }
 
-        // 3. CARGAR JUGADORES DESDE EL SERVIDOR
-        async function cargarJugadores() {
-            try {
-                const respuesta = await fetch('http://localhost:3000/jugadores');
-                todosLosJugadores = await respuesta.json();
+        // ==========================================
+        // MOTOR DE NAVEGACIÓN SEGURO (CON HASH #)
+        // ==========================================
+        window.addEventListener('hashchange', procesarHash);
+
+        function procesarHash() {
+            const hash = window.location.hash || '#categorias';
+
+            if (hash === '#staff') {
+                verStaff();
+            } else if (hash.startsWith('#jugadores-')) {
+                const categoria = decodeURIComponent(hash.replace('#jugadores-', ''));
+                verJugadores(categoria);
+            } else {
                 renderizarCategorias();
-            } catch (error) {
-                console.error('Error:', error);
             }
         }
 
-        // A. CARGAR EMPLEADOS DESDE EL SERVIDOR
-
-        async function cargarEmpleados() {
-            try {
-                const respuesta = await fetch('http://localhost:3000/empleados');
-                todosLosEmpleados = await respuesta.json();
-            } catch (error) {
-                console.error('Error al cargar empleados:', error);
-            }
-        }
 
         // 4. DIBUJAR TARJETAS
         function renderizarCategorias() {
-            sessionStorage.setItem('ultimaVista', 'categorias'); // <--- LÍNEA NUEVA
-
             document.getElementById('vista-jugadores').style.display = 'none';
+            document.getElementById('vista-staff').style.display = 'none';
+            document.getElementById('vista-dashboard').style.display = 'block'; 
             document.getElementById('vista-categorias').style.display = 'flex';
+            
             document.getElementById('titulo-pantalla').innerText = 'Categorías';
+            document.getElementById('filtro-rama').style.display = 'block'; // Volvemos a mostrar el filtro
 
             const ramaFiltro = document.getElementById('filtro-rama').value;
             const contenedor = document.getElementById('vista-categorias');
@@ -224,7 +286,7 @@
 
                 const tarjeta = `
                     <div class="col-md-4 col-lg-3">
-                        <div class="card h-100 shadow-sm card-categoria border-top border-4 ${colorBorde}" onclick="verJugadores('${cat}')">
+                        <div class="card h-100 shadow-sm card-categoria border-top border-4 ${colorBorde}" onclick="window.location.hash = '#jugadores-${cat}'">
                             <div class="card-body text-center">
                                 <h4 class="card-title text-dark fw-bold mb-3">${cat}</h4>
                                 <span class="badge bg-secondary rounded-pill px-3 py-2 fs-6">
@@ -240,11 +302,12 @@
 
         // 5. MOSTRAR TABLA DE UNA CATEGORÍA
         function verJugadores(categoriaSeleccionada) {
-            sessionStorage.setItem('ultimaVista', 'jugadores'); // <--- LÍNEA NUEVA
-            sessionStorage.setItem('ultimaCategoria', categoriaSeleccionada); // <--- LÍNEA NUEVA
-
             document.getElementById('vista-categorias').style.display = 'none';
+            document.getElementById('vista-dashboard').style.display = 'none';
+            document.getElementById('vista-staff').style.display = 'none';
             document.getElementById('vista-jugadores').style.display = 'block';
+            
+            document.getElementById('filtro-rama').style.display = 'block'; // Mostrar filtro
             
             const ramaFiltro = document.getElementById('filtro-rama').value;
             let textoRama = ramaFiltro === 'Todos' ? '' : ` (${ramaFiltro})`;
@@ -288,13 +351,14 @@
         }
 
         function verStaff() {
-            sessionStorage.setItem('ultimaVista', 'staff'); // <--- LÍNEA NUEVA
-
             // Ocultamos las otras vistas y mostramos la del staff
             document.getElementById('vista-categorias').style.display = 'none';
+            document.getElementById('vista-dashboard').style.display = 'none';
             document.getElementById('vista-jugadores').style.display = 'none';
             document.getElementById('vista-staff').style.display = 'block';
+            
             document.getElementById('titulo-pantalla').innerText = 'Directorio del Staff';
+            document.getElementById('filtro-rama').style.display = 'none'; // OCULTAMOS el filtro para ganar espacio
 
             const tabla = document.getElementById('lista-staff');
             tabla.innerHTML = '';
@@ -324,11 +388,6 @@
             });
         }
 
-        function volverACategorias() {
-            document.getElementById('vista-staff').style.display = 'none'; // <--- Línea nueva
-            renderizarCategorias();
-        }
-
         // --- 3. INICIALIZAR EL PANEL (Carga datos y cura la amnesia) ---
         async function inicializarPanel() {
             try {
@@ -338,22 +397,11 @@
 
                 const resEmp = await fetch('http://localhost:3000/empleados');
                 todosLosEmpleados = await resEmp.json();
+                
+                cargarDashboard();
 
-                // 2. Leemos la memoria del navegador
-                const vista = sessionStorage.getItem('ultimaVista');
-                const cat = sessionStorage.getItem('ultimaCategoria');
-
-                // 3. Restauramos la pantalla exacta en la que estaba
-                if (vista === 'staff') {
-                    verStaff();
-                } else if (vista === 'jugadores' && cat) {
-                    // Importante: llamamos primero a renderizarCategorias oculto para que 
-                    // se arme bien la estructura de fondo, y luego mostramos la tabla
-                    renderizarCategorias(); 
-                    verJugadores(cat);
-                } else {
-                    renderizarCategorias(); // Pantalla por defecto
-                }
+                // Arrancamos el motor de Hash para saber dónde posicionarnos
+                procesarHash();
             } catch (error) {
                 console.error('Error al cargar datos:', error);
             }
@@ -387,6 +435,126 @@
             const btnTesoreria = document.getElementById('btn-tesoreria');
             if (btnTesoreria) btnTesoreria.style.display = 'none';
         }
+
+        // ==========================================
+        // LÓGICA DEL DASHBOARD DE ESTADÍSTICAS (DINÁMICO TOTAL)
+        // ==========================================
+        let chartRamas = null;
+        let chartCategorias = null;
+
+        async function cargarDashboard() {
+            // 1. LEER EL FILTRO DE RAMA
+            const selectRama = document.getElementById('filtro-rama');
+            const ramaSeleccionada = selectRama ? selectRama.value : 'Todos';
+
+            // Filtramos el arreglo de jugadores según lo que diga el select
+            const jugadoresFiltrados = todosLosJugadores.filter(j => {
+                if (!selectRama || ramaSeleccionada === 'Todos' || ramaSeleccionada === '') return true;
+                const ramaJugador = j.rama || 'Masculino'; 
+                return ramaJugador === ramaSeleccionada;
+            });
+
+            // 2. MOSTRAR NÚMEROS EN LAS TARJETAS (Usamos la lista filtrada)
+            document.getElementById('dash-jugadores').innerText = jugadoresFiltrados.length;
+            document.getElementById('dash-staff').innerText = todosLosEmpleados.length;
+
+            // 3. RECAUDACIÓN DINÁMICA POR RAMA
+            const rolDash = sessionStorage.getItem('usuarioRol');
+            if (rolDash === 'Cuerpo Tecnico') {
+                const tarjetaReca = document.getElementById('tarjeta-recaudacion');
+                if(tarjetaReca) tarjetaReca.style.display = 'none';
+            } else {
+                try {
+                    // Traemos la lista detallada de TODOS los pagos (no solo el total)
+                    const resPagos = await fetch('http://localhost:3000/pagos-todos');
+                    const todosLosPagos = await resPagos.json();
+                    
+                    // Armamos una lista rápida con los "ID" de los jugadores filtrados (Femenino o Masculino)
+                    const idsFiltrados = jugadoresFiltrados.map(j => j.id);
+
+                    // Sumamos la plata SOLO si el jugador dueño de ese pago está en nuestra lista filtrada
+                    let sumaDinamica = 0;
+                    todosLosPagos.forEach(pago => {
+                        if (idsFiltrados.includes(pago.jugador_id)) {
+                            sumaDinamica += Number(pago.monto);
+                        }
+                    });
+
+                    // Mostramos la plata filtrada
+                    document.getElementById('dash-recaudacion').innerText = `$${sumaDinamica.toLocaleString('es-AR')}`;
+                } catch (e) { console.error("Error cargando pagos", e); }
+            }
+
+            // 4. GRÁFICO DE RAMAS (Torta)
+            let masc = 0, fem = 0;
+            jugadoresFiltrados.forEach(j => {
+                if (j.rama === 'Femenino') fem++;
+                else masc++;
+            });
+
+            if (chartRamas) chartRamas.destroy(); 
+            chartRamas = new Chart(document.getElementById('graficoRamas'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Masculino', 'Femenino'],
+                    datasets: [{
+                        data: [masc, fem],
+                        backgroundColor: ['#0d6efd', '#dc3545'], // Azul y Rojo
+                        borderWidth: 0
+                    }]
+                },
+                options: { 
+                    maintainAspectRatio: false, 
+                    cutout: '70%', 
+                    plugins: { legend: { position: 'bottom' } } 
+                }
+            });
+
+            // 5. GRÁFICO DE CATEGORÍAS (Barras)
+            const conteoCat = {
+                'Escuelita': 0, 'Pre Mini': 0, 'Mini (U11)': 0, 
+                'Infantiles (U13)': 0, 'Cadetes (U15)': 0, 
+                'Juveniles (U17)': 0, 'Liga Próximo (U21)': 0, 'Primera': 0
+            };
+
+            jugadoresFiltrados.forEach(j => {
+                const cat = obtenerCategoria(j.fecha_nacimiento);
+                if (conteoCat[cat] !== undefined) conteoCat[cat]++;
+            });
+
+            if (chartCategorias) chartCategorias.destroy();
+            chartCategorias = new Chart(document.getElementById('graficoCategorias'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(conteoCat),
+                    datasets: [{
+                        label: 'Jugadores en esta categoría',
+                        data: Object.values(conteoCat),
+                        backgroundColor: '#198754', // Verde del club
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }, 
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 5 } } }
+                }
+            });
+        }
+
+        // ==========================================
+        // FORZAR ACTUALIZACIÓN AL VOLVER ATRÁS
+        // ==========================================
+        window.addEventListener('pageshow', function(event) {
+            const vieneDelHistorial = event.persisted || 
+                                     (typeof window.performance != 'undefined' && 
+                                      window.performance.navigation.type === 2);
+            
+            if (vieneDelHistorial) {
+                window.location.reload(); 
+            }
+        });
 
     </script>
 </body>
