@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión del Club 🏀</title>
+    <link rel="icon" type="image/png" href="assets/Club_Sol_de_Mayo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -97,6 +98,47 @@
                 <button onclick="window.location.hash = '#staff'" class="btn btn-info shadow-sm text-dark fw-bold btn-responsivo">
                     <i class="bi bi-person-lines-fill"></i> Staff
                 </button>
+            </div>
+        </div>
+
+        <div class="row mb-4" id="contenedor-buscador">
+            <div class="col-12 col-md-8 col-lg-6 mx-auto">
+                <div class="input-group input-group-lg shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                    <span class="input-group-text bg-white border-primary border-end-0 text-primary">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" id="buscador-general" class="form-control border-primary border-start-0 ps-0" 
+                           placeholder="Buscar jugador por nombre, apellido o DNI..." 
+                           style="box-shadow: none;">
+                </div>
+            </div>
+        </div>
+
+        <div id="vista-busqueda" style="display: none;" class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0 fw-bold text-primary"><i class="bi bi-search"></i> Resultados de Búsqueda</h4>
+                <button class="btn btn-outline-secondary btn-sm shadow-sm fw-bold" onclick="limpiarBusqueda()">
+                    <i class="bi bi-x-lg"></i> Cerrar Búsqueda
+                </button>
+            </div>
+            
+            <div class="card shadow-sm border-0 border-top border-primary border-4">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Jugador</th>
+                                    <th>Categoría / Edad</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-resultados-busqueda">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -265,7 +307,7 @@
         let todosLosEgresos = [];
 
         // ==========================================
-        // MOTOR TEMPORAL DEFINITIVO (EL CEREBRO DEL FILTRO)
+        // MOTOR TEMPORAL DEFINITIVO
         // ==========================================
         function esActivoEnElMes(persona, mesSeleccionado) {
             if (mesSeleccionado === 'Todos') return true;
@@ -274,32 +316,29 @@
             const indiceMes = nombresMeses.indexOf(mesSeleccionado);
             const anioActual = new Date().getFullYear();
 
-            // 1. ¿Se dio de baja ANTES o DURANTE este mes?
             if (persona.fecha_baja) {
                 const baja = new Date(persona.fecha_baja);
                 baja.setMinutes(baja.getMinutes() + baja.getTimezoneOffset());
                 
                 if (baja.getFullYear() < anioActual || (baja.getFullYear() === anioActual && baja.getMonth() <= indiceMes)) {
-                    // SE FUE. ¿Pero REINGRESÓ a tiempo para que lo contemos en este mes?
                     if (persona.fecha_reingreso) {
                         const reingreso = new Date(persona.fecha_reingreso);
                         reingreso.setMinutes(reingreso.getMinutes() + reingreso.getTimezoneOffset());
                         if (reingreso.getFullYear() < anioActual || (reingreso.getFullYear() === anioActual && reingreso.getMonth() <= indiceMes)) {
-                            return true; // Volvió a tiempo
+                            return true; 
                         }
                     }
-                    return false; // Sigue dado de baja en este mes
+                    return false; 
                 }
             }
 
-            // 2. Si pasó el filtro de baja, ¿ya estaba inscripto en este mes? (Alta original)
             if (persona.fecha_alta) {
                 const alta = new Date(persona.fecha_alta);
                 alta.setMinutes(alta.getMinutes() + alta.getTimezoneOffset());
                 return (alta.getFullYear() < anioActual || (alta.getFullYear() === anioActual && alta.getMonth() <= indiceMes));
             }
 
-            return true; // Jugador antiguo sin fecha de alta guardada
+            return true; 
         }
 
         // --- 2. LÓGICA DE CATEGORÍAS ---
@@ -326,14 +365,16 @@
         function procesarHash() {
             const hash = window.location.hash || '#categorias';
 
-            // Ocultamos TODAS las vistas por seguridad
+            // Al navegar, limpiamos la barra de búsqueda para que no quede trabada
+            document.getElementById('buscador-general').value = '';
+
             document.getElementById('vista-categorias').style.display = 'none';
             document.getElementById('vista-dashboard').style.display = 'none';
             document.getElementById('vista-jugadores').style.display = 'none';
             document.getElementById('vista-staff').style.display = 'none';
             document.getElementById('vista-inactivos').style.display = 'none';
+            document.getElementById('vista-busqueda').style.display = 'none';
 
-            // Mostramos los filtros principales (algunas vistas los ocultan)
             document.getElementById('filtro-rama').style.display = 'block'; 
             document.getElementById('filtro-mes').style.display = 'block';
 
@@ -347,6 +388,79 @@
             } else {
                 renderizarCategorias();
             }
+        }
+
+        // ==========================================
+        // LÓGICA DEL BUSCADOR INTELIGENTE
+        // ==========================================
+        document.getElementById('buscador-general').addEventListener('input', function(e) {
+            const textoBusqueda = e.target.value.toLowerCase().trim();
+            
+            // Si el texto es muy corto, restauramos la vista normal
+            if (textoBusqueda.length < 2) {
+                if (document.getElementById('vista-busqueda').style.display === 'block') {
+                    procesarHash(); // Recarga la vista en la que estábamos
+                }
+                return;
+            }
+
+            // Ocultar todo lo demás
+            document.getElementById('vista-categorias').style.display = 'none';
+            document.getElementById('vista-dashboard').style.display = 'none';
+            document.getElementById('vista-jugadores').style.display = 'none';
+            document.getElementById('vista-staff').style.display = 'none';
+            document.getElementById('vista-inactivos').style.display = 'none';
+            
+            // Mostrar los resultados de búsqueda
+            document.getElementById('vista-busqueda').style.display = 'block';
+
+            const tabla = document.getElementById('lista-resultados-busqueda');
+            tabla.innerHTML = '';
+
+            // Filtrar jugadores por nombre, apellido o DNI
+            const resultados = todosLosJugadores.filter(j => {
+                const nombreCompleto = `${j.nombre} ${j.apellido}`.toLowerCase();
+                const dni = (j.dni || '').toString();
+                return nombreCompleto.includes(textoBusqueda) || dni.includes(textoBusqueda);
+            });
+
+            if (resultados.length === 0) {
+                tabla.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted fw-bold">No se encontraron jugadores con ese criterio.</td></tr>';
+                return;
+            }
+
+            resultados.forEach(jugador => {
+                const edad = jugador.fecha_nacimiento ? `${new Date().getFullYear() - new Date(jugador.fecha_nacimiento).getFullYear()} años` : '-';
+                const categoria = obtenerCategoria(jugador.fecha_nacimiento);
+                
+                const estaDeBaja = jugador.fecha_baja !== null;
+                const opacidad = estaDeBaja ? 'opacity-50' : '';
+                const estadoBadge = estaDeBaja ? '<span class="badge bg-danger ms-2 shadow-sm">BAJA</span>' : '<span class="badge bg-success ms-2 shadow-sm">ACTIVO</span>';
+
+                tabla.innerHTML += `
+                    <tr class="${opacidad}">
+                        <td>
+                            <div class="fw-bold">${jugador.nombre} ${jugador.apellido}</div>
+                            <div class="text-muted small"><i class="bi bi-card-text"></i> ${jugador.dni || '-'}</div>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark">${categoria} <span class="badge ${jugador.rama === 'Femenino' ? 'bg-danger' : 'bg-primary'} badge-rama ms-1">${jugador.rama || 'Masculino'}</span></div>
+                            <div class="text-muted small">${edad}</div>
+                        </td>
+                        <td>${estadoBadge}</td>
+                        <td>
+                            <a href="ficha.html?id=${jugador.id}" class="btn btn-outline-dark btn-sm">
+                                <i class="bi bi-person-vcard"></i> Ficha
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+
+        function limpiarBusqueda() {
+            document.getElementById('buscador-general').value = '';
+            procesarHash(); // Simula "Atrás" a la vista anterior
         }
 
         // --- RENDERIZADO DE VISTAS ---
@@ -402,7 +516,7 @@
 
         function verJugadores(categoriaSeleccionada) {
             document.getElementById('vista-jugadores').style.display = 'block';
-            document.getElementById('filtro-mes').style.display = 'none'; // Ocultamos mes para no marear
+            document.getElementById('filtro-mes').style.display = 'none'; 
             
             const ramaFiltro = document.getElementById('filtro-rama').value;
             const mesFiltro = document.getElementById('filtro-mes').value;
@@ -415,12 +529,11 @@
             const filtrados = todosLosJugadores.filter(jugador => {
                 const ramaJugador = jugador.rama || 'Masculino';
                 const pasaFiltroRama = (ramaFiltro === 'Todos' || ramaJugador === ramaFiltro);
-                const pasaTiempo = esActivoEnElMes(jugador, mesFiltro);
+                const pasaTiempo = esActivoEnElMes(jugador, mesFiltro); 
                 
                 return pasaFiltroRama && pasaTiempo && obtenerCategoria(jugador.fecha_nacimiento) === categoriaSeleccionada;
             });
 
-            // Si se seleccionó Histórico, mandamos los dados de baja al final de la lista
             filtrados.sort((a, b) => (a.fecha_baja ? 1 : 0) - (b.fecha_baja ? 1 : 0));
 
             filtrados.forEach(jugador => {
@@ -490,7 +603,6 @@
             });
         }
 
-        // NUEVA FUNCIÓN: VER INACTIVOS
         function verInactivos() {
             document.getElementById('vista-inactivos').style.display = 'block';
             document.getElementById('titulo-pantalla').innerText = 'Jugadores Inactivos';
@@ -500,7 +612,6 @@
             const tabla = document.getElementById('lista-inactivos');
             tabla.innerHTML = '';
 
-            // Solo mostramos los que tienen fecha de baja 
             const inactivos = todosLosJugadores.filter(j => j.fecha_baja !== null);
 
             if (inactivos.length === 0) {
@@ -592,7 +703,6 @@
             const selectMes = document.getElementById('filtro-mes');
             const mesSeleccionado = selectMes ? selectMes.value : 'Todos';
 
-            // FILTRAMOS CON LA NUEVA LÓGICA TEMPORAL
             const jugadoresFiltrados = todosLosJugadores.filter(j => {
                 const ramaJugador = j.rama || 'Masculino'; 
                 const pasaRama = (!selectRama || ramaSeleccionada === 'Todos' || ramaSeleccionada === '') ? true : (ramaJugador === ramaSeleccionada);
@@ -636,7 +746,6 @@
                 if (cardEgresos) cardEgresos.innerText = `$${sumaEgresos.toLocaleString('es-AR')}`;
             }
 
-            // GRÁFICOS
             let masc = 0, fem = 0;
             jugadoresFiltrados.forEach(j => {
                 if (j.rama === 'Femenino') fem++;

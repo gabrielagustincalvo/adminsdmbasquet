@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tesorería - Gestión Club 🏀</title>
+    <link rel="icon" type="image/png" href="assets/Club_Sol_de_Mayo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
@@ -266,6 +267,7 @@
         // VARIABLES GLOBALES PARA MANEJAR DATOS Y FILTROS
         let pagosCargadosDesdeBackend = []; 
         let pagosActualesExportar = [];     
+        let buscadorJugadores = null; // NUEVO: Global para poder modificar el buscador desde otros botones
 
         // 1. SEGURIDAD BLINDADA (ROLES)
         if (!sessionStorage.getItem('usuarioLogueado')) {
@@ -290,7 +292,7 @@
 
                 const select = document.getElementById('p-jugador');
 
-                const buscador = new Choices(select, {
+                buscadorJugadores = new Choices(select, {
                     searchEnabled: true,
                     searchPlaceholderValue: '🔍 Buscar apellido...',
                     itemSelectText: 'Seleccionar',
@@ -308,7 +310,7 @@
                     }))
                 ];
 
-                buscador.setChoices(opciones, 'value', 'label', true);
+                buscadorJugadores.setChoices(opciones, 'value', 'label', true);
                 select.addEventListener('change', cargarHistorial);
 
             } catch (error) {
@@ -749,7 +751,6 @@
 
             const tabla = document.getElementById('tabla-historial');
             
-            // Limpiamos botón de notificar masivo si ya existía de una búsqueda anterior
             const btnPrevio = document.getElementById('contenedor-boton-notificar');
             if (btnPrevio) btnPrevio.remove();
 
@@ -796,7 +797,6 @@
                     tabla.innerHTML += fila;
                 });
 
-                // AGREGAR BOTÓN DE NOTIFICAR MASIVO AL FINAL DE LA CARD
                 const btnMasivoHTML = `
                     <div id="contenedor-boton-notificar" class="p-3 bg-light border-top text-end" style="border-radius: 0 0 15px 15px;">
                         <button class="btn btn-primary fw-bold shadow-sm" onclick='enviarRecordatoriosMasivos(${JSON.stringify(deudores)}, "${mesFiltro}")'>
@@ -812,18 +812,15 @@
             }
         }
 
-        // Variable para manejar la "cola" de mensajes paso a paso (jugadores + contactos)
         let estadoEnvioMasivo = { envios: [], idLote: "", index: 0 };
 
         function enviarRecordatoriosMasivos(deudores, mes) {
             const loteActual = mes + "_" + deudores.length;
 
-            // 1. Si es la primera vez que tocamos el botón, armamos la cola de mensajes
             if (estadoEnvioMasivo.idLote !== loteActual) {
                 let nuevaCola = [];
                 
                 deudores.forEach(deudor => {
-                    // Mensaje para el JUGADOR (Usando la columna 'telefono')
                     if (deudor.telefono) {
                         nuevaCola.push({
                             deudor: deudor,
@@ -833,7 +830,6 @@
                         });
                     }
 
-                    // Mensaje para el CONTACTO DE EMERGENCIA (Usando las columnas de tu BD)
                     if (deudor.contacto_emergencia_tel) {
                         const nombreContacto = deudor.contacto_emergencia_nombre || "Contacto";
                         nuevaCola.push({
@@ -850,52 +846,63 @@
                     return;
                 }
 
-                // Guardamos la cola generada y confirmamos el inicio
                 if (!confirm(`Se generaron ${nuevaCola.length} avisos (entre jugadores y contactos de emergencia).\n\nLos chats se abrirán uno por uno con cada clic para evitar bloqueos del navegador.`)) return;
                 
                 estadoEnvioMasivo = { envios: nuevaCola, idLote: loteActual, index: 0 };
             }
 
-            // Si ya terminamos de enviar todos, no hacemos nada
             if (estadoEnvioMasivo.index >= estadoEnvioMasivo.envios.length) return;
 
-            // 2. Sacamos el envío que toca ahora de la cola
             const envioActual = estadoEnvioMasivo.envios[estadoEnvioMasivo.index];
             
-            // Abrimos WhatsApp con el teléfono y el texto correspondiente
             const url = `https://api.whatsapp.com/send?phone=${envioActual.telefono}&text=${encodeURIComponent(envioActual.mensaje)}`;
             window.open(url, '_blank');
 
-            // 3. Sumamos 1 para que el próximo clic abra el que sigue
             estadoEnvioMasivo.index++;
             
-            // 4. Actualizamos el botón para que te guíe
             actualizarBotonEnvio();
         }
 
-        // Función que cambia el color y texto del botón
         function actualizarBotonEnvio() {
             const btn = document.querySelector('#contenedor-boton-notificar button');
             if (!btn) return;
 
             if (estadoEnvioMasivo.index < estadoEnvioMasivo.envios.length) {
-                // Faltan mensajes: se pone amarillo y te dice a quién le toca
                 const proximo = estadoEnvioMasivo.envios[estadoEnvioMasivo.index];
                 btn.innerHTML = `<i class="bi bi-whatsapp"></i> Enviar al siguiente (${estadoEnvioMasivo.index + 1}/${estadoEnvioMasivo.envios.length}) - ${proximo.deudor.apellido} (${proximo.tipo})`;
                 btn.classList.remove('btn-primary');
                 btn.classList.add('btn-warning', 'text-dark');
             } else {
-                // Terminamos: se pone verde y avisa
                 btn.innerHTML = `<i class="bi bi-check-circle-fill"></i> ¡Todos los avisos enviados!`;
                 btn.classList.remove('btn-warning', 'text-dark', 'btn-primary');
                 btn.classList.add('btn-success');
-                btn.disabled = true; // Bloquea el botón para no repetir
+                btn.disabled = true; 
             }
         }
 
+        // ====================================================================
+        // NUEVA LÓGICA: PREPARAR COBRO AUTOMATIZADO
+        // ====================================================================
         function prepararCobro(id, mes) {
+            // 1. Subir suavemente la pantalla al formulario
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            alert("📌 Seleccioná al jugador en la lista de arriba para completar el cobro de " + mes);
+
+            // 2. Seleccionar el jugador automáticamente en el buscador de la izquierda (Choices.js)
+            if (buscadorJugadores) {
+                buscadorJugadores.setChoiceByValue(String(id));
+                
+                // Disparamos el evento 'change' manualmente. Esto hará que la tabla de la derecha
+                // deje de mostrar deudores y pase a mostrar el historial personal del jugador.
+                document.getElementById('p-jugador').dispatchEvent(new Event('change'));
+            }
+
+            // 3. Seleccionar el mes adeudado automáticamente
+            document.getElementById('p-mes').value = mes;
+
+            // 4. Poner el cursor titilando en la casilla de monto (con un leve retraso para que termine el scroll)
+            setTimeout(() => {
+                document.getElementById('p-monto').focus();
+            }, 500);
         }
 
         // Iniciar todo al entrar a la página
