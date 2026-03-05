@@ -158,6 +158,9 @@
                             <button onclick="exportarAExcel()" class="btn btn-success btn-sm shadow-sm fw-bold" title="Descargar como Excel">
                                 <i class="bi bi-file-earmark-excel-fill"></i> Exportar
                             </button>
+                            <button onclick="verDeudores()" class="btn btn-outline-danger btn-sm shadow-sm fw-bold" title="Ver quienes no pagaron">
+                                <i class="bi bi-person-exclamation"></i> Ver Deudas
+                            </button>
                             <span class="badge bg-light text-dark shadow-sm" style="cursor: pointer; padding: 0.5em 0.8em;" onclick="document.getElementById('p-jugador').closest('.choices').querySelector('.choices__item').click();">
                                 <i class="bi bi-arrow-clockwise"></i> Ver Todos
                             </span>
@@ -260,6 +263,7 @@
     </div>
 
     <script>
+        // VARIABLES GLOBALES PARA MANEJAR DATOS Y FILTROS
         let pagosCargadosDesdeBackend = []; 
         let pagosActualesExportar = [];     
 
@@ -316,6 +320,11 @@
         async function cargarHistorial() {
             const jugador_id = document.getElementById('p-jugador').value;
             const tabla = document.getElementById('tabla-historial');
+            
+            // Eliminamos cualquier botón de notificación previo para limpiar la vista
+            const btnPrevio = document.getElementById('contenedor-boton-notificar');
+            if (btnPrevio) btnPrevio.remove();
+
             tabla.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-success"></div></td></tr>';
 
             try {
@@ -324,10 +333,7 @@
                 const respuesta = await fetch(urlFetch);
                 pagosCargadosDesdeBackend = await respuesta.json();
 
-                // Cada vez que cambiamos de jugador, reiniciamos el filtro visual de mes
                 document.getElementById('filtro-mes').value = "";
-
-                // Llamamos a la función que pinta la tabla y ahora TAMBIÉN calcula las tarjetas
                 renderizarTabla();
 
             } catch (error) {
@@ -344,24 +350,18 @@
             const tabla = document.getElementById('tabla-historial');
             const mesFiltro = document.getElementById('filtro-mes').value;
 
-            // 1. Aplicamos el filtro de mes
             let pagosFiltrados = pagosCargadosDesdeBackend;
             if (mesFiltro !== "") {
                 pagosFiltrados = pagosCargadosDesdeBackend.filter(pago => pago.mes_correspondiente === mesFiltro);
             }
             pagosActualesExportar = pagosFiltrados;
 
-            // -----------------------------------------------------------
-            // LA MAGIA DE LAS TARJETAS: Calculamos los totales en base a lo filtrado
-            // -----------------------------------------------------------
             const cantidadTotal = pagosFiltrados.length;
             const montoTotal = pagosFiltrados.reduce((suma, pago) => suma + Number(pago.monto), 0);
 
-            // Actualizamos los números en las tarjetas
             document.getElementById('stat-cuotas').innerText = cantidadTotal;
             document.getElementById('stat-recaudacion').innerText = `$ ${montoTotal.toLocaleString('es-AR')}`;
 
-            // Actualizamos los títulos para que el usuario sepa si está viendo todo o algo filtrado
             if (jugador_id !== "" || mesFiltro !== "") {
                 document.getElementById('titulo-cuotas').innerText = 'Cuotas (Filtradas)';
                 document.getElementById('titulo-recaudacion').innerText = 'Recaudación (Filtrada)';
@@ -369,9 +369,7 @@
                 document.getElementById('titulo-cuotas').innerText = 'Total Cuotas Cobradas';
                 document.getElementById('titulo-recaudacion').innerText = 'Recaudación Global';
             }
-            // -----------------------------------------------------------
 
-            // 2. Dibujamos la tabla
             if (pagosFiltrados.length === 0) {
                 tabla.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4 fw-bold">No hay pagos que coincidan con este filtro.</td></tr>';
                 return;
@@ -528,11 +526,8 @@
 
                 if (respuesta.ok) {
                     alert(`✅ ¡Pago registrado con éxito!`);
-                    
                     document.getElementById('p-monto').value = '';
                     document.getElementById('p-observaciones').value = '';
-                    
-                    // Solo recargamos el historial, la tabla se encarga del resto
                     cargarHistorial(); 
                 } else {
                     alert('❌ Ocurrió un error al guardar el pago en la base de datos.');
@@ -556,28 +551,21 @@
                     <title>Recibo_${nombreJugador.replace(/ /g, '_')}_${mes}</title>
                     <style>
                         body { font-family: Arial, sans-serif; background: #f8f9fa; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
-                        
                         .recibo-box { 
                             background: white; border: 2px solid #198754; border-radius: 12px; 
                             width: 17cm; height: 9.5cm; 
                             padding: 15px 25px; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
                             position: relative; overflow: hidden;
                         }
-                        
                         .header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 8px; margin-bottom: 10px; }
                         .header h2 { margin: 0; color: #198754; font-size: 22px; }
                         .header p { margin: 2px 0 0 0; font-size: 12px; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 1px; }
-                        
                         .detalle { font-size: 14px; line-height: 1.5; margin-top: 5px; }
                         .detalle table { width: 100%; border-collapse: collapse; }
                         .detalle td { padding: 3px 0; border-bottom: 1px solid #f0f0f0; }
-                        
                         .monto { font-size: 24px; text-align: center; background: #e8f5e9; padding: 8px; border-radius: 8px; color: #198754; font-weight: bold; margin: 12px 0; border: 1px solid #c8e6c9;}
-                        
                         .footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 8px; position: absolute; bottom: 12px; left: 25px; right: 25px; }
-                        
                         .instrucciones { text-align: center; margin-top: 20px; padding: 15px; background: #fff3cd; color: #0f5132; border-radius: 8px; font-weight: bold; border: 1px solid #ffe69c; width: 17cm; box-sizing: border-box; }
-                        
                         @media print {
                             @page { size: A4 portrait; margin: 1cm; }
                             body { background: white; padding: 0; display: block; }
@@ -606,12 +594,10 @@
                             Este documento es un comprobante válido de pago.
                         </div>
                     </div>
-
                     <div class="instrucciones">
                         <p style="margin:0; font-size:18px;">📄 Paso 1: Elegí "Guardar como PDF" y guardalo.</p>
                         <p style="margin:5px 0 0 0; font-weight:normal;">Paso 2: Esta pestaña se redirigirá automáticamente a WhatsApp para que lo envíes.</p>
                     </div>
-
                     <script>
                         window.onload = function() { 
                             setTimeout(function() {
@@ -638,26 +624,20 @@
                     <title>Recibo - Sol de Mayo</title>
                     <style>
                         body { font-family: Arial, sans-serif; background: #f8f9fa; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
-                        
                         .recibo-box { 
                             background: white; border: 2px solid #198754; border-radius: 12px; 
                             width: 17cm; height: 9.5cm; 
                             padding: 15px 25px; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
                             position: relative; overflow: hidden;
                         }
-                        
                         .header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 8px; margin-bottom: 10px; }
                         .header h2 { margin: 0; color: #198754; font-size: 22px; }
                         .header p { margin: 2px 0 0 0; font-size: 12px; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 1px; }
-                        
                         .detalle { font-size: 14px; line-height: 1.5; margin-top: 5px; }
                         .detalle table { width: 100%; border-collapse: collapse; }
                         .detalle td { padding: 3px 0; border-bottom: 1px solid #f0f0f0; }
-                        
                         .monto { font-size: 24px; text-align: center; background: #e8f5e9; padding: 8px; border-radius: 8px; color: #198754; font-weight: bold; margin: 12px 0; border: 1px solid #c8e6c9;}
-                        
                         .footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 8px; position: absolute; bottom: 12px; left: 25px; right: 25px; }
-                        
                         @media print {
                             @page { size: A4 portrait; margin: 1cm; }
                             body { background: white; padding: 0; display: block; }
@@ -699,14 +679,11 @@
         function abrirModalEditar(id, mes, fechaIso, monto, metodo, observaciones) {
             document.getElementById('edit-pago-id').value = id;
             document.getElementById('edit-mes').value = mes;
-            
             const fechaOk = new Date(fechaIso).toISOString().split('T')[0];
             document.getElementById('edit-fecha').value = fechaOk;
-            
             document.getElementById('edit-monto').value = monto;
             document.getElementById('edit-metodo').value = metodo;
             document.getElementById('edit-observaciones').value = observaciones;
-
             const modal = new bootstrap.Modal(document.getElementById('modalEditarPago'));
             modal.show();
         }
@@ -715,7 +692,6 @@
         document.getElementById('form-editar-pago').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('edit-pago-id').value;
-
             const pagoActualizado = {
                 mes_correspondiente: document.getElementById('edit-mes').value,
                 fecha_pago: document.getElementById('edit-fecha').value,
@@ -723,18 +699,16 @@
                 metodo: document.getElementById('edit-metodo').value,
                 observaciones: document.getElementById('edit-observaciones').value
             };
-
             try {
                 const respuesta = await fetch(`http://localhost:3000/pagos/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(pagoActualizado)
                 });
-
                 if (respuesta.ok) {
                     alert('✅ Pago actualizado correctamente.');
                     bootstrap.Modal.getInstance(document.getElementById('modalEditarPago')).hide();
-                    cargarHistorial(); // Actualiza la tabla y las tarjetas
+                    cargarHistorial(); 
                 } else {
                     alert('❌ Error al actualizar el pago.');
                 }
@@ -747,15 +721,13 @@
         async function eliminarPago(id) {
             const confirmacion = confirm('⚠️ ATENCIÓN: ¿Estás seguro de que querés ANULAR este pago? Esta acción restará el dinero de la recaudación total.');
             if (!confirmacion) return;
-
             try {
                 const respuesta = await fetch(`http://localhost:3000/pagos/${id}`, {
                     method: 'DELETE'
                 });
-
                 if (respuesta.ok) {
                     alert('🗑️ Pago anulado correctamente.');
-                    cargarHistorial(); // Actualiza la tabla y las tarjetas
+                    cargarHistorial(); 
                 } else {
                     alert('❌ Hubo un error al intentar anular el pago.');
                 }
@@ -764,9 +736,170 @@
             }
         }
 
+        // ====================================================================
+        // GESTIÓN DE DEUDAS Y NOTIFICACIONES MASIVAS (DÍA 10)
+        // ====================================================================
+        async function verDeudores() {
+            const mesFiltro = document.getElementById('filtro-mes').value;
+            
+            if (mesFiltro === "") {
+                alert("⚠️ Por favor, selecciona un MES específico para ver quiénes adeudan esa cuota.");
+                return;
+            }
+
+            const tabla = document.getElementById('tabla-historial');
+            
+            // Limpiamos botón de notificar masivo si ya existía de una búsqueda anterior
+            const btnPrevio = document.getElementById('contenedor-boton-notificar');
+            if (btnPrevio) btnPrevio.remove();
+
+            tabla.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-danger"></div> Buscando deudores...</td></tr>';
+
+            try {
+                const resJug = await fetch('http://localhost:3000/jugadores');
+                const todosLosJugadores = await resJug.json();
+
+                const resPagos = await fetch('http://localhost:3000/pagos-todos');
+                const todosLosPagos = await resPagos.json();
+                const pagosDelMes = todosLosPagos.filter(p => p.mes_correspondiente === mesFiltro);
+
+                const deudores = todosLosJugadores.filter(jugador => {
+                    return !pagosDelMes.some(pago => Number(pago.jugador_id) === Number(jugador.id));
+                });
+
+                document.getElementById('stat-cuotas').innerText = deudores.length;
+                document.getElementById('titulo-cuotas').innerText = `Deudores de ${mesFiltro}`;
+                document.getElementById('stat-recaudacion').innerText = "---";
+                document.getElementById('titulo-recaudacion').innerText = "Pendiente de Cobro";
+
+                if (deudores.length === 0) {
+                    tabla.innerHTML = `<tr><td colspan="6" class="text-center text-success py-4 fw-bold">¡Excelente! Todos los jugadores están al día con ${mesFiltro}.</td></tr>`;
+                    return;
+                }
+
+                tabla.innerHTML = '';
+                deudores.forEach(deudor => {
+                    const fila = `
+                        <tr class="table-danger">
+                            <td class="ps-3 fw-bold text-dark small">${deudor.apellido}, ${deudor.nombre}</td>
+                            <td class="fw-bold text-danger">${mesFiltro}</td>
+                            <td class="text-muted small">PENDIENTE</td>
+                            <td class="fw-bold text-muted">$ --.---</td>
+                            <td><span class="badge bg-danger">IMPAGO</span></td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-success fw-bold" onclick="prepararCobro(${deudor.id}, '${mesFiltro}')">
+                                    <i class="bi bi-cash"></i> Cobrar ahora
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tabla.innerHTML += fila;
+                });
+
+                // AGREGAR BOTÓN DE NOTIFICAR MASIVO AL FINAL DE LA CARD
+                const btnMasivoHTML = `
+                    <div id="contenedor-boton-notificar" class="p-3 bg-light border-top text-end" style="border-radius: 0 0 15px 15px;">
+                        <button class="btn btn-primary fw-bold shadow-sm" onclick='enviarRecordatoriosMasivos(${JSON.stringify(deudores)}, "${mesFiltro}")'>
+                            <i class="bi bi-whatsapp"></i> Notificar a los ${deudores.length} deudores (Plazo Vencido)
+                        </button>
+                    </div>
+                `;
+                tabla.closest('.card').insertAdjacentHTML('beforeend', btnMasivoHTML);
+
+            } catch (error) {
+                console.error('Error al gestionar deudas:', error);
+                alert("❌ Error al conectar con el servidor para calcular deudas.");
+            }
+        }
+
+        // Variable para manejar la "cola" de mensajes paso a paso (jugadores + contactos)
+        let estadoEnvioMasivo = { envios: [], idLote: "", index: 0 };
+
+        function enviarRecordatoriosMasivos(deudores, mes) {
+            const loteActual = mes + "_" + deudores.length;
+
+            // 1. Si es la primera vez que tocamos el botón, armamos la cola de mensajes
+            if (estadoEnvioMasivo.idLote !== loteActual) {
+                let nuevaCola = [];
+                
+                deudores.forEach(deudor => {
+                    // Mensaje para el JUGADOR (Usando la columna 'telefono')
+                    if (deudor.telefono) {
+                        nuevaCola.push({
+                            deudor: deudor,
+                            telefono: deudor.telefono,
+                            tipo: "Jugador",
+                            mensaje: `Hola ${deudor.nombre}! Te saludamos del Club Atlético Sol de Mayo 🏀. Te recordamos que el día 10 venció el plazo para abonar la cuota de ${mes}. Si ya realizaste el pago, por favor envianos el comprobante. ¡Muchas gracias por acompañar al club!`
+                        });
+                    }
+
+                    // Mensaje para el CONTACTO DE EMERGENCIA (Usando las columnas de tu BD)
+                    if (deudor.contacto_emergencia_tel) {
+                        const nombreContacto = deudor.contacto_emergencia_nombre || "Contacto";
+                        nuevaCola.push({
+                            deudor: deudor,
+                            telefono: deudor.contacto_emergencia_tel,
+                            tipo: `Contacto: ${nombreContacto}`,
+                            mensaje: `Hola ${nombreContacto}! Te escribimos del Club Atlético Sol de Mayo 🏀. Nos comunicamos con vos como contacto de ${deudor.nombre} ${deudor.apellido}. Te recordamos que el día 10 venció el plazo para abonar su cuota de ${mes}. Si ya realizaron el pago, por favor envíennos el comprobante. ¡Muchas gracias!`
+                        });
+                    }
+                });
+
+                if (nuevaCola.length === 0) {
+                    alert("⚠️ Ninguno de los deudores en esta lista tiene un teléfono o contacto de emergencia registrado.");
+                    return;
+                }
+
+                // Guardamos la cola generada y confirmamos el inicio
+                if (!confirm(`Se generaron ${nuevaCola.length} avisos (entre jugadores y contactos de emergencia).\n\nLos chats se abrirán uno por uno con cada clic para evitar bloqueos del navegador.`)) return;
+                
+                estadoEnvioMasivo = { envios: nuevaCola, idLote: loteActual, index: 0 };
+            }
+
+            // Si ya terminamos de enviar todos, no hacemos nada
+            if (estadoEnvioMasivo.index >= estadoEnvioMasivo.envios.length) return;
+
+            // 2. Sacamos el envío que toca ahora de la cola
+            const envioActual = estadoEnvioMasivo.envios[estadoEnvioMasivo.index];
+            
+            // Abrimos WhatsApp con el teléfono y el texto correspondiente
+            const url = `https://api.whatsapp.com/send?phone=${envioActual.telefono}&text=${encodeURIComponent(envioActual.mensaje)}`;
+            window.open(url, '_blank');
+
+            // 3. Sumamos 1 para que el próximo clic abra el que sigue
+            estadoEnvioMasivo.index++;
+            
+            // 4. Actualizamos el botón para que te guíe
+            actualizarBotonEnvio();
+        }
+
+        // Función que cambia el color y texto del botón
+        function actualizarBotonEnvio() {
+            const btn = document.querySelector('#contenedor-boton-notificar button');
+            if (!btn) return;
+
+            if (estadoEnvioMasivo.index < estadoEnvioMasivo.envios.length) {
+                // Faltan mensajes: se pone amarillo y te dice a quién le toca
+                const proximo = estadoEnvioMasivo.envios[estadoEnvioMasivo.index];
+                btn.innerHTML = `<i class="bi bi-whatsapp"></i> Enviar al siguiente (${estadoEnvioMasivo.index + 1}/${estadoEnvioMasivo.envios.length}) - ${proximo.deudor.apellido} (${proximo.tipo})`;
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-warning', 'text-dark');
+            } else {
+                // Terminamos: se pone verde y avisa
+                btn.innerHTML = `<i class="bi bi-check-circle-fill"></i> ¡Todos los avisos enviados!`;
+                btn.classList.remove('btn-warning', 'text-dark', 'btn-primary');
+                btn.classList.add('btn-success');
+                btn.disabled = true; // Bloquea el botón para no repetir
+            }
+        }
+
+        function prepararCobro(id, mes) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            alert("📌 Seleccioná al jugador en la lista de arriba para completar el cobro de " + mes);
+        }
+
         // Iniciar todo al entrar a la página
         cargarJugadoresSelect();
-        // Llamamos directamente al historial, que ahora se encarga de todo (incluso las tarjetas)
         cargarHistorial(); 
     </script>
 </body>

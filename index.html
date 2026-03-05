@@ -14,20 +14,17 @@
 
         /* Ajuste responsivo para los botones del menú */
         @media (max-width: 768px) {
-            .botonera-mobile {
-                width: 100%;
-                margin-top: 10px;
-            }
+            .botonera-mobile { width: 100%; margin-top: 10px; }
             .btn-responsivo {
-                flex: 1 1 45% !important; /* Magia: ocupan mitad y mitad. Si queda uno solo en la fila, se estira al 100% */
-                margin: 0 !important; /* Borra los márgenes de PC */
+                flex: 1 1 45% !important; 
+                margin: 0 !important; 
                 text-align: center;
                 font-size: 0.85rem;
                 padding: 0.4rem 0.2rem;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                gap: 5px; /* Separación entre el ícono y el texto */
+                gap: 5px; 
             }
         }
     </style>
@@ -57,6 +54,22 @@
                     <option value="Femenino">Femenino 🟣</option>
                     <option value="Masculino">Masculino 🔵</option>
                 </select>
+
+                <select id="filtro-mes" class="form-select bg-success text-white fw-bold border-0 shadow-sm w-auto" onchange="cargarDashboard(); procesarHash();">
+                    <option value="Todos">📅 Histórico (Todo)</option>
+                    <option value="Enero">Enero</option>
+                    <option value="Febrero">Febrero</option>
+                    <option value="Marzo">Marzo</option>
+                    <option value="Abril">Abril</option>
+                    <option value="Mayo">Mayo</option>
+                    <option value="Junio">Junio</option>
+                    <option value="Julio">Julio</option>
+                    <option value="Agosto">Agosto</option>
+                    <option value="Septiembre">Septiembre</option>
+                    <option value="Octubre">Octubre</option>
+                    <option value="Noviembre">Noviembre</option>
+                    <option value="Diciembre">Diciembre</option>
+                </select>
             </div>
             
             <div class="d-flex flex-wrap justify-content-center justify-content-lg-end gap-2 botonera-mobile">
@@ -69,53 +82,71 @@
                 <a href="registro.html" id="btn-crear-usuario" class="btn btn-warning shadow-sm text-dark fw-bold btn-responsivo">
                     <i class="bi bi-person-badge"></i> Nuevo Empleado
                 </a>
-                <a href="pagos.html" id="btn-tesoreria" class="btn btn-success shadow-sm fw-bold btn-responsivo" style="background-color: #198754;">
-                    <i class="bi bi-cash-coin"></i> Tesorería
+                
+                <a href="pagos.html" class="btn-tesoreria btn btn-success shadow-sm fw-bold btn-responsivo" style="background-color: #198754;">
+                    <i class="bi bi-box-arrow-in-right"></i> Ingresos
                 </a>
+                <a href="egresos.html" class="btn-tesoreria btn btn-danger shadow-sm fw-bold btn-responsivo">
+                    <i class="bi bi-box-arrow-right"></i> Egresos
+                </a>
+
+                <button onclick="window.location.hash = '#inactivos'" class="btn btn-secondary shadow-sm fw-bold btn-responsivo">
+                    <i class="bi bi-person-x-fill"></i> Ver Inactivos
+                </button>
 
                 <button onclick="window.location.hash = '#staff'" class="btn btn-info shadow-sm text-dark fw-bold btn-responsivo">
                     <i class="bi bi-person-lines-fill"></i> Staff
                 </button>
-
             </div>
-
         </div>
 
         <div id="vista-dashboard" class="mb-5">
             <h4 class="mb-4 fw-bold text-secondary"><i class="bi bi-graph-up-arrow"></i> Radiografía del Club</h4>
             
             <div class="row g-3 mb-4">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card bg-primary text-white border-0 shadow-sm h-100" style="border-radius: 15px;">
                         <div class="card-body d-flex align-items-center">
                             <i class="bi bi-people-fill fs-1 me-3 opacity-50"></i>
                             <div>
-                                <h6 class="card-title text-uppercase fw-bold mb-0">Total Jugadores</h6>
-                                <h2 class="display-5 fw-bold mb-0" id="dash-jugadores">0</h2>
+                                <h6 class="card-title text-uppercase fw-bold mb-0">Jugadores</h6>
+                                <h2 class="display-6 fw-bold mb-0" id="dash-jugadores">0</h2>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="col-md-4" id="tarjeta-recaudacion">
+                <div class="col-md-3" id="tarjeta-recaudacion">
                     <div class="card bg-success text-white border-0 shadow-sm h-100" style="border-radius: 15px;">
                         <div class="card-body d-flex align-items-center">
                             <i class="bi bi-piggy-bank-fill fs-1 me-3 opacity-50"></i>
                             <div>
-                                <h6 class="card-title text-uppercase fw-bold mb-0">Recaudación</h6>
-                                <h2 class="display-6 fw-bold mb-0" id="dash-recaudacion">$0</h2>
+                                <h6 class="card-title text-uppercase fw-bold mb-0">Ingresos</h6>
+                                <h3 class="fw-bold mb-0" id="dash-recaudacion">$0</h3>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-3" id="tarjeta-egresos">
+                    <div class="card bg-danger text-white border-0 shadow-sm h-100" style="border-radius: 15px;">
+                        <div class="card-body d-flex align-items-center">
+                            <i class="bi bi-tags-fill fs-1 me-3 opacity-50"></i>
+                            <div>
+                                <h6 class="card-title text-uppercase fw-bold mb-0">Egresos</h6>
+                                <h3 class="fw-bold mb-0" id="dash-egresos">$0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
                     <div class="card bg-dark text-white border-0 shadow-sm h-100" style="border-radius: 15px;">
                         <div class="card-body d-flex align-items-center">
                             <i class="bi bi-person-badge-fill fs-1 me-3 opacity-50"></i>
                             <div>
-                                <h6 class="card-title text-uppercase fw-bold mb-0">Staff Técnico</h6>
-                                <h2 class="display-5 fw-bold mb-0" id="dash-staff">0</h2>
+                                <h6 class="card-title text-uppercase fw-bold mb-0">Staff</h6>
+                                <h2 class="display-6 fw-bold mb-0" id="dash-staff">0</h2>
                             </div>
                         </div>
                     </div>
@@ -161,8 +192,7 @@
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="lista-jugadores">
-                            </tbody>
+                        <tbody id="lista-jugadores"></tbody>
                     </table>
                 </div>
             </div>
@@ -184,16 +214,41 @@
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="lista-staff">
-                            </tbody>
+                        <tbody id="lista-staff"></tbody>
                     </table>
                 </div>
             </div>
         </div>
+
+        <div id="vista-inactivos" style="display: none;">
+            <button class="btn btn-secondary mb-3 shadow-sm" onclick="window.location.hash = '#categorias'">
+                <i class="bi bi-arrow-left"></i> Volver a Categorías
+            </button>
+            
+            <div class="card shadow-sm border-0 border-top border-danger border-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 text-danger fw-bold"><i class="bi bi-person-x"></i> Jugadores Inactivos (Bajas)</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Jugador</th>
+                                <th>Rama</th>
+                                <th>Fecha Baja</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-inactivos"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // 1. SEGURIDAD
+        // --- 1. SEGURIDAD ---
         const usuarioLogueado = sessionStorage.getItem('usuarioLogueado');
         if (!usuarioLogueado) window.location.href = 'login.html';
         else document.getElementById('usuario-nombre').innerText = usuarioLogueado;
@@ -206,8 +261,48 @@
 
         let todosLosJugadores = [];
         let todosLosEmpleados = [];
+        let todosLosPagos = [];
+        let todosLosEgresos = [];
 
-        // 2. LÓGICA DE CATEGORÍAS (Tus reglas exactas)
+        // ==========================================
+        // MOTOR TEMPORAL DEFINITIVO (EL CEREBRO DEL FILTRO)
+        // ==========================================
+        function esActivoEnElMes(persona, mesSeleccionado) {
+            if (mesSeleccionado === 'Todos') return true;
+
+            const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            const indiceMes = nombresMeses.indexOf(mesSeleccionado);
+            const anioActual = new Date().getFullYear();
+
+            // 1. ¿Se dio de baja ANTES o DURANTE este mes?
+            if (persona.fecha_baja) {
+                const baja = new Date(persona.fecha_baja);
+                baja.setMinutes(baja.getMinutes() + baja.getTimezoneOffset());
+                
+                if (baja.getFullYear() < anioActual || (baja.getFullYear() === anioActual && baja.getMonth() <= indiceMes)) {
+                    // SE FUE. ¿Pero REINGRESÓ a tiempo para que lo contemos en este mes?
+                    if (persona.fecha_reingreso) {
+                        const reingreso = new Date(persona.fecha_reingreso);
+                        reingreso.setMinutes(reingreso.getMinutes() + reingreso.getTimezoneOffset());
+                        if (reingreso.getFullYear() < anioActual || (reingreso.getFullYear() === anioActual && reingreso.getMonth() <= indiceMes)) {
+                            return true; // Volvió a tiempo
+                        }
+                    }
+                    return false; // Sigue dado de baja en este mes
+                }
+            }
+
+            // 2. Si pasó el filtro de baja, ¿ya estaba inscripto en este mes? (Alta original)
+            if (persona.fecha_alta) {
+                const alta = new Date(persona.fecha_alta);
+                alta.setMinutes(alta.getMinutes() + alta.getTimezoneOffset());
+                return (alta.getFullYear() < anioActual || (alta.getFullYear() === anioActual && alta.getMonth() <= indiceMes));
+            }
+
+            return true; // Jugador antiguo sin fecha de alta guardada
+        }
+
+        // --- 2. LÓGICA DE CATEGORÍAS ---
         function obtenerCategoria(fechaNacimiento) {
             if (!fechaNacimiento) return 'Sin Fecha';
             const anio = new Date(fechaNacimiento).getFullYear();
@@ -220,19 +315,32 @@
             if (anio === 2010 || anio === 2009) return 'Juveniles (U17)';
             if (anio >= 2005 && anio <= 2008) return 'Liga Próximo (U21)';
             if (anio <= 2004) return 'Primera';
-            return 'Otras'; // Por si anotas a alguien nacido en 2023 en adelante
+            return 'Otras'; 
         }
 
         // ==========================================
-        // MOTOR DE NAVEGACIÓN SEGURO (CON HASH #)
+        // SISTEMA DE NAVEGACIÓN
         // ==========================================
         window.addEventListener('hashchange', procesarHash);
 
         function procesarHash() {
             const hash = window.location.hash || '#categorias';
 
+            // Ocultamos TODAS las vistas por seguridad
+            document.getElementById('vista-categorias').style.display = 'none';
+            document.getElementById('vista-dashboard').style.display = 'none';
+            document.getElementById('vista-jugadores').style.display = 'none';
+            document.getElementById('vista-staff').style.display = 'none';
+            document.getElementById('vista-inactivos').style.display = 'none';
+
+            // Mostramos los filtros principales (algunas vistas los ocultan)
+            document.getElementById('filtro-rama').style.display = 'block'; 
+            document.getElementById('filtro-mes').style.display = 'block';
+
             if (hash === '#staff') {
                 verStaff();
+            } else if (hash === '#inactivos') {
+                verInactivos();
             } else if (hash.startsWith('#jugadores-')) {
                 const categoria = decodeURIComponent(hash.replace('#jugadores-', ''));
                 verJugadores(categoria);
@@ -241,45 +349,37 @@
             }
         }
 
-
-        // 4. DIBUJAR TARJETAS
+        // --- RENDERIZADO DE VISTAS ---
         function renderizarCategorias() {
-            document.getElementById('vista-jugadores').style.display = 'none';
-            document.getElementById('vista-staff').style.display = 'none';
             document.getElementById('vista-dashboard').style.display = 'block'; 
             document.getElementById('vista-categorias').style.display = 'flex';
-            
             document.getElementById('titulo-pantalla').innerText = 'Categorías';
-            document.getElementById('filtro-rama').style.display = 'block'; // Volvemos a mostrar el filtro
 
             const ramaFiltro = document.getElementById('filtro-rama').value;
+            const mesFiltro = document.getElementById('filtro-mes').value;
             const contenedor = document.getElementById('vista-categorias');
             contenedor.innerHTML = '';
 
             const agrupados = {};
 
-            // Filtramos y agrupamos
             todosLosJugadores.forEach(jugador => {
-                // Filtro por rama (si el jugador no tiene rama cargada, asumimos Masculino por defecto para que no desaparezca)
                 const ramaJugador = jugador.rama || 'Masculino'; 
                 if (ramaFiltro !== 'Todos' && ramaJugador !== ramaFiltro) return;
+                if (!esActivoEnElMes(jugador, mesFiltro)) return;
 
                 const cat = obtenerCategoria(jugador.fecha_nacimiento);
                 if (!agrupados[cat]) agrupados[cat] = [];
                 agrupados[cat].push(jugador);
             });
 
-            // Orden oficial para mostrar las tarjetas (de los más chicos a los más grandes)
             const ordenOficial = ['Escuelita', 'Pre Mini', 'Mini (U11)', 'Infantiles (U13)', 'Cadetes (U15)', 'Juveniles (U17)', 'Liga Próximo (U21)', 'Primera', 'Sin Fecha', 'Otras'];
-            
             const categoriasPresentes = Object.keys(agrupados).sort((a, b) => ordenOficial.indexOf(a) - ordenOficial.indexOf(b));
 
             if (categoriasPresentes.length === 0) {
-                contenedor.innerHTML = `<div class="col-12 text-center text-muted mt-5"><h4>No hay jugadores en esta rama.</h4></div>`;
+                contenedor.innerHTML = `<div class="col-12 text-center text-muted mt-5"><h4>No hay jugadores en esta categoría/mes.</h4></div>`;
                 return;
             }
 
-            // Dibujar las tarjetas
             categoriasPresentes.forEach(cat => {
                 const cantidad = agrupados[cat].length;
                 let colorBorde = cat === 'Primera' ? 'border-danger' : (cat.includes('U') ? 'border-warning' : 'border-success');
@@ -300,16 +400,12 @@
             });
         }
 
-        // 5. MOSTRAR TABLA DE UNA CATEGORÍA
         function verJugadores(categoriaSeleccionada) {
-            document.getElementById('vista-categorias').style.display = 'none';
-            document.getElementById('vista-dashboard').style.display = 'none';
-            document.getElementById('vista-staff').style.display = 'none';
             document.getElementById('vista-jugadores').style.display = 'block';
-            
-            document.getElementById('filtro-rama').style.display = 'block'; // Mostrar filtro
+            document.getElementById('filtro-mes').style.display = 'none'; // Ocultamos mes para no marear
             
             const ramaFiltro = document.getElementById('filtro-rama').value;
+            const mesFiltro = document.getElementById('filtro-mes').value;
             let textoRama = ramaFiltro === 'Todos' ? '' : ` (${ramaFiltro})`;
             document.getElementById('titulo-pantalla').innerText = `${categoriaSeleccionada}${textoRama}`;
 
@@ -319,18 +415,26 @@
             const filtrados = todosLosJugadores.filter(jugador => {
                 const ramaJugador = jugador.rama || 'Masculino';
                 const pasaFiltroRama = (ramaFiltro === 'Todos' || ramaJugador === ramaFiltro);
-                return pasaFiltroRama && obtenerCategoria(jugador.fecha_nacimiento) === categoriaSeleccionada;
+                const pasaTiempo = esActivoEnElMes(jugador, mesFiltro);
+                
+                return pasaFiltroRama && pasaTiempo && obtenerCategoria(jugador.fecha_nacimiento) === categoriaSeleccionada;
             });
+
+            // Si se seleccionó Histórico, mandamos los dados de baja al final de la lista
+            filtrados.sort((a, b) => (a.fecha_baja ? 1 : 0) - (b.fecha_baja ? 1 : 0));
 
             filtrados.forEach(jugador => {
                 const edad = jugador.fecha_nacimiento ? `${new Date().getFullYear() - new Date(jugador.fecha_nacimiento).getFullYear()} años` : '-';
                 const anioNac = jugador.fecha_nacimiento ? new Date(jugador.fecha_nacimiento).getFullYear() : '-';
-                const ramaColor = (jugador.rama === 'Femenino') ? 'bg-purple' : 'bg-primary'; // Podes agregar CSS para bg-purple
+                
+                const estaDeBaja = jugador.fecha_baja !== null;
+                const opacidad = estaDeBaja ? 'opacity-50' : '';
+                const cartelBaja = estaDeBaja ? '<span class="badge bg-danger ms-2">BAJA</span>' : '';
                 
                 const fila = `
-                    <tr>
+                    <tr class="${opacidad}">
                         <td>
-                            <div class="fw-bold">${jugador.nombre} ${jugador.apellido}</div>
+                            <div class="fw-bold">${jugador.nombre} ${jugador.apellido} ${cartelBaja}</div>
                             <div class="text-muted small">ID: #${jugador.id}</div>
                         </td>
                         <td>
@@ -351,20 +455,18 @@
         }
 
         function verStaff() {
-            // Ocultamos las otras vistas y mostramos la del staff
-            document.getElementById('vista-categorias').style.display = 'none';
-            document.getElementById('vista-dashboard').style.display = 'none';
-            document.getElementById('vista-jugadores').style.display = 'none';
             document.getElementById('vista-staff').style.display = 'block';
-            
             document.getElementById('titulo-pantalla').innerText = 'Directorio del Staff';
-            document.getElementById('filtro-rama').style.display = 'none'; // OCULTAMOS el filtro para ganar espacio
+            document.getElementById('filtro-rama').style.display = 'none'; 
+            document.getElementById('filtro-mes').style.display = 'none';
 
+            const mesFiltro = document.getElementById('filtro-mes').value;
             const tabla = document.getElementById('lista-staff');
             tabla.innerHTML = '';
 
-            todosLosEmpleados.forEach(emp => {
-                // Le damos un color distinto a la etiqueta según el rol
+            const filtrados = todosLosEmpleados.filter(emp => esActivoEnElMes(emp, mesFiltro));
+
+            filtrados.forEach(emp => {
                 let badgeClass = 'bg-info text-dark';
                 if (emp.rol === 'Admin Principal') badgeClass = 'bg-dark text-white';
                 if (emp.rol === 'Cuerpo Tecnico') badgeClass = 'bg-warning text-dark';
@@ -388,104 +490,153 @@
             });
         }
 
-        // --- 3. INICIALIZAR EL PANEL (Carga datos y cura la amnesia) ---
+        // NUEVA FUNCIÓN: VER INACTIVOS
+        function verInactivos() {
+            document.getElementById('vista-inactivos').style.display = 'block';
+            document.getElementById('titulo-pantalla').innerText = 'Jugadores Inactivos';
+            document.getElementById('filtro-rama').style.display = 'none'; 
+            document.getElementById('filtro-mes').style.display = 'none';
+
+            const tabla = document.getElementById('lista-inactivos');
+            tabla.innerHTML = '';
+
+            // Solo mostramos los que tienen fecha de baja 
+            const inactivos = todosLosJugadores.filter(j => j.fecha_baja !== null);
+
+            if (inactivos.length === 0) {
+                tabla.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted fw-bold">No hay jugadores inactivos actualmente.</td></tr>';
+                return;
+            }
+
+            inactivos.forEach(j => {
+                const fBS = new Date(j.fecha_baja);
+                fBS.setMinutes(fBS.getMinutes() + fBS.getTimezoneOffset());
+                
+                tabla.innerHTML += `
+                    <tr>
+                        <td>
+                            <div class="fw-bold">${j.nombre} ${j.apellido}</div>
+                            <div class="text-muted small">ID: #${j.id}</div>
+                        </td>
+                        <td><span class="badge ${j.rama === 'Femenino' ? 'bg-danger' : 'bg-primary'}">${j.rama || 'Masculino'}</span></td>
+                        <td class="text-danger fw-bold"><i class="bi bi-calendar-x"></i> ${fBS.toLocaleDateString('es-AR')}</td>
+                        <td>
+                            <a href="ficha.html?id=${j.id}" class="btn btn-outline-dark btn-sm">
+                                <i class="bi bi-person-vcard"></i> Ficha para Reactivar
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // --- 3. INICIALIZAR EL PANEL ---
         async function inicializarPanel() {
             try {
-                // 1. Traemos jugadores y staff al mismo tiempo
-                const resJug = await fetch('http://localhost:3000/jugadores');
-                todosLosJugadores = await resJug.json();
+                const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                const mesActual = nombresMeses[new Date().getMonth()];
+                document.getElementById('filtro-mes').value = mesActual;
 
-                const resEmp = await fetch('http://localhost:3000/empleados');
+                const [resJug, resEmp, resPagos, resEgresos] = await Promise.all([
+                    fetch('http://localhost:3000/jugadores'),
+                    fetch('http://localhost:3000/empleados'),
+                    fetch('http://localhost:3000/pagos-todos'),
+                    fetch('http://localhost:3000/egresos')
+                ]);
+
+                todosLosJugadores = await resJug.json();
                 todosLosEmpleados = await resEmp.json();
+                todosLosPagos = await resPagos.json();
+                todosLosEgresos = await resEgresos.json();
                 
                 cargarDashboard();
-
-                // Arrancamos el motor de Hash para saber dónde posicionarnos
                 procesarHash();
             } catch (error) {
                 console.error('Error al cargar datos:', error);
             }
         }
 
-        // Ejecutamos la carga inteligente al abrir la página
         inicializarPanel();
 
-        // --- LÓGICA DE PERMISOS (ROLES) ---
+        // --- LÓGICA DE PERMISOS ---
         const rolUsuario = sessionStorage.getItem('usuarioRol');
 
-        // NUEVO: Ocultamos el botón de Asistencia a los Administrativos
         if (rolUsuario === 'Administrativo') {
             const btnAsistencia = document.getElementById('btn-asistencia');
             if (btnAsistencia) btnAsistencia.style.display = 'none';
         }
 
-        // 1. Escondemos botón de Nuevo Empleado a CUALQUIERA que no sea el Jefe
         const btnCrearUsuario = document.getElementById('btn-crear-usuario');
         if (btnCrearUsuario && rolUsuario !== 'Admin Principal') {
             btnCrearUsuario.style.display = 'none';
         }
         
-        // Si es Cuerpo Técnico, le escondemos el resto de las herramientas administrativas
         if (rolUsuario === 'Cuerpo Tecnico') {
-            // 2. Escondemos botón de Alta de Jugadores
             const btnNuevoJugador = document.querySelector('a[href="alta.html"]');
             if (btnNuevoJugador) btnNuevoJugador.style.display = 'none';
 
-            // 3. Escondemos botón de Tesorería
-            const btnTesoreria = document.getElementById('btn-tesoreria');
-            if (btnTesoreria) btnTesoreria.style.display = 'none';
+            const botonesTesoreria = document.querySelectorAll('.btn-tesoreria');
+            botonesTesoreria.forEach(btn => btn.style.display = 'none');
         }
 
         // ==========================================
-        // LÓGICA DEL DASHBOARD DE ESTADÍSTICAS (DINÁMICO TOTAL)
+        // LÓGICA DEL DASHBOARD DE ESTADÍSTICAS 
         // ==========================================
         let chartRamas = null;
         let chartCategorias = null;
 
-        async function cargarDashboard() {
-            // 1. LEER EL FILTRO DE RAMA
+        function cargarDashboard() {
             const selectRama = document.getElementById('filtro-rama');
             const ramaSeleccionada = selectRama ? selectRama.value : 'Todos';
+            
+            const selectMes = document.getElementById('filtro-mes');
+            const mesSeleccionado = selectMes ? selectMes.value : 'Todos';
 
-            // Filtramos el arreglo de jugadores según lo que diga el select
+            // FILTRAMOS CON LA NUEVA LÓGICA TEMPORAL
             const jugadoresFiltrados = todosLosJugadores.filter(j => {
-                if (!selectRama || ramaSeleccionada === 'Todos' || ramaSeleccionada === '') return true;
                 const ramaJugador = j.rama || 'Masculino'; 
-                return ramaJugador === ramaSeleccionada;
+                const pasaRama = (!selectRama || ramaSeleccionada === 'Todos' || ramaSeleccionada === '') ? true : (ramaJugador === ramaSeleccionada);
+                return pasaRama && esActivoEnElMes(j, mesSeleccionado);
             });
 
-            // 2. MOSTRAR NÚMEROS EN LAS TARJETAS (Usamos la lista filtrada)
-            document.getElementById('dash-jugadores').innerText = jugadoresFiltrados.length;
-            document.getElementById('dash-staff').innerText = todosLosEmpleados.length;
+            const staffFiltrado = todosLosEmpleados.filter(emp => esActivoEnElMes(emp, mesSeleccionado));
 
-            // 3. RECAUDACIÓN DINÁMICA POR RAMA
+            document.getElementById('dash-jugadores').innerText = jugadoresFiltrados.length;
+            document.getElementById('dash-staff').innerText = staffFiltrado.length;
+
             const rolDash = sessionStorage.getItem('usuarioRol');
             if (rolDash === 'Cuerpo Tecnico') {
                 const tarjetaReca = document.getElementById('tarjeta-recaudacion');
                 if(tarjetaReca) tarjetaReca.style.display = 'none';
+                const tarjetaEgre = document.getElementById('tarjeta-egresos');
+                if(tarjetaEgre) tarjetaEgre.style.display = 'none';
             } else {
-                try {
-                    // Traemos la lista detallada de TODOS los pagos (no solo el total)
-                    const resPagos = await fetch('http://localhost:3000/pagos-todos');
-                    const todosLosPagos = await resPagos.json();
-                    
-                    // Armamos una lista rápida con los "ID" de los jugadores filtrados (Femenino o Masculino)
-                    const idsFiltrados = jugadoresFiltrados.map(j => j.id);
+                const idsFiltrados = jugadoresFiltrados.map(j => j.id);
+                let sumaIngresos = 0;
+                
+                todosLosPagos.forEach(pago => {
+                    const coincideRamaYTiempo = idsFiltrados.includes(pago.jugador_id);
+                    const coincideMes = mesSeleccionado === 'Todos' || pago.mes_correspondiente === mesSeleccionado;
+                    if (coincideRamaYTiempo && coincideMes) sumaIngresos += Number(pago.monto);
+                });
+                document.getElementById('dash-recaudacion').innerText = `$${sumaIngresos.toLocaleString('es-AR')}`;
 
-                    // Sumamos la plata SOLO si el jugador dueño de ese pago está en nuestra lista filtrada
-                    let sumaDinamica = 0;
-                    todosLosPagos.forEach(pago => {
-                        if (idsFiltrados.includes(pago.jugador_id)) {
-                            sumaDinamica += Number(pago.monto);
-                        }
-                    });
-
-                    // Mostramos la plata filtrada
-                    document.getElementById('dash-recaudacion').innerText = `$${sumaDinamica.toLocaleString('es-AR')}`;
-                } catch (e) { console.error("Error cargando pagos", e); }
+                let sumaEgresos = 0;
+                const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                
+                todosLosEgresos.forEach(egreso => {
+                    const fechaObj = new Date(egreso.fecha);
+                    fechaObj.setMinutes(fechaObj.getMinutes() + fechaObj.getTimezoneOffset());
+                    const mesEgresoStr = nombresMeses[fechaObj.getMonth()];
+                    const coincideMes = mesSeleccionado === 'Todos' || mesEgresoStr === mesSeleccionado;
+                    if (coincideMes) sumaEgresos += Number(egreso.monto);
+                });
+                
+                const cardEgresos = document.getElementById('dash-egresos');
+                if (cardEgresos) cardEgresos.innerText = `$${sumaEgresos.toLocaleString('es-AR')}`;
             }
 
-            // 4. GRÁFICO DE RAMAS (Torta)
+            // GRÁFICOS
             let masc = 0, fem = 0;
             jugadoresFiltrados.forEach(j => {
                 if (j.rama === 'Femenino') fem++;
@@ -499,18 +650,13 @@
                     labels: ['Masculino', 'Femenino'],
                     datasets: [{
                         data: [masc, fem],
-                        backgroundColor: ['#0d6efd', '#dc3545'], // Azul y Rojo
+                        backgroundColor: ['#0d6efd', '#dc3545'], 
                         borderWidth: 0
                     }]
                 },
-                options: { 
-                    maintainAspectRatio: false, 
-                    cutout: '70%', 
-                    plugins: { legend: { position: 'bottom' } } 
-                }
+                options: { maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
             });
 
-            // 5. GRÁFICO DE CATEGORÍAS (Barras)
             const conteoCat = {
                 'Escuelita': 0, 'Pre Mini': 0, 'Mini (U11)': 0, 
                 'Infantiles (U13)': 0, 'Cadetes (U15)': 0, 
@@ -528,34 +674,25 @@
                 data: {
                     labels: Object.keys(conteoCat),
                     datasets: [{
-                        label: 'Jugadores en esta categoría',
+                        label: 'Jugadores',
                         data: Object.values(conteoCat),
-                        backgroundColor: '#198754', // Verde del club
+                        backgroundColor: '#198754', 
                         borderRadius: 5
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } }, 
                     scales: { y: { beginAtZero: true, ticks: { stepSize: 5 } } }
                 }
             });
         }
 
-        // ==========================================
-        // FORZAR ACTUALIZACIÓN AL VOLVER ATRÁS
-        // ==========================================
         window.addEventListener('pageshow', function(event) {
-            const vieneDelHistorial = event.persisted || 
-                                     (typeof window.performance != 'undefined' && 
-                                      window.performance.navigation.type === 2);
-            
-            if (vieneDelHistorial) {
+            if (event.persisted || (typeof window.performance != 'undefined' && window.performance.navigation.type === 2)) {
                 window.location.reload(); 
             }
         });
-
     </script>
 </body>
 </html>

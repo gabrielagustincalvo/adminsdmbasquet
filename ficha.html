@@ -19,6 +19,7 @@
             .card { border: 2px solid #000 !important; box-shadow: none !important; page-break-inside: avoid; margin-bottom: 0 !important; }
             .solo-impresion { display: block !important; }
         }
+        .baja-style { background-color: #ffe6e6 !important; border: 2px dashed #dc3545 !important; }
     </style>
 </head>
 <body class="bg-light">
@@ -44,23 +45,23 @@
                         <p class="mb-0 text-muted">Club Atlético - Básquet</p>
                     </div>
 
-                    <div class="card shadow-sm border-0 mb-4">
-                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                    <div class="card shadow-sm border-0 mb-4" id="tarjeta-principal-ficha">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3" id="header-ficha">
                             <h5 class="mb-0"><i class="bi bi-person-vcard"></i> Ficha Personal</h5>
                             <span id="f-rama" class="badge bg-light text-primary fs-6 px-3 py-2 rounded-pill shadow-sm">...</span>
                         </div>
                         
                         <div class="d-flex justify-content-center align-items-center mb-4 gap-3 mt-3">
                             <h2 id="f-nombre-completo" class="fw-bold text-dark mb-0">Cargando...</h2>
-                            <button onclick="window.location.href='editar.html?id=' + idJugador" class="btn btn-outline-secondary btn-sm rounded-circle botonera-acciones" title="Editar Jugador">
+                            
+                            <button id="btn-editar-jugador" onclick="window.location.href='editar.html?id=' + idJugador" class="btn btn-outline-secondary btn-sm rounded-circle botonera-acciones" title="Editar Jugador">
                                 <i class="bi bi-pencil"></i>
                             </button>
-                            <button onclick="eliminarJugador()" class="btn btn-outline-danger btn-sm rounded-circle botonera-acciones" title="Eliminar Jugador">
-                                <i class="bi bi-trash3"></i>
-                            </button>
+                            
+                            <span id="contenedor-estado-jugador" class="botonera-acciones"></span>
                         </div>
                             
-                        <div class="row g-3 mb-4 px-3">
+                        <div class="row g-3 mb-2 px-3">
                             <div class="col-4">
                                 <div class="p-3 bg-light rounded border text-center">
                                     <small class="text-muted d-block text-uppercase fw-bold">DNI</small>
@@ -80,6 +81,9 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="row g-3 mb-4 px-3 justify-content-center" id="fechas-club-container">
+                            </div>
 
                         <h5 class="text-secondary border-bottom pb-2 mt-4 px-3"><i class="bi bi-telephone-fill text-danger"></i> Contacto de Emergencia</h5>
                         <div class="mb-4 p-3 mx-3 bg-light rounded border">
@@ -216,6 +220,48 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalBaja" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content border-warning">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-person-x-fill"></i> Dar de Baja al Jugador</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">El jugador dejará de aparecer en las listas actuales, pero su historial y pagos se conservarán intactos.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">¿En qué fecha real se dio de baja?</label>
+                        <input type="date" id="input-fecha-baja" class="form-control bg-light border-warning fw-bold text-dark" required>
+                    </div>
+                    <div class="d-grid mt-4">
+                        <button type="button" class="btn btn-warning fw-bold text-dark" onclick="confirmarBaja()">Confirmar Baja</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalReactivar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content border-success">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-person-check-fill"></i> Reactivar Jugador</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">El jugador volverá a figurar como activo en el plantel para la toma de asistencia y cobro de cuotas.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">¿En qué fecha real se reincorporó?</label>
+                        <input type="date" id="input-fecha-reingreso" class="form-control bg-light border-success fw-bold text-dark" required>
+                    </div>
+                    <div class="d-grid mt-4">
+                        <button type="button" class="btn btn-success fw-bold" onclick="confirmarReactivacion()">Confirmar Reincorporación</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="modalKine" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -231,15 +277,15 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">Motivo / Lesión</label>
-                            <input type="text" id="k-motivo" class="form-control border-primary" placeholder="Ej: Esguince tobillo derecho" required>
+                            <input type="text" id="k-motivo" class="form-control border-primary" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">Tratamiento Realizado</label>
-                            <textarea id="k-tratamiento" class="form-control bg-light" rows="2" placeholder="Ej: Magnetoterapia, masajes..." required></textarea>
+                            <textarea id="k-tratamiento" class="form-control bg-light" rows="2" required></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Observaciones / Evolución (Opcional)</label>
-                            <textarea id="k-observaciones" class="form-control bg-light" rows="2" placeholder="Ej: Reposo por 48hs"></textarea>
+                            <label class="form-label fw-bold small text-muted">Observaciones (Opcional)</label>
+                            <textarea id="k-observaciones" class="form-control bg-light" rows="2"></textarea>
                         </div>
                         <div class="d-grid mt-4">
                             <button type="submit" class="btn btn-primary fw-bold">Guardar Registro</button>
@@ -254,26 +300,26 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square"></i> Editar Sesión de Kinesiología</h5>
+                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square"></i> Editar Sesión</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="form-editar-kine">
                         <input type="hidden" id="edit-k-id">
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Fecha de Sesión</label>
+                            <label class="form-label fw-bold small text-muted">Fecha</label>
                             <input type="date" id="edit-k-fecha" class="form-control bg-light" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Motivo / Lesión</label>
+                            <label class="form-label fw-bold small text-muted">Motivo</label>
                             <input type="text" id="edit-k-motivo" class="form-control border-warning" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Tratamiento Realizado</label>
+                            <label class="form-label fw-bold small text-muted">Tratamiento</label>
                             <textarea id="edit-k-tratamiento" class="form-control bg-light" rows="2" required></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Observaciones / Evolución (Opcional)</label>
+                            <label class="form-label fw-bold small text-muted">Observaciones</label>
                             <textarea id="edit-k-observaciones" class="form-control bg-light" rows="2"></textarea>
                         </div>
                         <div class="d-grid mt-4">
@@ -290,6 +336,7 @@
         if (!sessionStorage.getItem('usuarioLogueado')) {
             window.location.href = 'login.html';
         }
+        const rolUsuario = sessionStorage.getItem('usuarioRol');
 
         const urlParams = new URLSearchParams(window.location.search);
         const idJugador = urlParams.get('id');
@@ -298,8 +345,6 @@
         let historialKine = []; 
 
         // --- 2. CARGAR FICHA Y DOCUMENTOS ---
-        
-        // Función auxiliar para dibujar los botones de documentos
         function renderDoc(campoBD, nombreArchivoGuardado, idHtmlInput) {
             if (nombreArchivoGuardado) {
                 return `
@@ -322,7 +367,6 @@
             }
         }
 
-        // Lógica de subida (API Fetch con FormData)
         async function subirDocumento(campoBD, inputElement) {
             const file = inputElement.files[0];
             if (!file) return;
@@ -331,28 +375,28 @@
             formData.append(campoBD, file);
 
             try {
-                // Efecto visual de carga
                 const labelElement = inputElement.parentElement;
                 const originalHtml = labelElement.innerHTML;
                 labelElement.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Subiendo...';
                 labelElement.classList.add('disabled');
 
                 const res = await fetch(`http://localhost:3000/jugadores/${idJugador}/documentos`, {
-                    method: 'POST',
-                    body: formData // No ponemos "Content-Type", el navegador lo hace solo para archivos
+                    method: 'POST', body: formData 
                 });
 
-                if (res.ok) {
-                    cargarFicha(); // Refrescamos todo para mostrar el botón verde
-                } else {
+                if (res.ok) cargarFicha();
+                else {
                     alert('❌ Error al subir el documento');
                     labelElement.innerHTML = originalHtml;
                     labelElement.classList.remove('disabled');
                 }
-            } catch (error) {
-                console.error(error);
-                alert('Error de conexión con el servidor');
-            }
+            } catch (error) { alert('Error de conexión con el servidor'); }
+        }
+
+        function formatearFecha(fechaIso) {
+            const d = new Date(fechaIso);
+            d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+            return d.toLocaleDateString('es-AR');
         }
 
         async function cargarFicha() {
@@ -360,13 +404,43 @@
                 const respuesta = await fetch(`http://localhost:3000/jugadores/${idJugador}`);
                 jugadorActual = await respuesta.json();
 
-                document.getElementById('f-nombre-completo').innerText = `${jugadorActual.nombre} ${jugadorActual.apellido}`;
+                let tituloNombre = `${jugadorActual.nombre} ${jugadorActual.apellido}`;
+                
+                // LÓGICA DE ESTADO (ACTIVO / DADO DE BAJA)
+                const contenedorBotones = document.getElementById('contenedor-estado-jugador');
+                const tarjetaPrincipal = document.getElementById('tarjeta-principal-ficha');
+                const headerFicha = document.getElementById('header-ficha');
+
+                if (jugadorActual.fecha_baja) {
+                    tituloNombre += ' <span class="badge bg-danger ms-2 fs-6">BAJA</span>';
+                    tarjetaPrincipal.classList.add('baja-style');
+                    headerFicha.classList.replace('bg-primary', 'bg-danger');
+
+                    if (rolUsuario !== 'Cuerpo Tecnico') {
+                        contenedorBotones.innerHTML = `
+                            <button onclick="reactivarJugador()" class="btn btn-success btn-sm rounded-circle shadow-sm" title="Reactivar Jugador en el Club">
+                                <i class="bi bi-person-check-fill"></i>
+                            </button>
+                        `;
+                    }
+                } else {
+                    tarjetaPrincipal.classList.remove('baja-style');
+                    headerFicha.classList.replace('bg-danger', 'bg-primary');
+
+                    if (rolUsuario !== 'Cuerpo Tecnico') {
+                        contenedorBotones.innerHTML = `
+                            <button onclick="eliminarJugador()" class="btn btn-outline-warning btn-sm rounded-circle shadow-sm" title="Dar de Baja">
+                                <i class="bi bi-person-x-fill text-dark"></i>
+                            </button>
+                        `;
+                    }
+                }
+
+                document.getElementById('f-nombre-completo').innerHTML = tituloNombre;
                 document.getElementById('f-dni').innerText = jugadorActual.dni;
                 
                 if(jugadorActual.fecha_nacimiento){
-                    const fecha = new Date(jugadorActual.fecha_nacimiento);
-                    fecha.setMinutes(fecha.getMinutes() + fecha.getTimezoneOffset()); 
-                    document.getElementById('f-fecha').innerText = fecha.toLocaleDateString('es-AR');
+                    document.getElementById('f-fecha').innerText = formatearFecha(jugadorActual.fecha_nacimiento);
                 }
                 
                 document.getElementById('f-telefono').innerText = jugadorActual.telefono || '-';
@@ -383,12 +457,34 @@
                 badgeRama.innerText = rama;
                 if (rama === 'Femenino') badgeRama.classList.replace('text-primary', 'text-danger');
 
-                // DIBUJAMOS LOS DOCUMENTOS ADJUNTOS
+                // LÓGICA DE FECHAS EN EL CLUB
+                let htmlFechasClub = `
+                    <div class="col-6 col-md-4">
+                        <div class="p-2 border rounded text-center" style="background-color: #e9ecef;">
+                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.75rem;"><i class="bi bi-calendar-plus"></i> Ingreso Original</small>
+                            <strong class="fs-6">${jugadorActual.fecha_alta ? formatearFecha(jugadorActual.fecha_alta) : 'No registrada'}</strong>
+                        </div>
+                    </div>
+                `;
+
+                if (jugadorActual.fecha_reingreso) {
+                    htmlFechasClub += `
+                        <div class="col-6 col-md-4">
+                            <div class="p-2 bg-success bg-opacity-10 border-success rounded border text-center">
+                                <small class="text-success d-block text-uppercase fw-bold" style="font-size: 0.75rem;"><i class="bi bi-arrow-repeat"></i> Reincorporación</small>
+                                <strong class="fs-6 text-success">${formatearFecha(jugadorActual.fecha_reingreso)}</strong>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                document.getElementById('fechas-club-container').innerHTML = htmlFechasClub;
+
+                // Documentos y Estadísticas
                 document.getElementById('doc-apto-box').innerHTML = renderDoc('apto_medico', jugadorActual.apto_medico, 'file-apto');
                 document.getElementById('doc-dni-frente-box').innerHTML = renderDoc('dni_frente', jugadorActual.dni_frente, 'file-dni-f');
                 document.getElementById('doc-dni-dorso-box').innerHTML = renderDoc('dni_dorso', jugadorActual.dni_dorso, 'file-dni-d');
 
-                // Cargar estadísticas
                 try {
                     const resAsis = await fetch(`http://localhost:3000/asistencia/jugador/${idJugador}`);
                     historialAsistencia = await resAsis.json();
@@ -410,7 +506,58 @@
             window.location.href = 'index.html';
         }
 
-        // --- 3. EXPORTAR Y ELIMINAR JUGADOR ---
+        // --- 3. FUNCIONES DE ESTADO (BAJA Y REACTIVAR) ---
+        function eliminarJugador() {
+            document.getElementById('input-fecha-baja').valueAsDate = new Date();
+            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalBaja'));
+            modal.show();
+        }
+
+        async function confirmarBaja() {
+            const fechaBaja = document.getElementById('input-fecha-baja').value;
+            if (!fechaBaja) return alert('Por favor, seleccioná una fecha.');
+
+            try {
+                const respuesta = await fetch(`http://localhost:3000/jugadores/${idJugador}`, { 
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fecha_baja: fechaBaja }) 
+                });
+                
+                if (respuesta.ok) {
+                    alert('✅ Jugador dado de baja correctamente en la fecha indicada.');
+                    bootstrap.Modal.getInstance(document.getElementById('modalBaja')).hide();
+                    cargarFicha(); 
+                } else alert('❌ Error al dar de baja.');
+            } catch (error) { alert('❌ No se pudo conectar con el servidor.'); }
+        }
+
+        function reactivarJugador() {
+            document.getElementById('input-fecha-reingreso').valueAsDate = new Date();
+            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalReactivar'));
+            modal.show();
+        }
+
+        async function confirmarReactivacion() {
+            const fechaReingreso = document.getElementById('input-fecha-reingreso').value;
+            if (!fechaReingreso) return alert('Por favor, seleccioná una fecha.');
+
+            try {
+                const respuesta = await fetch(`http://localhost:3000/jugadores/${idJugador}/reactivar`, { 
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fecha_reingreso: fechaReingreso }) 
+                });
+                
+                if (respuesta.ok) {
+                    alert('✅ ¡Jugador reactivado exitosamente!');
+                    bootstrap.Modal.getInstance(document.getElementById('modalReactivar')).hide();
+                    cargarFicha(); 
+                } else alert('❌ Error al reactivar.');
+            } catch (error) { alert('❌ No se pudo conectar con el servidor.'); }
+        }
+
+        // --- 4. EXPORTAR PDF Y EMAIL ---
         function generarPDFyWhatsApp() {
             if(!jugadorActual) return;
             const titulosImpresion = document.querySelectorAll('.solo-impresion');
@@ -445,31 +592,17 @@
             window.location.href = `mailto:?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
         }
 
-        async function eliminarJugador() {
-            if (!confirm(`⚠️ ¿ELIMINAR definitivamente a ${jugadorActual.nombre} ${jugadorActual.apellido}?`)) return;
-            try {
-                const respuesta = await fetch(`http://localhost:3000/jugadores/${idJugador}`, { method: 'DELETE' });
-                if (respuesta.ok) {
-                    alert('Jugador eliminado.');
-                    window.location.href = 'index.html'; 
-                } else alert('Error al eliminar.');
-            } catch (error) { alert('No se pudo conectar.'); }
-        }
-
-        // --- 4. PERMISOS ---
-        const rolUsuario = sessionStorage.getItem('usuarioRol');
+        // --- 5. PERMISOS ---
         if (rolUsuario === 'Cuerpo Tecnico') {
-            const btnEditar = document.querySelector('button[onclick*="editar.html"]');
-            const btnEliminar = document.querySelector('button[onclick="eliminarJugador()"]');
+            const btnEditar = document.getElementById('btn-editar-jugador');
             if (btnEditar) btnEditar.style.display = 'none';
-            if (btnEliminar) btnEliminar.style.display = 'none';
         }
         if (rolUsuario === 'Administrativo') {
             const btnAgregarKine = document.getElementById('btn-agregar-kine');
             if (btnAgregarKine) btnAgregarKine.style.display = 'none';
         }
 
-        // --- 5. ASISTENCIA ---
+        // --- 6. ASISTENCIA ---
         function generarReporteAsistencia() {
             if (historialAsistencia.length === 0) {
                 document.getElementById('f-reporte-texto').innerHTML = 'El jugador no tiene registros de asistencia.';
@@ -502,7 +635,7 @@
             cont.innerHTML = htmlRes;
         }
 
-        // --- 6. KINESIOLOGÍA ---
+        // --- 7. KINESIOLOGÍA ---
         document.getElementById('k-fecha').valueAsDate = new Date(); 
 
         async function cargarKinesiologia() {
@@ -518,9 +651,7 @@
                 }
 
                 historialKine.forEach(reg => {
-                    const fechaObj = new Date(reg.fecha);
-                    fechaObj.setMinutes(fechaObj.getMinutes() + fechaObj.getTimezoneOffset());
-                    const fechaStr = fechaObj.toLocaleDateString('es-AR');
+                    const fechaStr = formatearFecha(reg.fecha);
                     const obsHtml = reg.observaciones ? `<br><small class="text-muted fst-italic">Obs: ${reg.observaciones}</small>` : '';
 
                     let botonesAccion = `<td></td>`;
@@ -556,7 +687,6 @@
             }
         }
 
-        // GUARDAR NUEVA SESIÓN
         document.getElementById('form-kine').addEventListener('submit', async (e) => {
             e.preventDefault();
             const nuevoReg = {
@@ -580,11 +710,9 @@
             } catch (error) { alert('❌ Error de servidor.'); }
         });
 
-        // ABRIR VENTANA DE EDICIÓN
         function abrirEdicionKine(id) {
             const registro = historialKine.find(r => r.id === id);
             if (!registro) return;
-
             document.getElementById('edit-k-id').value = registro.id;
             if (registro.fecha) {
                 const d = new Date(registro.fecha);
@@ -597,13 +725,11 @@
             document.getElementById('edit-k-motivo').value = registro.lesion_motivo || '';
             document.getElementById('edit-k-tratamiento').value = registro.tratamiento || '';
             document.getElementById('edit-k-observaciones').value = registro.observaciones || '';
-
             const modalEl = document.getElementById('modalEditarKine');
             const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
             modalInstance.show();
         }
 
-        // GUARDAR CAMBIOS DE EDICIÓN
         document.getElementById('form-editar-kine').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('edit-k-id').value;
@@ -624,7 +750,6 @@
             } catch (error) { alert('❌ Error de servidor.'); }
         });
 
-        // ELIMINAR SESIÓN
         async function eliminarKine(id) {
             if (!confirm('⚠️ ¿ELIMINAR definitivamente esta sesión?')) return;
             try {

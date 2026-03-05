@@ -66,6 +66,10 @@
                                     <label class="form-label">Teléfono / Celular (Opcional)</label>
                                     <input type="text" id="telefono" class="form-control" placeholder="Ej: 2920123456">
                                 </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Fecha de Ingreso al Club</label>
+                                    <input type="date" id="fecha_alta" class="form-control bg-light border-secondary" required>
+                                </div>
                             </div>
 
                             <h5 class="text-primary border-bottom pb-2 mb-3 mt-4">Contacto de Emergencia</h5>
@@ -127,18 +131,22 @@
             window.location.href = 'login.html';
         }
 
+        // PRECARGAR LA FECHA DE HOY EN EL CAMPO DE ALTA
+        document.getElementById('fecha_alta').valueAsDate = new Date();
+
         // 2. ¿Qué pasa cuando apretamos "Guardar"?
         document.getElementById('form-alta').addEventListener('submit', async (e) => {
-            e.preventDefault(); // Evita que la página se recargue
+            e.preventDefault(); 
 
-            // Armamos la "caja" con todos los datos, ¡INCLUYENDO LA RAMA!
+            // Armamos la "caja" con todos los datos
             const datosJugador = {
                 nombre: document.getElementById('nombre').value,
                 apellido: document.getElementById('apellido').value,
                 dni: document.getElementById('dni').value,
                 fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
-                rama: document.getElementById('rama').value, // <-- Este es el dato nuevo
+                rama: document.getElementById('rama').value, 
                 telefono: document.getElementById('telefono').value,
+                fecha_alta: document.getElementById('fecha_alta').value, // <-- Se envía la fecha elegida
                 contacto_emergencia_nombre: document.getElementById('contacto_nombre').value,
                 contacto_emergencia_tel: document.getElementById('contacto_tel').value,
                 grupo_sanguineo: document.getElementById('grupo_sanguineo').value,
@@ -157,7 +165,7 @@
 
                 if (respuesta.ok) {
                     alert('¡Jugador inscripto con éxito! 🏀');
-                    window.location.href = 'index.html'; // Volvemos al plantel
+                    window.location.href = 'index.html'; 
                 } else {
                     alert('Hubo un error al guardar el jugador. Verificá la conexión con el servidor.');
                 }

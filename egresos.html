@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Egresos - Gestión Club 🏀</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        body { background-color: #f8f9fa; }
+        .card-egresos { border-radius: 15px; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); }
+    </style>
+</head>
+<body class="pb-5">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="bi bi-graph-down-arrow"></i> Control de Egresos (Gastos)
+            </a>
+            <div class="d-flex align-items-center text-white">
+                <a href="javascript:history.back()" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 12px; border-left: 5px solid #dc3545 !important;">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="bg-danger bg-opacity-10 p-3 rounded-circle me-3 text-danger">
+                            <i class="bi bi-tags fs-3"></i>
+                        </div>
+                        <div>
+                            <p class="text-muted mb-0 fw-bold small text-uppercase" id="titulo-cantidad">Cantidad de Gastos</p>
+                            <h3 class="mb-0 fw-bold text-dark" id="stat-cantidad">--</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 12px; border-left: 5px solid #dc3545 !important;">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="bg-danger bg-opacity-10 p-3 rounded-circle me-3 text-danger">
+                            <i class="bi bi-cash-stack fs-3"></i>
+                        </div>
+                        <div>
+                            <p class="text-muted mb-0 fw-bold small text-uppercase" id="titulo-total">Total Gastado</p>
+                            <h3 class="mb-0 fw-bold text-danger" id="stat-total">$ --</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 card-egresos h-100">
+                    <div class="card-header bg-danger text-white text-center py-3" style="border-radius: 15px 15px 0 0;">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-plus-circle"></i> Registrar Gasto</h5>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        <form id="form-egreso">
+                            
+                            <div class="mb-3">
+                                <label class="form-label text-muted fw-bold small">Concepto / Detalle</label>
+                                <input type="text" id="e-concepto" class="form-control border-danger fw-bold" required placeholder="Ej: Pago de planillero U15">
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label class="form-label text-muted fw-bold small">Categoría</label>
+                                    <select id="e-categoria" class="form-select bg-light" required>
+                                        <option value="Arbitrajes y Mesa">🏀 Arbitrajes y Mesa</option>
+                                        <option value="Materiales Deportivos">⛹️‍♂️ Materiales Deportivos</option>
+                                        <option value="Indumentaria">👕 Indumentaria</option>
+                                        <option value="Viáticos y Transportes">🚌 Viáticos y Transportes</option>
+                                        <option value="Inscripciones y Torneos">🏆 Inscripciones y Torneos</option>
+                                        <option value="Mantenimiento">🧹 Mantenimiento</option>
+                                        <option value="Otros Gastos">📌 Otros Gastos</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label text-muted fw-bold small">Fecha</label>
+                                    <input type="date" id="e-fecha" class="form-control bg-light" required>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label text-muted fw-bold small">Método</label>
+                                    <select id="e-metodo" class="form-select bg-light" required>
+                                        <option value="Efectivo">Efectivo 💵</option>
+                                        <option value="Transferencia">Transferencia 📱</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-muted fw-bold small">Monto Gastado ($)</label>
+                                <input type="number" id="e-monto" class="form-control border-danger text-end fw-bold fs-5" required placeholder="Ej: 15000" min="1">
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label text-muted fw-bold small">Observaciones (Opcional)</label>
+                                <input type="text" id="e-observaciones" class="form-control bg-light" placeholder="Ej: Factura C N° 123">
+                            </div>
+
+                            <button type="submit" class="btn btn-danger w-100 fw-bold btn-lg shadow-sm">
+                                <i class="bi bi-save"></i> Guardar Egreso
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 mb-4">
+                <div class="card border-0 card-egresos h-100">
+                    <div class="card-header bg-dark text-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2" style="border-radius: 15px 15px 0 0;">
+                        <h5 class="mb-0"><i class="bi bi-journal-text"></i> Libro Mayor de Egresos</h5>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <select id="filtro-mes" class="form-select form-select-sm bg-light fw-bold" style="width: auto; cursor: pointer;" onchange="renderizarTabla()">
+                                <option value="">📅 Todos los Meses</option>
+                                <option value="1">Enero</option>
+                                <option value="2">Febrero</option>
+                                <option value="3">Marzo</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Mayo</option>
+                                <option value="6">Junio</option>
+                                <option value="7">Julio</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Septiembre</option>
+                                <option value="10">Octubre</option>
+                                <option value="11">Noviembre</option>
+                                <option value="12">Diciembre</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-flex align-items-center gap-2">
+                            <select id="filtro-categoria" class="form-select form-select-sm bg-light fw-bold" style="width: auto; cursor: pointer;" onchange="renderizarTabla()">
+                                <option value="">📌 Todas las Categorías</option>
+                                <option value="Arbitrajes y Mesa">Arbitrajes y Mesa</option>
+                                <option value="Materiales Deportivos">Materiales Deportivos</option>
+                                <option value="Indumentaria">Indumentaria</option>
+                                <option value="Viáticos y Transportes">Viáticos y Transportes</option>
+                                <option value="Inscripciones y Torneos">Inscripciones y Torneos</option>
+                                <option value="Mantenimiento">Mantenimiento</option>
+                                <option value="Otros Gastos">Otros Gastos</option>
+                            </select>
+
+                            <button onclick="exportarAExcel()" class="btn btn-success btn-sm shadow-sm fw-bold" title="Descargar Excel">
+                                <i class="bi bi-file-earmark-excel-fill"></i> Exportar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 550px; overflow-y: auto;">
+                            <table class="table table-hover align-middle mb-0" style="min-width: 600px;">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th class="ps-3">Fecha</th>
+                                        <th>Concepto</th>
+                                        <th>Categoría</th>
+                                        <th>Método</th>
+                                        <th>Monto</th>
+                                        <th class="text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-historial">
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5">
+                                            <div class="spinner-border text-danger"></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let egresosCargados = []; 
+        let egresosParaExportar = [];     
+
+        // SEGURIDAD BLINDADA (ROLES)
+        if (!sessionStorage.getItem('usuarioLogueado')) {
+            window.location.href = 'login.html';
+        }
+
+        const rolUsuario = sessionStorage.getItem('usuarioRol');
+        if (rolUsuario === 'Cuerpo Tecnico') {
+            alert('⛔ Acceso Denegado: La sección de Tesorería es exclusiva para el personal administrativo.');
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('e-fecha').valueAsDate = new Date();
+
+        // 1. OBTENER DATOS DE LA BASE DE DATOS
+        async function cargarHistorial() {
+            const tabla = document.getElementById('tabla-historial');
+            tabla.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-danger"></div></td></tr>';
+
+            try {
+                const respuesta = await fetch('http://localhost:3000/egresos');
+                egresosCargados = await respuesta.json();
+                renderizarTabla();
+            } catch (error) {
+                console.error('Error historial:', error);
+                tabla.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">Error de conexión con el servidor.</td></tr>';
+            }
+        }
+
+        // 2. RENDERIZAR TABLA CON FILTROS Y TOTALES
+        function renderizarTabla() {
+            const tabla = document.getElementById('tabla-historial');
+            const filtroCat = document.getElementById('filtro-categoria').value;
+            const filtroMes = document.getElementById('filtro-mes').value; // Agregamos la lectura del mes
+
+            // Aplicar Filtros combinados (Categoría y/o Mes)
+            let egresosFiltrados = egresosCargados;
+            
+            // Filtro por Categoría
+            if (filtroCat !== "") {
+                egresosFiltrados = egresosFiltrados.filter(e => e.categoria === filtroCat);
+            }
+
+            // Filtro por Mes
+            if (filtroMes !== "") {
+                egresosFiltrados = egresosFiltrados.filter(e => {
+                    const fechaObj = new Date(e.fecha);
+                    // Ajustamos zona horaria para evitar desfases de un día
+                    fechaObj.setMinutes(fechaObj.getMinutes() + fechaObj.getTimezoneOffset()); 
+                    
+                    // .getMonth() devuelve de 0 (Enero) a 11 (Diciembre), le sumamos 1 para que coincida con el select
+                    const mesEgreso = (fechaObj.getMonth() + 1).toString();
+                    return mesEgreso === filtroMes;
+                });
+            }
+            
+            egresosParaExportar = egresosFiltrados;
+
+            // Calcular Totales de lo que quedó filtrado
+            const cantidadTotal = egresosFiltrados.length;
+            const montoTotal = egresosFiltrados.reduce((suma, e) => suma + Number(e.monto), 0);
+
+            document.getElementById('stat-cantidad').innerText = cantidadTotal;
+            document.getElementById('stat-total').innerText = `$ ${montoTotal.toLocaleString('es-AR')}`;
+
+            // Cambiar títulos si hay algún filtro activo
+            if (filtroCat !== "" || filtroMes !== "") {
+                document.getElementById('titulo-cantidad').innerText = 'Cantidad (Filtrado)';
+                document.getElementById('titulo-total').innerText = 'Total Gastado (Filtrado)';
+            } else {
+                document.getElementById('titulo-cantidad').innerText = 'Cantidad de Gastos';
+                document.getElementById('titulo-total').innerText = 'Total Gastado';
+            }
+
+            // Dibujar la tabla
+            if (egresosFiltrados.length === 0) {
+                tabla.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4 fw-bold">No hay egresos registrados para este filtro.</td></tr>';
+                return;
+            }
+
+            tabla.innerHTML = '';
+            egresosFiltrados.forEach(egreso => {
+                const fechaObj = new Date(egreso.fecha);
+                fechaObj.setMinutes(fechaObj.getMinutes() + fechaObj.getTimezoneOffset());
+                const fechaFormat = fechaObj.toLocaleDateString('es-AR');
+                const montoFormat = `$${Number(egreso.monto).toLocaleString('es-AR')}`;
+
+                const fila = `
+                    <tr>
+                        <td class="ps-3 text-muted small fw-bold">${fechaFormat}</td>
+                        <td class="fw-bold text-dark">${egreso.concepto}</td>
+                        <td><span class="badge bg-dark">${egreso.categoria}</span></td>
+                        <td><span class="badge bg-secondary">${egreso.metodo}</span></td>
+                        <td class="fw-bold text-danger">${montoFormat}</td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-outline-danger btn-sm" title="Anular Egreso" onclick="eliminarEgreso(${egreso.id})">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tabla.innerHTML += fila;
+            });
+        }
+
+        // 3. GUARDAR UN NUEVO EGRESO
+        document.getElementById('form-egreso').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nuevoEgreso = {
+                concepto: document.getElementById('e-concepto').value,
+                categoria: document.getElementById('e-categoria').value,
+                fecha: document.getElementById('e-fecha').value,
+                monto: document.getElementById('e-monto').value,
+                metodo: document.getElementById('e-metodo').value,
+                observaciones: document.getElementById('e-observaciones').value
+            };
+
+            try {
+                const respuesta = await fetch('http://localhost:3000/egresos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevoEgreso)
+                });
+
+                if (respuesta.ok) {
+                    alert(`✅ ¡Gasto registrado exitosamente!`);
+                    document.getElementById('e-concepto').value = '';
+                    document.getElementById('e-monto').value = '';
+                    document.getElementById('e-observaciones').value = '';
+                    cargarHistorial(); 
+                } else {
+                    alert('❌ Error al guardar en la base de datos.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ No se pudo conectar con el servidor.');
+            }
+        });
+
+        // 4. ELIMINAR/ANULAR UN EGRESO
+        async function eliminarEgreso(id) {
+            const confirmacion = confirm('⚠️ ATENCIÓN: ¿Estás seguro de que querés borrar este gasto del registro?');
+            if (!confirmacion) return;
+
+            try {
+                const respuesta = await fetch(`http://localhost:3000/egresos/${id}`, { method: 'DELETE' });
+                if (respuesta.ok) {
+                    alert('🗑️ Egreso anulado correctamente.');
+                    cargarHistorial(); 
+                } else {
+                    alert('❌ Hubo un error al intentar borrar el registro.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // 5. EXPORTAR A EXCEL (XLSX)
+        function exportarAExcel() {
+            if (egresosParaExportar.length === 0) {
+                alert("⚠️ No hay datos para exportar.");
+                return;
+            }
+
+            const datosExcel = egresosParaExportar.map(e => {
+                const fechaObj = new Date(e.fecha);
+                fechaObj.setMinutes(fechaObj.getMinutes() + fechaObj.getTimezoneOffset());
+                
+                return {
+                    "Fecha": fechaObj.toLocaleDateString('es-AR'),
+                    "Concepto": e.concepto,
+                    "Categoría": e.categoria,
+                    "Monto ($)": Number(e.monto), 
+                    "Método": e.metodo,
+                    "Observaciones": e.observaciones || ""
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Egresos");
+
+            XLSX.writeFile(workbook, "Historial_Egresos_SolDeMayo.xlsx");
+        }
+
+        // Iniciar página
+        cargarHistorial();
+    </script>
+</body>
+</html>

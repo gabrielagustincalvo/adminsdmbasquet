@@ -57,28 +57,29 @@ app.get('/', (req, res) => {
 
 // 1. RUTA DE REGISTRO COMPLETO
 app.post('/registro', async (req, res) => {
-  const { nombre, apellido, dni, direccion, telefono, correo, usuario, password, rol, rolCreador } = req.body;
+  // ACA AGREGAMOS fecha_alta AL FINAL
+  const { nombre, apellido, dni, direccion, telefono, correo, usuario, password, rol, rolCreador, fecha_alta } = req.body;
 
-  // ==========================================
   // BARRERA DE SEGURIDAD DEFINITIVA
-  // ==========================================
-  // Si el que manda la petición NO es Admin Principal, bloqueamos la acción.
   if (rolCreador !== 'Admin Principal') {
       return res.status(403).json({ 
           mensaje: 'Acceso Denegado: Operación reservada exclusivamente para el Administrador Principal.' 
       });
   }
-  // ==========================================
 
   try {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // ACA AGREGAMOS fecha_alta y el $10
     const query = `
-      INSERT INTO usuarios (nombre, apellido, dni, direccion, telefono, correo, usuario, password, rol) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, nombre, usuario, rol
+      INSERT INTO usuarios (nombre, apellido, dni, direccion, telefono, correo, usuario, password, rol, fecha_alta) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id, nombre, usuario, rol
     `;
-    const values = [nombre, apellido, dni, direccion, telefono, correo, usuario, hashedPassword, rol];
+    
+    // Si no mandan fecha (por algún error), ponemos la fecha de hoy automáticamente
+    const fechaHoy = new Date().toISOString().split('T')[0];
+    const values = [nombre, apellido, dni, direccion, telefono, correo, usuario, hashedPassword, rol, fecha_alta || fechaHoy];
     
     const result = await pool.query(query, values);
 
@@ -198,24 +199,24 @@ app.get('/jugadores/:id', async (req, res) => {
 // 4. Ruta para CREAR (Guardar) un nuevo jugador
 app.post('/jugadores', async (req, res) => {
   try {
-    // PARTE 1: Atrapamos los datos de la web (Agregamos 'rama' al final)
+    // ACA AGREGAMOS fecha_alta
     const { 
         nombre, apellido, dni, fecha_nacimiento, telefono, 
         contacto_emergencia_nombre, contacto_emergencia_tel,
-        grupo_sanguineo, alergias, lesiones, cirugias, rama 
+        grupo_sanguineo, alergias, lesiones, cirugias, rama, fecha_alta
     } = req.body;
 
-    // PARTE 2: Armamos la instrucción SQL (Agregamos 'rama' y el '$12')
+    // ACA AGREGAMOS fecha_alta y el $13
     const query = `
       INSERT INTO jugadores (
           nombre, apellido, dni, fecha_nacimiento, telefono, 
           contacto_emergencia_nombre, contacto_emergencia_tel,
-          grupo_sanguineo, alergias, lesiones, cirugias, rama 
+          grupo_sanguineo, alergias, lesiones, cirugias, rama, fecha_alta 
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *
     `;
     
-    // PARTE 3: Pasamos los valores reales (Agregamos 'rama' al final de la lista)
+    const fechaHoy = new Date().toISOString().split('T')[0];
     const values = [
         nombre, apellido, dni, fecha_nacimiento, telefono, 
         contacto_emergencia_nombre, contacto_emergencia_tel,
@@ -223,7 +224,8 @@ app.post('/jugadores', async (req, res) => {
         alergias || 'Ninguna', 
         lesiones || 'Ninguna', 
         cirugias || 'Ninguna',
-        rama || 'Masculino' 
+        rama || 'Masculino',
+        fecha_alta || fechaHoy
     ];
 
     const result = await pool.query(query, values);
@@ -274,26 +276,59 @@ app.put('/jugadores/:id', async (req, res) => {
   }
 });
 
-// 6. Ruta para ELIMINAR (Borrar) un jugador
+// 6. Ruta para DAR DE BAJA (Con fecha manual)
 app.delete('/jugadores/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    // Atrapamos la fecha que nos mandan desde la página
+    const { fecha_baja } = req.body; 
     
-    // Le decimos a la base de datos: Borrá la fila donde el ID sea este
-    const result = await pool.query('DELETE FROM jugadores WHERE id = $1 RETURNING *', [id]);
+    // Si por algún motivo no llega fecha, usamos la de hoy por defecto
+    const fecha = fecha_baja || new Date().toISOString().split('T')[0];
+
+    const query = 'UPDATE jugadores SET fecha_baja = $1 WHERE id = $2 RETURNING *';
+    const result = await pool.query(query, [fecha, id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json({ mensaje: 'Jugador no encontrado' });
     }
     
-    res.json({ mensaje: 'Jugador eliminado correctamente' });
+    res.json({ mensaje: 'Jugador dado de baja correctamente.' });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Error al eliminar el jugador');
+    res.status(500).send('Error al dar de baja al jugador');
   }
 });
 
-// 7. Ruta para SUBIR DOCUMENTOS (Apto Médico, DNI)
+// 7. Ruta para REACTIVAR a un jugador (Con fecha manual de reingreso)
+app.put('/jugadores/:id/reactivar', async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Atrapamos la fecha que nos mandan desde la página
+    const { fecha_reingreso } = req.body;
+    
+    const fecha = fecha_reingreso || new Date().toISOString().split('T')[0];
+
+    const query = `
+        UPDATE jugadores 
+        SET fecha_baja = NULL, 
+            fecha_reingreso = $1 
+        WHERE id = $2 RETURNING *
+    `;
+    const result = await pool.query(query, [fecha, id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ mensaje: 'Jugador no encontrado' });
+    }
+    
+    res.json({ mensaje: '¡Jugador reactivado correctamente!' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Error al reactivar al jugador');
+  }
+});
+
+// 8. Ruta para SUBIR DOCUMENTOS (Apto Médico, DNI)
 app.post('/jugadores/:id/documentos', upload.fields([
   { name: 'apto_medico', maxCount: 1 },
   { name: 'dni_frente', maxCount: 1 },
@@ -674,6 +709,52 @@ app.delete('/kinesiologia/:id', async (req, res) => {
     console.error('Error al eliminar registro kinesiológico:', err.message);
     res.status(500).send('Error interno al eliminar');
   }
+});
+
+// ==========================================
+//        MÓDULO DE EGRESOS (GASTOS)
+// ==========================================
+
+// 1. Obtener todos los egresos
+app.get('/egresos', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM egresos ORDER BY fecha DESC, id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Error en el servidor al obtener egresos');
+    }
+});
+
+// 2. Registrar un nuevo egreso
+app.post('/egresos', async (req, res) => {
+    const { concepto, categoria, fecha, monto, metodo, observaciones } = req.body;
+    try {
+        const result = await pool.query(
+            'INSERT INTO egresos (concepto, categoria, fecha, monto, metodo, observaciones) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [concepto, categoria, fecha, monto, metodo, observaciones]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Error al guardar el egreso');
+    }
+});
+
+// 3. Eliminar un egreso (Anular gasto)
+app.delete('/egresos/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await pool.query('DELETE FROM egresos WHERE id = $1 RETURNING *', [id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ mensaje: 'Egreso no encontrado' });
+        }
+        res.json({ message: 'Egreso eliminado correctamente' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Error al eliminar el egreso');
+    }
 });
 
 // ==========================================
