@@ -219,7 +219,7 @@
             tabla.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-danger"></div></td></tr>';
 
             try {
-                const respuesta = await fetch('http://localhost:3000/egresos');
+                const respuesta = await fetch('//egresos');
                 egresosCargados = await respuesta.json();
                 renderizarTabla();
             } catch (error) {
@@ -318,7 +318,7 @@
             };
 
             try {
-                const respuesta = await fetch('http://localhost:3000/egresos', {
+                const respuesta = await fetch('//egresos', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(nuevoEgreso)
@@ -345,7 +345,7 @@
             if (!confirmacion) return;
 
             try {
-                const respuesta = await fetch(`http://localhost:3000/egresos/${id}`, { method: 'DELETE' });
+                const respuesta = await fetch(`//egresos/${id}`, { method: 'DELETE' });
                 if (respuesta.ok) {
                     alert('🗑️ Egreso anulado correctamente.');
                     cargarHistorial(); 

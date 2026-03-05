@@ -161,7 +161,7 @@
 
             try {
                 // Enviamos los datos al cerebro (Backend)
-                const respuesta = await fetch('http://localhost:3000/jugadores', {
+                const respuesta = await fetch('//jugadores', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(datosJugador)

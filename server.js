@@ -9,12 +9,16 @@ const fs = require('fs');
 
 // <--- MODIFICACIÓN: Se movió la inicialización de 'app' hacia arriba para que el resto del código la reconozca.
 const app = express();
-const port = 3000;
+// <--- MODIFICACIÓN RENDER: Hacemos que el puerto sea dinámico para la nube
+const port = process.env.PORT || 3000; 
 
 // Middleware
 // <--- MODIFICACIÓN: Se subieron los middlewares básicos para que atrapen el formato json y cors desde el principio.
 app.use(cors());
 app.use(express.json());
+
+// <--- MODIFICACIÓN RENDER: Hacer que toda la carpeta sea pública para cargar los HTML y el Logo
+app.use(express.static(__dirname));
 
 // Crear la carpeta "uploads" automáticamente si no existe
 if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
@@ -46,9 +50,9 @@ const pool = new Pool({
   port: 5432,
 });
 
-// 1. Ruta de prueba
+// 1. Ruta principal (MODIFICACIÓN RENDER: Ahora te manda al Login)
 app.get('/', (req, res) => {
-  res.send('¡Hola! El servidor del Club está funcionando 🏀');
+  res.sendFile(path.join(__dirname, 'login.html'));
 });
 
 // ==========================================
@@ -761,5 +765,5 @@ app.delete('/egresos/:id', async (req, res) => {
 // ARRANQUE DEL SERVIDOR
 // ==========================================
 app.listen(port, () => {
-  console.log(`Servidor corriendo en http://localhost:${port}`);
+  console.log(`Servidor corriendo en el puerto ${port}`);
 });

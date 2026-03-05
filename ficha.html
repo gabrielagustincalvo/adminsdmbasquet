@@ -353,7 +353,7 @@
         function renderDoc(campoBD, nombreArchivoGuardado, idHtmlInput) {
             if (nombreArchivoGuardado) {
                 return `
-                    <a href="http://localhost:3000/uploads/${nombreArchivoGuardado}" target="_blank" class="btn btn-sm btn-success w-100 mb-2 shadow-sm">
+                    <a href="//uploads/${nombreArchivoGuardado}" target="_blank" class="btn btn-sm btn-success w-100 mb-2 shadow-sm">
                         <i class="bi bi-eye"></i> Ver Archivo
                     </a>
                     <label class="btn btn-outline-secondary btn-sm w-100 mb-0">
@@ -385,7 +385,7 @@
                 labelElement.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Subiendo...';
                 labelElement.classList.add('disabled');
 
-                const res = await fetch(`http://localhost:3000/jugadores/${idJugador}/documentos`, {
+                const res = await fetch(`//jugadores/${idJugador}/documentos`, {
                     method: 'POST', body: formData 
                 });
 
@@ -406,7 +406,7 @@
 
         async function cargarFicha() {
             try {
-                const respuesta = await fetch(`http://localhost:3000/jugadores/${idJugador}`);
+                const respuesta = await fetch(`//jugadores/${idJugador}`);
                 jugadorActual = await respuesta.json();
 
                 let tituloNombre = `${jugadorActual.nombre} ${jugadorActual.apellido}`;
@@ -491,7 +491,7 @@
                 document.getElementById('doc-dni-dorso-box').innerHTML = renderDoc('dni_dorso', jugadorActual.dni_dorso, 'file-dni-d');
 
                 try {
-                    const resAsis = await fetch(`http://localhost:3000/asistencia/jugador/${idJugador}`);
+                    const resAsis = await fetch(`//asistencia/jugador/${idJugador}`);
                     historialAsistencia = await resAsis.json();
                     generarReporteAsistencia(); 
                 } catch (e) {
@@ -523,7 +523,7 @@
             if (!fechaBaja) return alert('Por favor, seleccioná una fecha.');
 
             try {
-                const respuesta = await fetch(`http://localhost:3000/jugadores/${idJugador}`, { 
+                const respuesta = await fetch(`//jugadores/${idJugador}`, { 
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ fecha_baja: fechaBaja }) 
@@ -548,7 +548,7 @@
             if (!fechaReingreso) return alert('Por favor, seleccioná una fecha.');
 
             try {
-                const respuesta = await fetch(`http://localhost:3000/jugadores/${idJugador}/reactivar`, { 
+                const respuesta = await fetch(`//jugadores/${idJugador}/reactivar`, { 
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ fecha_reingreso: fechaReingreso }) 
@@ -646,7 +646,7 @@
         async function cargarKinesiologia() {
             const tabla = document.getElementById('tabla-kinesiologia');
             try {
-                const respuesta = await fetch(`http://localhost:3000/kinesiologia/${idJugador}`);
+                const respuesta = await fetch(`//kinesiologia/${idJugador}`);
                 historialKine = await respuesta.json(); 
 
                 tabla.innerHTML = '';
@@ -703,7 +703,7 @@
                 profesional_nombre: sessionStorage.getItem('usuarioLogueado') || 'Kinesiólogo'
             };
             try {
-                const res = await fetch('http://localhost:3000/kinesiologia', {
+                const res = await fetch('//kinesiologia', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevoReg)
                 });
                 if (res.ok) {
@@ -745,7 +745,7 @@
                 observaciones: document.getElementById('edit-k-observaciones').value
             };
             try {
-                const res = await fetch(`http://localhost:3000/kinesiologia/${id}`, {
+                const res = await fetch(`//kinesiologia/${id}`, {
                     method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(act)
                 });
                 if (res.ok) {
@@ -758,7 +758,7 @@
         async function eliminarKine(id) {
             if (!confirm('⚠️ ¿ELIMINAR definitivamente esta sesión?')) return;
             try {
-                const res = await fetch(`http://localhost:3000/kinesiologia/${id}`, { method: 'DELETE' });
+                const res = await fetch(`//kinesiologia/${id}`, { method: 'DELETE' });
                 if (res.ok) cargarKinesiologia(); 
                 else alert('❌ Error al eliminar.');
             } catch (error) { console.error('Error:', error); }

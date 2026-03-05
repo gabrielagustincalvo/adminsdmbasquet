@@ -127,7 +127,7 @@
         async function cargarDatosParaEditar() {
             try {
                 // Apuntamos a la ruta de empleados
-                const respuesta = await fetch(`http://localhost:3000/empleados/${idEmpleado}`);
+                const respuesta = await fetch(`//empleados/${idEmpleado}`);
                 const empleado = await respuesta.json();
 
                 if (respuesta.status === 404) {
@@ -199,7 +199,7 @@
 
             try {
                 // Usamos el método PUT hacia la ruta de empleados
-                const respuesta = await fetch(`http://localhost:3000/empleados/${idEmpleado}`, {
+                const respuesta = await fetch(`//empleados/${idEmpleado}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(datosActualizados)

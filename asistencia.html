@@ -155,11 +155,11 @@
 
             try {
                 // Traemos TODOS los jugadores
-                const resJugadores = await fetch('http://localhost:3000/jugadores');
+                const resJugadores = await fetch('//jugadores');
                 todosLosJugadores = await resJugadores.json();
 
                 // Traemos la ASISTENCIA de esa fecha Y TIPO específico
-                const resAsistencia = await fetch(`http://localhost:3000/asistencia/${fechaSeleccionada}/${tipoSeleccionado}`);
+                const resAsistencia = await fetch(`//asistencia/${fechaSeleccionada}/${tipoSeleccionado}`);
                 asistenciaDelDia = await resAsistencia.json();
 
                 // Filtramos a los jugadores
@@ -247,7 +247,7 @@
             });
 
             try {
-                const respuesta = await fetch('http://localhost:3000/asistencia', {
+                const respuesta = await fetch('//asistencia', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(paqueteAsistencia)
