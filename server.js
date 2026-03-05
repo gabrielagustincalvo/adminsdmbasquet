@@ -41,13 +41,10 @@ const upload = multer({ storage: storage });
 // <--- MODIFICACIÓN: Al estar debajo de "const app = express();", esta línea ya no dará el error "Cannot access 'app' before initialization".
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Configuración de la Base de Datos
+// Configuración de la Base de Datos (Adaptable para Local o Render)
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'club_db',
-  password: '185132Gaby', // Tu contraseña
-  port: 5432,
+  connectionString: process.env.DATABASE_URL || 'postgres://postgres:185132Gaby@localhost:5432/club_db',
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
 // 1. Ruta principal (MODIFICACIÓN RENDER: Ahora te manda al Login)
