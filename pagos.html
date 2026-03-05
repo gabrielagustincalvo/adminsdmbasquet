@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <style>
         body { background-color: #f8f9fa; }
@@ -43,7 +44,7 @@
                             <i class="bi bi-receipt fs-3"></i>
                         </div>
                         <div>
-                            <p class="text-muted mb-0 fw-bold small text-uppercase">Total Cuotas Cobradas</p>
+                            <p class="text-muted mb-0 fw-bold small text-uppercase" id="titulo-cuotas">Total Cuotas Cobradas</p>
                             <h3 class="mb-0 fw-bold text-dark" id="stat-cuotas">--</h3>
                         </div>
                     </div>
@@ -56,7 +57,7 @@
                             <i class="bi bi-cash-stack fs-3"></i>
                         </div>
                         <div>
-                            <p class="text-muted mb-0 fw-bold small text-uppercase">Recaudación Global</p>
+                            <p class="text-muted mb-0 fw-bold small text-uppercase" id="titulo-recaudacion">Recaudación Global</p>
                             <h3 class="mb-0 fw-bold text-success" id="stat-recaudacion">$ --</h3>
                         </div>
                     </div>
@@ -134,12 +135,35 @@
 
             <div class="col-lg-8 mb-4">
                 <div class="card border-0 card-tesoreria h-100">
-                    <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center" style="border-radius: 15px 15px 0 0;">
+                    <div class="card-header bg-dark text-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2" style="border-radius: 15px 15px 0 0;">
                         <h5 class="mb-0"><i class="bi bi-clock-history"></i> Libro Mayor de Pagos</h5>
-                        <span class="badge bg-light text-dark shadow-sm" style="cursor: pointer;" onclick="document.getElementById('p-jugador').closest('.choices').querySelector('.choices__item').click();">
-                            <i class="bi bi-arrow-clockwise"></i> Ver Todos
-                        </span>
+                        
+                        <div class="d-flex align-items-center gap-2">
+                            <select id="filtro-mes" class="form-select form-select-sm bg-light fw-bold" style="width: auto; cursor: pointer;" onchange="renderizarTabla()">
+                                <option value="">🗓️ Todos los meses</option>
+                                <option value="Enero">Enero</option>
+                                <option value="Febrero">Febrero</option>
+                                <option value="Marzo">Marzo</option>
+                                <option value="Abril">Abril</option>
+                                <option value="Mayo">Mayo</option>
+                                <option value="Junio">Junio</option>
+                                <option value="Julio">Julio</option>
+                                <option value="Agosto">Agosto</option>
+                                <option value="Septiembre">Septiembre</option>
+                                <option value="Octubre">Octubre</option>
+                                <option value="Noviembre">Noviembre</option>
+                                <option value="Diciembre">Diciembre</option>
+                            </select>
+
+                            <button onclick="exportarAExcel()" class="btn btn-success btn-sm shadow-sm fw-bold" title="Descargar como Excel">
+                                <i class="bi bi-file-earmark-excel-fill"></i> Exportar
+                            </button>
+                            <span class="badge bg-light text-dark shadow-sm" style="cursor: pointer; padding: 0.5em 0.8em;" onclick="document.getElementById('p-jugador').closest('.choices').querySelector('.choices__item').click();">
+                                <i class="bi bi-arrow-clockwise"></i> Ver Todos
+                            </span>
+                        </div>
                     </div>
+                    
                     <div class="card-body p-0">
                         <div class="table-responsive" style="max-height: 550px; overflow-y: auto;">
                             <table class="table table-hover align-middle mb-0" style="min-width: 600px;">
@@ -169,46 +193,7 @@
         </div>
     </div>
 
-    <div id="recibo-template" style="display: none;">
-        <div id="recibo-contenido" style="padding: 40px; background: white; width: 600px; color: #333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
-            <div style="text-align: center; border-bottom: 3px solid #198754; padding-bottom: 20px; margin-bottom: 30px;">
-                <h2 style="color: #198754; margin: 0; font-size: 28px; font-weight: bold;">🏀 Club Sol de Mayo Básquet</h2>
-                <p style="margin: 5px 0 0; color: #555; font-size: 16px;">Viedma, Río Negro</p>
-                <div style="margin-top: 15px; display: inline-block; background: #e8f5e9; color: #198754; padding: 5px 15px; border-radius: 20px; font-weight: bold; border: 1px solid #c8e6c9;">COMPROBANTE OFICIAL DE PAGO</div>
-            </div>
-            
-            <div style="font-size: 18px; line-height: 2;">
-                <table style="width: 100%; border-collapse: collapse;">
-                    <tr>
-                        <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Fecha:</strong></td>
-                        <td style="text-align: right; border-bottom: 1px solid #eee;" id="recibo-fecha">--</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Recibimos de:</strong></td>
-                        <td style="text-align: right; border-bottom: 1px solid #eee;" id="recibo-nombre">--</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Concepto:</strong></td>
-                        <td style="text-align: right; border-bottom: 1px solid #eee;" id="recibo-concepto">--</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Forma de Pago:</strong></td>
-                        <td style="text-align: right; border-bottom: 1px solid #eee;" id="recibo-metodo">--</td>
-                    </tr>
-                </table>
-            </div>
-            
-            <div style="background: #f8f9fa; border-left: 5px solid #198754; margin-top: 30px; padding: 20px; text-align: center;">
-                <span style="font-size: 18px; color: #666;">TOTAL ABONADO</span><br>
-                <strong style="font-size: 32px; color: #198754;" id="recibo-monto">--</strong>
-            </div>
-            
-            <div style="margin-top: 50px; text-align: center; color: #888; font-size: 14px; border-top: 1px dashed #ccc; padding-top: 20px;">
-                <p style="margin: 0;">¡Muchas gracias por acompañar el crecimiento del club!</p>
-                <p style="margin: 5px 0 0;">Este documento es un comprobante válido de pago.</p>
-            </div>
-        </div>
-    </div>
+    <div id="recibo-template" style="display: none;"></div>
 
     <div class="modal fade" id="modalEditarPago" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
@@ -275,14 +260,15 @@
     </div>
 
     <script>
+        let pagosCargadosDesdeBackend = []; 
+        let pagosActualesExportar = [];     
+
         // 1. SEGURIDAD BLINDADA (ROLES)
         if (!sessionStorage.getItem('usuarioLogueado')) {
             window.location.href = 'login.html';
         }
 
         const rolUsuario = sessionStorage.getItem('usuarioRol');
-        
-        // Bloqueamos el acceso al Cuerpo Técnico por privacidad financiera
         if (rolUsuario === 'Cuerpo Tecnico') {
             alert('⛔ Acceso Denegado: La sección de Tesorería es exclusiva para el personal administrativo.');
             window.location.href = 'index.html';
@@ -319,7 +305,6 @@
                 ];
 
                 buscador.setChoices(opciones, 'value', 'label', true);
-
                 select.addEventListener('change', cargarHistorial);
 
             } catch (error) {
@@ -327,20 +312,7 @@
             }
         }
 
-        // 3. CARGAR ESTADÍSTICAS GLOBALES
-        async function cargarTotales() {
-            try {
-                const respuesta = await fetch('http://localhost:3000/pagos-totales');
-                const datos = await respuesta.json();
-
-                document.getElementById('stat-cuotas').innerText = datos.cantidad;
-                document.getElementById('stat-recaudacion').innerText = `$${Number(datos.total).toLocaleString('es-AR')}`;
-            } catch (error) {
-                console.error('Error estadísticas:', error);
-            }
-        }
-
-        // 4. CARGAR HISTORIAL (GLOBAL O INDIVIDUAL)
+        // 3. CARGAR HISTORIAL (BÚSQUEDA A BASE DE DATOS)
         async function cargarHistorial() {
             const jugador_id = document.getElementById('p-jugador').value;
             const tabla = document.getElementById('tabla-historial');
@@ -350,63 +322,157 @@
                 const urlFetch = jugador_id ? `http://localhost:3000/pagos/${jugador_id}` : 'http://localhost:3000/pagos-todos';
                 
                 const respuesta = await fetch(urlFetch);
-                const pagos = await respuesta.json();
+                pagosCargadosDesdeBackend = await respuesta.json();
 
-                if (pagos.length === 0) {
-                    tabla.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4 fw-bold">No hay pagos registrados aún.</td></tr>';
-                    return;
-                }
+                // Cada vez que cambiamos de jugador, reiniciamos el filtro visual de mes
+                document.getElementById('filtro-mes').value = "";
 
-                tabla.innerHTML = '';
-                pagos.forEach(pago => {
-                    const fechaObj = new Date(pago.fecha_pago);
-                    fechaObj.setMinutes(fechaObj.getMinutes() + fechaObj.getTimezoneOffset());
-                    const fechaFormat = fechaObj.toLocaleDateString('es-AR');
-                    const montoFormat = `$${Number(pago.monto).toLocaleString('es-AR')}`;
+                // Llamamos a la función que pinta la tabla y ahora TAMBIÉN calcula las tarjetas
+                renderizarTabla();
 
-                    // Lógica para saber qué nombre poner en la tabla y en el recibo
-                    let nombreMostrar = '';
-                    if (pago.apellido && pago.nombre) {
-                        nombreMostrar = `${pago.apellido}, ${pago.nombre}`; 
-                    } else if (jugador_id) {
-                        const selectJugador = document.getElementById('p-jugador');
-                        nombreMostrar = selectJugador.options[selectJugador.selectedIndex].text.split(' - ')[0];
-                    }
-
-                    const fila = `
-                        <tr>
-                            <td class="ps-3 fw-bold text-dark small">${nombreMostrar}</td>
-                            <td class="fw-bold text-primary">${pago.mes_correspondiente}</td>
-                            <td class="text-muted small">${fechaFormat}</td>
-                            <td class="fw-bold text-success">${montoFormat}</td>
-                            <td><span class="badge bg-secondary">${pago.metodo}</span></td>
-                            <td class="text-center"> <div class="btn-group shadow-sm">
-                                    <button type="button" class="btn btn-outline-dark btn-sm" title="Imprimir Papel" 
-                                        onclick="imprimirReciboPapel('${pago.mes_correspondiente}', '${fechaFormat}', '${montoFormat}', '${pago.metodo}', '${nombreMostrar}')">
-                                        <i class="bi bi-printer-fill"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-success btn-sm" title="Enviar WhatsApp" 
-                                        onclick="generarYEnviarRecibo('${pago.mes_correspondiente}', '${fechaFormat}', '${montoFormat}', '${pago.metodo}', '${nombreMostrar}')">
-                                        <i class="bi bi-whatsapp"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-primary btn-sm" title="Editar Pago" 
-                                        onclick="abrirModalEditar(${pago.id}, '${pago.mes_correspondiente}', '${pago.fecha_pago}', ${pago.monto}, '${pago.metodo}', '${pago.observaciones || ''}')">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-danger btn-sm" title="Anular Pago" 
-                                        onclick="eliminarPago(${pago.id})">
-                                        <i class="bi bi-trash3"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                    tabla.innerHTML += fila;
-                });
             } catch (error) {
                 console.error('Error historial:', error);
                 tabla.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">Error de conexión.</td></tr>';
             }
+        }
+
+        // ====================================================================
+        // RENDERIZAR TABLA CON FILTROS Y ACTUALIZAR TARJETAS EN TIEMPO REAL
+        // ====================================================================
+        function renderizarTabla() {
+            const jugador_id = document.getElementById('p-jugador').value;
+            const tabla = document.getElementById('tabla-historial');
+            const mesFiltro = document.getElementById('filtro-mes').value;
+
+            // 1. Aplicamos el filtro de mes
+            let pagosFiltrados = pagosCargadosDesdeBackend;
+            if (mesFiltro !== "") {
+                pagosFiltrados = pagosCargadosDesdeBackend.filter(pago => pago.mes_correspondiente === mesFiltro);
+            }
+            pagosActualesExportar = pagosFiltrados;
+
+            // -----------------------------------------------------------
+            // LA MAGIA DE LAS TARJETAS: Calculamos los totales en base a lo filtrado
+            // -----------------------------------------------------------
+            const cantidadTotal = pagosFiltrados.length;
+            const montoTotal = pagosFiltrados.reduce((suma, pago) => suma + Number(pago.monto), 0);
+
+            // Actualizamos los números en las tarjetas
+            document.getElementById('stat-cuotas').innerText = cantidadTotal;
+            document.getElementById('stat-recaudacion').innerText = `$ ${montoTotal.toLocaleString('es-AR')}`;
+
+            // Actualizamos los títulos para que el usuario sepa si está viendo todo o algo filtrado
+            if (jugador_id !== "" || mesFiltro !== "") {
+                document.getElementById('titulo-cuotas').innerText = 'Cuotas (Filtradas)';
+                document.getElementById('titulo-recaudacion').innerText = 'Recaudación (Filtrada)';
+            } else {
+                document.getElementById('titulo-cuotas').innerText = 'Total Cuotas Cobradas';
+                document.getElementById('titulo-recaudacion').innerText = 'Recaudación Global';
+            }
+            // -----------------------------------------------------------
+
+            // 2. Dibujamos la tabla
+            if (pagosFiltrados.length === 0) {
+                tabla.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4 fw-bold">No hay pagos que coincidan con este filtro.</td></tr>';
+                return;
+            }
+
+            tabla.innerHTML = '';
+            pagosFiltrados.forEach(pago => {
+                const fechaObj = new Date(pago.fecha_pago);
+                fechaObj.setMinutes(fechaObj.getMinutes() + fechaObj.getTimezoneOffset());
+                const fechaFormat = fechaObj.toLocaleDateString('es-AR');
+                const montoFormat = `$${Number(pago.monto).toLocaleString('es-AR')}`;
+
+                let nombreMostrar = '';
+                if (pago.apellido && pago.nombre) {
+                    nombreMostrar = `${pago.apellido}, ${pago.nombre}`; 
+                } else if (jugador_id) {
+                    const selectJugador = document.getElementById('p-jugador');
+                    nombreMostrar = selectJugador.options[selectJugador.selectedIndex].text.split(' - ')[0];
+                }
+
+                const fila = `
+                    <tr>
+                        <td class="ps-3 fw-bold text-dark small">${nombreMostrar}</td>
+                        <td class="fw-bold text-primary">${pago.mes_correspondiente}</td>
+                        <td class="text-muted small">${fechaFormat}</td>
+                        <td class="fw-bold text-success">${montoFormat}</td>
+                        <td><span class="badge bg-secondary">${pago.metodo}</span></td>
+                        <td class="text-center"> <div class="btn-group shadow-sm">
+                                <button type="button" class="btn btn-outline-dark btn-sm" title="Imprimir Papel" 
+                                    onclick="imprimirReciboPapel('${pago.mes_correspondiente}', '${fechaFormat}', '${montoFormat}', '${pago.metodo}', '${nombreMostrar}')">
+                                    <i class="bi bi-printer-fill"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-success btn-sm" title="Enviar WhatsApp" 
+                                    onclick="generarYEnviarRecibo('${pago.mes_correspondiente}', '${fechaFormat}', '${montoFormat}', '${pago.metodo}', '${nombreMostrar}')">
+                                    <i class="bi bi-whatsapp"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" title="Editar Pago" 
+                                    onclick="abrirModalEditar(${pago.id}, '${pago.mes_correspondiente}', '${pago.fecha_pago}', ${pago.monto}, '${pago.metodo}', '${pago.observaciones || ''}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm" title="Anular Pago" 
+                                    onclick="eliminarPago(${pago.id})">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tabla.innerHTML += fila;
+            });
+        }
+
+        // ====================================================================
+        // EXPORTAR A EXCEL (XLSX)
+        // ====================================================================
+        function exportarAExcel() {
+            if (pagosActualesExportar.length === 0) {
+                alert("⚠️ No hay datos en la tabla para exportar.");
+                return;
+            }
+
+            const jugador_id = document.getElementById('p-jugador').value;
+            let nombreFijo = "";
+            if (jugador_id) {
+                const selectJugador = document.getElementById('p-jugador');
+                nombreFijo = selectJugador.options[selectJugador.selectedIndex].text.split(' - ')[0];
+            }
+
+            const datosExcel = pagosActualesExportar.map(pago => {
+                let nombreMostrar = '';
+                if (pago.apellido && pago.nombre) {
+                    nombreMostrar = `${pago.apellido}, ${pago.nombre}`; 
+                } else {
+                    nombreMostrar = nombreFijo;
+                }
+
+                const fechaObj = new Date(pago.fecha_pago);
+                fechaObj.setMinutes(fechaObj.getMinutes() + fechaObj.getTimezoneOffset());
+                const fechaFormat = fechaObj.toLocaleDateString('es-AR');
+
+                return {
+                    "Jugador": nombreMostrar,
+                    "Mes": pago.mes_correspondiente,
+                    "Fecha": fechaFormat,
+                    "Monto ($)": Number(pago.monto), 
+                    "Método": pago.metodo,
+                    "Observaciones": pago.observaciones || ""
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Libro Mayor");
+
+            let nombreArchivo = "Historial_Pagos_SolDeMayo";
+            if (nombreFijo) {
+                nombreArchivo += `_${nombreFijo.replace(/ /g, '_')}`; 
+            }
+            nombreArchivo += ".xlsx"; 
+
+            XLSX.writeFile(workbook, nombreArchivo);
         }
 
         // 5. GUARDAR PAGO
@@ -425,9 +491,28 @@
                 return;
             }
 
+            const mesSeleccionado = document.getElementById('p-mes').value;
+
+            try {
+                const resCheck = await fetch(`http://localhost:3000/pagos/${jugadorId}`);
+                const pagosDelJugador = await resCheck.json();
+
+                const yaTienePago = pagosDelJugador.some(pago => pago.mes_correspondiente === mesSeleccionado);
+
+                if (yaTienePago) {
+                    const quiereForzar = confirm(`⚠️ ATENCIÓN: Este jugador ya tiene un cobro registrado para la cuota de ${mesSeleccionado}.\n\n¿Estás seguro de que querés registrar OTRO pago para este mismo mes? (Aceptar solo si es para saldar una deuda o pago parcial).`);
+                    
+                    if (!quiereForzar) {
+                        return; 
+                    }
+                }
+            } catch (error) {
+                console.error('Error al verificar pagos duplicados:', error);
+            }
+
             const nuevoPago = {
                 jugador_id: jugadorId,
-                mes_correspondiente: document.getElementById('p-mes').value,
+                mes_correspondiente: mesSeleccionado,
                 fecha_pago: document.getElementById('p-fecha').value,
                 monto: document.getElementById('p-monto').value,
                 metodo: document.getElementById('p-metodo').value,
@@ -442,22 +527,12 @@
                 });
 
                 if (respuesta.ok) {
-                    alert(`✅ ¡Pago registrado con éxito! Generando recibo...`);
+                    alert(`✅ ¡Pago registrado con éxito!`);
                     
-                    const selectElement = document.getElementById('p-jugador');
-                    const nombreJug = selectElement.options[selectElement.selectedIndex].text.split(' - ')[0];
-                    const montoFormateado = `$${Number(nuevoPago.monto).toLocaleString('es-AR')}`;
-                    
-                    const fechaObj = new Date(nuevoPago.fecha_pago);
-                    fechaObj.setMinutes(fechaObj.getMinutes() + fechaObj.getTimezoneOffset());
-                    const fechaFormat = fechaObj.toLocaleDateString('es-AR');
-                    
-                    generarYEnviarRecibo(nuevoPago.mes_correspondiente, fechaFormat, montoFormateado, nuevoPago.metodo, nombreJug);
-
                     document.getElementById('p-monto').value = '';
                     document.getElementById('p-observaciones').value = '';
                     
-                    cargarTotales();
+                    // Solo recargamos el historial, la tabla se encarga del resto
                     cargarHistorial(); 
                 } else {
                     alert('❌ Ocurrió un error al guardar el pago en la base de datos.');
@@ -468,36 +543,46 @@
             }
         });
 
-        // ====================================================================
         // 6A. NUEVO FLUJO: EMERGENTE PARA GUARDAR PDF Y LUEGO WHATSAPP
-        // ====================================================================
         function generarYEnviarRecibo(mes, fecha, monto, metodo, nombreJugador) {
-            // Pre-armamos el enlace de WhatsApp
             const textoWA = `Hola! Te envío el comprobante oficial del pago de la Cuota de ${mes} (${nombreJugador}). ¡Muchas gracias por acompañar al club! 🏀`;
             const linkWA = `https://api.whatsapp.com/send?text=${encodeURIComponent(textoWA)}`;
             
-            // Abrimos la ventana emergente
             const ventana = window.open('', '_blank', 'width=800,height=800');
             
-            // Escribimos el mismo HTML seguro y probado que usamos para imprimir
             const html = `
                 <html>
                 <head>
                     <title>Recibo_${nombreJugador.replace(/ /g, '_')}_${mes}</title>
                     <style>
-                        body { font-family: Arial, sans-serif; padding: 40px; color: #333; background: #fff; }
-                        .recibo-box { border: 2px solid #198754; border-radius: 12px; padding: 30px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-                        .header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 20px; margin-bottom: 20px; }
-                        .header h2 { margin: 0; color: #198754; font-size: 24px; }
-                        .detalle { font-size: 16px; line-height: 2; margin-top: 20px; }
-                        .monto { font-size: 28px; text-align: center; background: #e8f5e9; padding: 15px; border-radius: 8px; color: #198754; font-weight: bold; margin: 25px 0; border: 1px solid #c8e6c9;}
-                        .footer { text-align: center; margin-top: 40px; font-size: 13px; color: #777; border-top: 1px solid #eee; padding-top: 15px; }
+                        body { font-family: Arial, sans-serif; background: #f8f9fa; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
                         
-                        /* Un mensaje temporal para el usuario, que se oculta al imprimir */
-                        .instrucciones { text-align: center; margin-top: 30px; padding: 15px; background: #fff3cd; color: #0f5132; border-radius: 8px; font-weight: bold; border: 1px solid #ffe69c; }
+                        .recibo-box { 
+                            background: white; border: 2px solid #198754; border-radius: 12px; 
+                            width: 17cm; height: 9.5cm; 
+                            padding: 15px 25px; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+                            position: relative; overflow: hidden;
+                        }
+                        
+                        .header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 8px; margin-bottom: 10px; }
+                        .header h2 { margin: 0; color: #198754; font-size: 22px; }
+                        .header p { margin: 2px 0 0 0; font-size: 12px; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+                        
+                        .detalle { font-size: 14px; line-height: 1.5; margin-top: 5px; }
+                        .detalle table { width: 100%; border-collapse: collapse; }
+                        .detalle td { padding: 3px 0; border-bottom: 1px solid #f0f0f0; }
+                        
+                        .monto { font-size: 24px; text-align: center; background: #e8f5e9; padding: 8px; border-radius: 8px; color: #198754; font-weight: bold; margin: 12px 0; border: 1px solid #c8e6c9;}
+                        
+                        .footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 8px; position: absolute; bottom: 12px; left: 25px; right: 25px; }
+                        
+                        .instrucciones { text-align: center; margin-top: 20px; padding: 15px; background: #fff3cd; color: #0f5132; border-radius: 8px; font-weight: bold; border: 1px solid #ffe69c; width: 17cm; box-sizing: border-box; }
+                        
                         @media print {
+                            @page { size: A4 portrait; margin: 1cm; }
+                            body { background: white; padding: 0; display: block; }
+                            .recibo-box { box-shadow: none; margin: 0 auto; } 
                             .instrucciones { display: none !important; }
-                            .recibo-box { box-shadow: none; border: none; }
                         }
                     </style>
                 </head>
@@ -508,13 +593,18 @@
                             <p>COMPROBANTE OFICIAL DE PAGO</p>
                         </div>
                         <div class="detalle">
-                            <strong>Fecha:</strong> ${fecha}<br>
-                            <strong>Recibimos de:</strong> ${nombreJugador}<br>
-                            <strong>Concepto:</strong> Cuota ${mes}<br>
-                            <strong>Método:</strong> ${metodo}
+                            <table>
+                                <tr><td><strong>Fecha:</strong></td><td style="text-align: right;">${fecha}</td></tr>
+                                <tr><td><strong>Recibimos de:</strong></td><td style="text-align: right;">${nombreJugador}</td></tr>
+                                <tr><td><strong>Concepto:</strong></td><td style="text-align: right;">Cuota ${mes}</td></tr>
+                                <tr><td><strong>Método de pago:</strong></td><td style="text-align: right;">${metodo}</td></tr>
+                            </table>
                         </div>
                         <div class="monto">TOTAL: ${monto}</div>
-                        <div class="footer">¡Gracias por acompañar al club!</div>
+                        <div class="footer">
+                            <strong>¡Muchas gracias por acompañar el crecimiento del club!</strong><br>
+                            Este documento es un comprobante válido de pago.
+                        </div>
                     </div>
 
                     <div class="instrucciones">
@@ -524,12 +614,8 @@
 
                     <script>
                         window.onload = function() { 
-                            // Damos medio segundo para que la ventana cargue los estilos
                             setTimeout(function() {
-                                // 1. Abre la ventana nativa (Acá eliges Guardar como PDF)
                                 window.print(); 
-                                
-                                // 2. Una vez que guardes o canceles, esperamos 1 segundo y vamos a WhatsApp
                                 setTimeout(function() {
                                     window.location.replace("${linkWA}");
                                 }, 1000);
@@ -543,9 +629,7 @@
             ventana.document.close();
         }
 
-        // ====================================================================
-        // 6B. IMPRIMIR RECIBO DIRECTO EN PAPEL (Impresora física)
-        // ====================================================================
+        // 6B. IMPRIMIR RECIBO DIRECTO EN PAPEL
         function imprimirReciboPapel(mes, fecha, monto, metodo, nombreJugador) {
             const ventana = window.open('', '_blank', 'width=800,height=600');
             const html = `
@@ -553,13 +637,32 @@
                 <head>
                     <title>Recibo - Sol de Mayo</title>
                     <style>
-                        body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
-                        .recibo-box { border: 2px solid #198754; border-radius: 12px; padding: 30px; max-width: 500px; margin: 0 auto; }
-                        .header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 20px; margin-bottom: 20px; }
-                        .header h2 { margin: 0; color: #198754; }
-                        .detalle { font-size: 16px; line-height: 2; margin-top: 20px; }
-                        .monto { font-size: 28px; text-align: center; background: #e8f5e9; padding: 15px; border-radius: 8px; color: #198754; font-weight: bold; margin: 25px 0; border: 1px solid #c8e6c9;}
-                        .footer { text-align: center; margin-top: 40px; font-size: 13px; color: #777; border-top: 1px solid #eee; padding-top: 15px; }
+                        body { font-family: Arial, sans-serif; background: #f8f9fa; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
+                        
+                        .recibo-box { 
+                            background: white; border: 2px solid #198754; border-radius: 12px; 
+                            width: 17cm; height: 9.5cm; 
+                            padding: 15px 25px; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+                            position: relative; overflow: hidden;
+                        }
+                        
+                        .header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 8px; margin-bottom: 10px; }
+                        .header h2 { margin: 0; color: #198754; font-size: 22px; }
+                        .header p { margin: 2px 0 0 0; font-size: 12px; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+                        
+                        .detalle { font-size: 14px; line-height: 1.5; margin-top: 5px; }
+                        .detalle table { width: 100%; border-collapse: collapse; }
+                        .detalle td { padding: 3px 0; border-bottom: 1px solid #f0f0f0; }
+                        
+                        .monto { font-size: 24px; text-align: center; background: #e8f5e9; padding: 8px; border-radius: 8px; color: #198754; font-weight: bold; margin: 12px 0; border: 1px solid #c8e6c9;}
+                        
+                        .footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 8px; position: absolute; bottom: 12px; left: 25px; right: 25px; }
+                        
+                        @media print {
+                            @page { size: A4 portrait; margin: 1cm; }
+                            body { background: white; padding: 0; display: block; }
+                            .recibo-box { box-shadow: none; margin: 0 auto; }
+                        }
                     </style>
                 </head>
                 <body>
@@ -569,13 +672,18 @@
                             <p>COMPROBANTE OFICIAL DE PAGO</p>
                         </div>
                         <div class="detalle">
-                            <strong>Fecha:</strong> ${fecha}<br>
-                            <strong>Recibimos de:</strong> ${nombreJugador}<br>
-                            <strong>Concepto:</strong> Cuota ${mes}<br>
-                            <strong>Método:</strong> ${metodo}
+                            <table>
+                                <tr><td><strong>Fecha:</strong></td><td style="text-align: right;">${fecha}</td></tr>
+                                <tr><td><strong>Recibimos de:</strong></td><td style="text-align: right;">${nombreJugador}</td></tr>
+                                <tr><td><strong>Concepto:</strong></td><td style="text-align: right;">Cuota ${mes}</td></tr>
+                                <tr><td><strong>Método de pago:</strong></td><td style="text-align: right;">${metodo}</td></tr>
+                            </table>
                         </div>
                         <div class="monto">TOTAL: ${monto}</div>
-                        <div class="footer">¡Gracias por acompañar al club!</div>
+                        <div class="footer">
+                            <strong>¡Muchas gracias por acompañar el crecimiento del club!</strong><br>
+                            Este documento es un comprobante válido de pago.
+                        </div>
                     </div>
                     <script>
                         window.onload = function() { window.print(); }
@@ -626,8 +734,7 @@
                 if (respuesta.ok) {
                     alert('✅ Pago actualizado correctamente.');
                     bootstrap.Modal.getInstance(document.getElementById('modalEditarPago')).hide();
-                    cargarTotales();
-                    cargarHistorial();
+                    cargarHistorial(); // Actualiza la tabla y las tarjetas
                 } else {
                     alert('❌ Error al actualizar el pago.');
                 }
@@ -648,8 +755,7 @@
 
                 if (respuesta.ok) {
                     alert('🗑️ Pago anulado correctamente.');
-                    cargarTotales();
-                    cargarHistorial();
+                    cargarHistorial(); // Actualiza la tabla y las tarjetas
                 } else {
                     alert('❌ Hubo un error al intentar anular el pago.');
                 }
@@ -660,7 +766,7 @@
 
         // Iniciar todo al entrar a la página
         cargarJugadoresSelect();
-        cargarTotales();
+        // Llamamos directamente al historial, que ahora se encarga de todo (incluso las tarjetas)
         cargarHistorial(); 
     </script>
 </body>
