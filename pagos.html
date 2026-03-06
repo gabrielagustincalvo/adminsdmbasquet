@@ -18,6 +18,11 @@
     <style>
         body { background-color: #f8f9fa; }
         .card-tesoreria { border-radius: 15px; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); }
+
+        /* Ocultar el texto espúreo generado por el buscador en móviles */
+        .choices__item--selectable[data-value=""] {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="pb-5">
