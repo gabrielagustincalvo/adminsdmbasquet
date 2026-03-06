@@ -550,7 +550,7 @@
 
         // 6A. NUEVO FLUJO: EMERGENTE PARA GUARDAR PDF Y LUEGO WHATSAPP
         function generarYEnviarRecibo(mes, fecha, monto, metodo, nombreJugador) {
-            const textoWA = `Hola! Te envío el comprobante oficial del pago de la Cuota de ${mes} (${nombreJugador}). ¡Muchas gracias por acompañar al club! 🏀`;
+            const textoWA = `Hola! Te envío el comprobante oficial del pago de la Cuota de ${mes} de ${nombreJugador}. ¡Muchas gracias por acompañar al club! 🏀`;
             const linkWA = `https://api.whatsapp.com/send?text=${encodeURIComponent(textoWA)}`;
             
             const ventana = window.open('', '_blank', 'width=800,height=800');
