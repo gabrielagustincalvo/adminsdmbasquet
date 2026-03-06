@@ -703,7 +703,7 @@
                 profesional_nombre: sessionStorage.getItem('usuarioLogueado') || 'Kinesiólogo'
             };
             try {
-                const res = await fetch('//kinesiologia', {
+                const res = await fetch('/kinesiologia', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevoReg)
                 });
                 if (res.ok) {

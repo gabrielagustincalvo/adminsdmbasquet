@@ -652,10 +652,10 @@
                 document.getElementById('filtro-mes').value = mesActual;
 
                 const [resJug, resEmp, resPagos, resEgresos] = await Promise.all([
-                    fetch('//jugadores'),
-                    fetch('//empleados'),
-                    fetch('//pagos-todos'),
-                    fetch('//egresos')
+                    fetch('/jugadores'),
+                    fetch('/empleados'),
+                    fetch('/pagos-todos'),
+                    fetch('/egresos')
                 ]);
 
                 todosLosJugadores = await resJug.json();

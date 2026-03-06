@@ -155,7 +155,7 @@
 
             try {
                 // Traemos TODOS los jugadores
-                const resJugadores = await fetch('//jugadores');
+                const resJugadores = await fetch('/jugadores');
                 todosLosJugadores = await resJugadores.json();
 
                 // Traemos la ASISTENCIA de esa fecha Y TIPO específico
@@ -247,7 +247,7 @@
             });
 
             try {
-                const respuesta = await fetch('//asistencia', {
+                const respuesta = await fetch('/asistencia', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(paqueteAsistencia)

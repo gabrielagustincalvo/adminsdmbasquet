@@ -286,7 +286,7 @@
         // 2. CARGAR JUGADORES BLINDADO
         async function cargarJugadoresSelect() {
             try {
-                const respuesta = await fetch('//jugadores');
+                const respuesta = await fetch('/jugadores');
                 const jugadores = await respuesta.json();
                 
                 jugadores.sort((a, b) => a.apellido.localeCompare(b.apellido));
@@ -521,7 +521,7 @@
             };
 
             try {
-                const respuesta = await fetch('//pagos', {
+                const respuesta = await fetch('/pagos', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(nuevoPago)
@@ -764,10 +764,10 @@
             tabla.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-danger"></div> Buscando deudores...</td></tr>';
 
             try {
-                const resJug = await fetch('//jugadores');
+                const resJug = await fetch('/jugadores');
                 const todosLosJugadores = await resJug.json();
 
-                const resPagos = await fetch('//pagos-todos');
+                const resPagos = await fetch('/pagos-todos');
                 const todosLosPagos = await resPagos.json();
                 const pagosDelMes = todosLosPagos.filter(p => p.mes_correspondiente === mesFiltro);
 
