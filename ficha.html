@@ -406,7 +406,7 @@
 
         async function cargarFicha() {
             try {
-                const respuesta = await fetch(`//jugadores/${idJugador}`);
+                const respuesta = await fetch(`/jugadores/${idJugador}`);
                 jugadorActual = await respuesta.json();
 
                 let tituloNombre = `${jugadorActual.nombre} ${jugadorActual.apellido}`;
@@ -646,7 +646,7 @@
         async function cargarKinesiologia() {
             const tabla = document.getElementById('tabla-kinesiologia');
             try {
-                const respuesta = await fetch(`//kinesiologia/${idJugador}`);
+                const respuesta = await fetch(`/kinesiologia/${idJugador}`);
                 historialKine = await respuesta.json(); 
 
                 tabla.innerHTML = '';
