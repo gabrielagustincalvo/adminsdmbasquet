@@ -156,7 +156,7 @@
             msjError.classList.add('d-none');
 
             try {
-                const res = await fetch('//cambiar-password-obligatorio', {
+                const res = await fetch('/cambiar-password-obligatorio', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: idUsuario, nuevaPassword: p1 })
