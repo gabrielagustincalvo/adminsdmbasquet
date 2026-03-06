@@ -154,11 +154,11 @@
             }
 
             try {
-                // Traemos TODOS los jugadores
+                // Traemos TODOS los jugadores. CORRECCIÓN: Se agrega '/' al inicio
                 const resJugadores = await fetch('/jugadores');
                 todosLosJugadores = await resJugadores.json();
 
-                // Traemos la ASISTENCIA de esa fecha Y TIPO específico
+                // Traemos la ASISTENCIA de esa fecha Y TIPO específico. CORRECCIÓN: Se agrega '/' al inicio
                 const resAsistencia = await fetch(`/asistencia/${fechaSeleccionada}/${tipoSeleccionado}`);
                 asistenciaDelDia = await resAsistencia.json();
 
@@ -247,6 +247,7 @@
             });
 
             try {
+                // CORRECCIÓN: Se agrega '/' al inicio
                 const respuesta = await fetch('/asistencia', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
