@@ -142,12 +142,13 @@
 
             <div class="col-lg-8 mb-4">
                 <div class="card border-0 card-tesoreria h-100">
-                    <div class="card-header bg-dark text-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2" style="border-radius: 15px 15px 0 0;">
-                        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Libro Mayor de Pagos</h5>
+                    <div class="card-header bg-dark text-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-2" style="border-radius: 15px 15px 0 0;">
+                        <h5 class="mb-0 text-center w-100 w-md-auto"><i class="bi bi-clock-history"></i> Libro Mayor de pagos</h5>
                         
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <select id="filtro-mes" class="form-select form-select-sm bg-light fw-bold" style="width: auto; cursor: pointer;" onchange="renderizarTabla()">
-                                <option value="">🗓️ Todos los meses</option>
+                        <div class="d-flex align-items-center gap-1 gap-md-2 flex-nowrap w-100 justify-content-center justify-content-md-end overflow-hidden">
+                            
+                            <select id="filtro-mes" class="form-select form-select-sm bg-light fw-bold flex-shrink-1" style="min-width: 0; text-overflow: ellipsis;" onchange="renderizarTabla()">
+                                <option value="">🗓️ Meses</option>
                                 <option value="Enero">Enero</option>
                                 <option value="Febrero">Febrero</option>
                                 <option value="Marzo">Marzo</option>
@@ -162,11 +163,12 @@
                                 <option value="Diciembre">Diciembre</option>
                             </select>
 
-                            <button onclick="exportarAExcel()" class="btn btn-success btn-sm shadow-sm fw-bold" title="Descargar como Excel">
-                                <i class="bi bi-file-earmark-excel-fill"></i> Exportar
+                            <button onclick="exportarAExcel()" class="btn btn-success btn-sm shadow-sm fw-bold text-nowrap flex-shrink-0" title="Descargar Excel">
+                                <i class="bi bi-file-earmark-excel-fill"></i> <span class="d-none d-sm-inline">Exportar</span>
                             </button>
-                            <button onclick="verDeudores()" class="btn btn-outline-danger btn-sm shadow-sm fw-bold" title="Ver quienes no pagaron">
-                                <i class="bi bi-person-exclamation"></i> Ver Deudas
+                            
+                            <button onclick="verDeudores()" class="btn btn-outline-danger btn-sm shadow-sm fw-bold text-nowrap flex-shrink-0" title="Ver Deudas">
+                                <i class="bi bi-person-exclamation"></i> <span class="d-none d-sm-inline">Deudas</span>
                             </button>
                         </div>
                     </div>
