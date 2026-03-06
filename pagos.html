@@ -331,7 +331,7 @@
             tabla.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-success"></div></td></tr>';
 
             try {
-                const urlFetch = jugador_id ? `//pagos/${jugador_id}` : '//pagos-todos';
+                const urlFetch = jugador_id ? `/pagos/${jugador_id}` : '/pagos-todos';
                 
                 const respuesta = await fetch(urlFetch);
                 pagosCargadosDesdeBackend = await respuesta.json();
