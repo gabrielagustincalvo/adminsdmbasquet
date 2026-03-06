@@ -227,18 +227,20 @@
             
             <div class="card shadow-sm border-0">
                 <div class="card-body">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Jugador</th>
-                                <th>Edad / Año</th>
-                                <th>Rama</th>
-                                <th>Teléfono</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lista-jugadores"></tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Jugador</th>
+                                    <th>Edad / Año</th>
+                                    <th class="d-none d-md-table-cell">Rama</th>
+                                    <th class="d-none d-md-table-cell">Teléfono</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-jugadores"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -250,17 +252,19 @@
             
             <div class="card shadow-sm border-0">
                 <div class="card-body">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Rol</th>
-                                <th>Teléfono</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lista-staff"></tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Rol</th>
+                                    <th class="d-none d-md-table-cell">Teléfono</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-staff"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -275,17 +279,19 @@
                     <h5 class="mb-0 text-danger fw-bold"><i class="bi bi-person-x"></i> Jugadores Inactivos (Bajas)</h5>
                 </div>
                 <div class="card-body">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Jugador</th>
-                                <th>Rama</th>
-                                <th>Fecha Baja</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lista-inactivos"></tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Jugador</th>
+                                    <th class="d-none d-md-table-cell">Rama</th>
+                                    <th>Fecha Baja</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-inactivos"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -557,8 +563,8 @@
                             <div>${edad}</div>
                             <div class="text-muted small">Clase ${anioNac}</div>
                         </td>
-                        <td><span class="badge ${jugador.rama === 'Femenino' ? 'bg-danger' : 'bg-primary'} badge-rama">${jugador.rama || 'Masculino'}</span></td>
-                        <td>${jugador.telefono || '-'}</td>
+                        <td class="d-none d-md-table-cell"><span class="badge ${jugador.rama === 'Femenino' ? 'bg-danger' : 'bg-primary'} badge-rama">${jugador.rama || 'Masculino'}</span></td>
+                        <td class="d-none d-md-table-cell">${jugador.telefono || '-'}</td>
                         <td>
                             <a href="ficha.html?id=${jugador.id}" class="btn btn-outline-dark btn-sm">
                                 <i class="bi bi-person-vcard"></i> Ficha
@@ -594,7 +600,7 @@
                             <div class="text-muted small">DNI: ${emp.dni || '-'}</div>
                         </td>
                         <td><span class="badge ${badgeClass}">${emp.rol}</span></td>
-                        <td>${emp.telefono || '-'}</td>
+                        <td class="d-none d-md-table-cell">${emp.telefono || '-'}</td>
                         <td>
                             <a href="ficha-empleado.html?id=${emp.id}" class="btn btn-outline-dark btn-sm">
                                 <i class="bi bi-person-vcard"></i> Ficha
@@ -626,13 +632,13 @@
                 const fBS = new Date(j.fecha_baja);
                 fBS.setMinutes(fBS.getMinutes() + fBS.getTimezoneOffset());
                 
-                tabla.innerHTML += `
+                const fila = `
                     <tr>
                         <td>
                             <div class="fw-bold">${j.nombre} ${j.apellido}</div>
                             <div class="text-muted small">ID: #${j.id}</div>
                         </td>
-                        <td><span class="badge ${j.rama === 'Femenino' ? 'bg-danger' : 'bg-primary'}">${j.rama || 'Masculino'}</span></td>
+                        <td class="d-none d-md-table-cell"><span class="badge ${j.rama === 'Femenino' ? 'bg-danger' : 'bg-primary'}">${j.rama || 'Masculino'}</span></td>
                         <td class="text-danger fw-bold"><i class="bi bi-calendar-x"></i> ${fBS.toLocaleDateString('es-AR')}</td>
                         <td>
                             <a href="ficha.html?id=${j.id}" class="btn btn-outline-dark btn-sm">
@@ -641,6 +647,7 @@
                         </td>
                     </tr>
                 `;
+                tabla.innerHTML += fila;
             });
         }
 
