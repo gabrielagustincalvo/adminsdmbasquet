@@ -159,7 +159,7 @@
                 todosLosJugadores = await resJugadores.json();
 
                 // Traemos la ASISTENCIA de esa fecha Y TIPO específico
-                const resAsistencia = await fetch(`//asistencia/${fechaSeleccionada}/${tipoSeleccionado}`);
+                const resAsistencia = await fetch(`/asistencia/${fechaSeleccionada}/${tipoSeleccionado}`);
                 asistenciaDelDia = await resAsistencia.json();
 
                 // Filtramos a los jugadores
