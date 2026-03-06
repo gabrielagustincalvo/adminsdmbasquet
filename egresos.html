@@ -128,12 +128,13 @@
 
             <div class="col-lg-8 mb-4">
                 <div class="card border-0 card-egresos h-100">
-                    <div class="card-header bg-dark text-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2" style="border-radius: 15px 15px 0 0;">
-                        <h5 class="mb-0"><i class="bi bi-journal-text"></i> Libro Mayor de Egresos</h5>
+                    <div class="card-header bg-dark text-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-2" style="border-radius: 15px 15px 0 0;">
+                        <h5 class="mb-0 text-center w-100 w-md-auto"><i class="bi bi-journal-text"></i> Libro Mayor de Egresos</h5>
 
-                        <div class="d-flex align-items-center gap-2">
-                            <select id="filtro-mes" class="form-select form-select-sm bg-light fw-bold" style="width: auto; cursor: pointer;" onchange="renderizarTabla()">
-                                <option value="">📅 Todos los Meses</option>
+                        <div class="d-flex align-items-center gap-1 flex-nowrap w-100 justify-content-between">
+                            
+                            <select id="filtro-mes" class="form-select form-select-sm bg-light fw-bold flex-shrink-1" style="width: auto; max-width: 120px; font-size: 0.85rem;" onchange="renderizarTabla()">
+                                <option value="">📅 Meses</option>
                                 <option value="1">Enero</option>
                                 <option value="2">Febrero</option>
                                 <option value="3">Marzo</option>
@@ -147,21 +148,19 @@
                                 <option value="11">Noviembre</option>
                                 <option value="12">Diciembre</option>
                             </select>
-                        </div>
-                        
-                        <div class="d-flex align-items-center gap-2">
-                            <select id="filtro-categoria" class="form-select form-select-sm bg-light fw-bold" style="width: auto; cursor: pointer;" onchange="renderizarTabla()">
-                                <option value="">📌 Todas las Categorías</option>
-                                <option value="Arbitrajes y Mesa">Arbitrajes y Mesa</option>
-                                <option value="Materiales Deportivos">Materiales Deportivos</option>
-                                <option value="Indumentaria">Indumentaria</option>
-                                <option value="Viáticos y Transportes">Viáticos y Transportes</option>
-                                <option value="Inscripciones y Torneos">Inscripciones y Torneos</option>
+                            
+                            <select id="filtro-categoria" class="form-select form-select-sm bg-light fw-bold flex-shrink-1" style="width: 100%; max-width: 140px; font-size: 0.85rem;" onchange="renderizarTabla()">
+                                <option value="">📌 Categorías</option>
+                                <option value="Arbitrajes y Mesa">Arbitrajes</option>
+                                <option value="Materiales Deportivos">Materiales</option>
+                                <option value="Indumentaria">Ropa</option>
+                                <option value="Viáticos y Transportes">Viáticos</option>
+                                <option value="Inscripciones y Torneos">Torneos</option>
                                 <option value="Mantenimiento">Mantenimiento</option>
-                                <option value="Otros Gastos">Otros Gastos</option>
+                                <option value="Otros Gastos">Otros</option>
                             </select>
 
-                            <button onclick="exportarAExcel()" class="btn btn-success btn-sm shadow-sm fw-bold" title="Descargar Excel">
+                            <button onclick="exportarAExcel()" class="btn btn-success btn-sm shadow-sm fw-bold text-nowrap flex-shrink-0 px-2" style="font-size: 0.85rem;" title="Descargar Excel">
                                 <i class="bi bi-file-earmark-excel-fill"></i> Exportar
                             </button>
                         </div>
