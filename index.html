@@ -316,7 +316,7 @@
         let todosLosEgresos = [];
 
         // ==========================================
-        // MOTOR TEMPORAL DEFINITIVO
+        // MOTOR TEMPORAL DEFINITIVO (CORREGIDO)
         // ==========================================
         function esActivoEnElMes(persona, mesSeleccionado) {
             if (mesSeleccionado === 'Todos') return true;
@@ -324,6 +324,21 @@
             const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
             const indiceMes = nombresMeses.indexOf(mesSeleccionado);
             const anioActual = new Date().getFullYear();
+
+            // 🌟 NUEVA REGLA DE NEGOCIO:
+            // Si la persona es un JUGADOR (no tiene rol de empleado) y se le registró
+            // un pago en este mes, se le da un "Pase VIP" y cuenta como activo,
+            // sin importar su fecha real de ingreso al sistema.
+            const esJugador = !persona.rol; 
+            if (esJugador && typeof todosLosPagos !== 'undefined') {
+                const tienePagoEsteMes = todosLosPagos.some(pago => 
+                    Number(pago.jugador_id) === Number(persona.id) && 
+                    pago.mes_correspondiente === mesSeleccionado
+                );
+                if (tienePagoEsteMes) {
+                    return true;
+                }
+            }
 
             if (persona.fecha_baja) {
                 const baja = new Date(persona.fecha_baja);
@@ -731,11 +746,12 @@
                 const tarjetaEgre = document.getElementById('tarjeta-egresos');
                 if(tarjetaEgre) tarjetaEgre.style.display = 'none';
             } else {
-                const idsFiltrados = jugadoresFiltrados.map(j => j.id);
+                // 🌟 CORRECCIÓN CRÍTICA DE SUMA DE INGRESOS: Convertimos a Number() por seguridad
+                const idsFiltrados = jugadoresFiltrados.map(j => Number(j.id));
                 let sumaIngresos = 0;
                 
                 todosLosPagos.forEach(pago => {
-                    const coincideRamaYTiempo = idsFiltrados.includes(pago.jugador_id);
+                    const coincideRamaYTiempo = idsFiltrados.includes(Number(pago.jugador_id));
                     const coincideMes = mesSeleccionado === 'Todos' || pago.mes_correspondiente === mesSeleccionado;
                     if (coincideRamaYTiempo && coincideMes) sumaIngresos += Number(pago.monto);
                 });
