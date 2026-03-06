@@ -129,7 +129,7 @@
         // 1. Apenas entra, buscamos los datos y llenamos los casilleros
         async function cargarDatosParaEditar() {
             try {
-                const respuesta = await fetch(`//jugadores/${idJugador}`);
+                const respuesta = await fetch(`/jugadores/${idJugador}`);
                 const jugador = await respuesta.json();
 
                 document.getElementById('nombre').value = jugador.nombre;
@@ -180,7 +180,7 @@
 
             try {
                 // Usamos el método PUT (Actualizar) hacia el ID específico
-                const respuesta = await fetch(`//jugadores/${idJugador}`, {
+                const respuesta = await fetch(`/jugadores/${idJugador}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(datosActualizados)

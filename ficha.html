@@ -385,7 +385,7 @@
                 labelElement.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Subiendo...';
                 labelElement.classList.add('disabled');
 
-                const res = await fetch(`//jugadores/${idJugador}/documentos`, {
+                const res = await fetch(`/jugadores/${idJugador}/documentos`, {
                     method: 'POST', body: formData 
                 });
 
@@ -491,7 +491,7 @@
                 document.getElementById('doc-dni-dorso-box').innerHTML = renderDoc('dni_dorso', jugadorActual.dni_dorso, 'file-dni-d');
 
                 try {
-                    const resAsis = await fetch(`//asistencia/jugador/${idJugador}`);
+                    const resAsis = await fetch(`/asistencia/jugador/${idJugador}`);
                     historialAsistencia = await resAsis.json();
                     generarReporteAsistencia(); 
                 } catch (e) {
@@ -523,7 +523,7 @@
             if (!fechaBaja) return alert('Por favor, seleccioná una fecha.');
 
             try {
-                const respuesta = await fetch(`//jugadores/${idJugador}`, { 
+                const respuesta = await fetch(`/jugadores/${idJugador}`, { 
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ fecha_baja: fechaBaja }) 
@@ -548,7 +548,7 @@
             if (!fechaReingreso) return alert('Por favor, seleccioná una fecha.');
 
             try {
-                const respuesta = await fetch(`//jugadores/${idJugador}/reactivar`, { 
+                const respuesta = await fetch(`/jugadores/${idJugador}/reactivar`, { 
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ fecha_reingreso: fechaReingreso }) 
@@ -745,7 +745,7 @@
                 observaciones: document.getElementById('edit-k-observaciones').value
             };
             try {
-                const res = await fetch(`//kinesiologia/${id}`, {
+                const res = await fetch(`/kinesiologia/${id}`, {
                     method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(act)
                 });
                 if (res.ok) {
@@ -758,7 +758,7 @@
         async function eliminarKine(id) {
             if (!confirm('⚠️ ¿ELIMINAR definitivamente esta sesión?')) return;
             try {
-                const res = await fetch(`//kinesiologia/${id}`, { method: 'DELETE' });
+                const res = await fetch(`/kinesiologia/${id}`, { method: 'DELETE' });
                 if (res.ok) cargarKinesiologia(); 
                 else alert('❌ Error al eliminar.');
             } catch (error) { console.error('Error:', error); }

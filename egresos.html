@@ -345,7 +345,7 @@
             if (!confirmacion) return;
 
             try {
-                const respuesta = await fetch(`//egresos/${id}`, { method: 'DELETE' });
+                const respuesta = await fetch(`/egresos/${id}`, { method: 'DELETE' });
                 if (respuesta.ok) {
                     alert('🗑️ Egreso anulado correctamente.');
                     cargarHistorial(); 

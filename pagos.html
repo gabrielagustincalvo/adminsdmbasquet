@@ -495,7 +495,7 @@
             const mesSeleccionado = document.getElementById('p-mes').value;
 
             try {
-                const resCheck = await fetch(`//pagos/${jugadorId}`);
+                const resCheck = await fetch(`/pagos/${jugadorId}`);
                 const pagosDelJugador = await resCheck.json();
 
                 const yaTienePago = pagosDelJugador.some(pago => pago.mes_correspondiente === mesSeleccionado);
@@ -709,7 +709,7 @@
                 observaciones: document.getElementById('edit-observaciones').value
             };
             try {
-                const respuesta = await fetch(`//pagos/${id}`, {
+                const respuesta = await fetch(`/pagos/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(pagoActualizado)
@@ -731,7 +731,7 @@
             const confirmacion = confirm('⚠️ ATENCIÓN: ¿Estás seguro de que querés ANULAR este pago? Esta acción restará el dinero de la recaudación total.');
             if (!confirmacion) return;
             try {
-                const respuesta = await fetch(`//pagos/${id}`, {
+                const respuesta = await fetch(`/pagos/${id}`, {
                     method: 'DELETE'
                 });
                 if (respuesta.ok) {
