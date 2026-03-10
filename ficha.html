@@ -17,13 +17,14 @@
         .solo-impresion { display: none; }
 
         @media print {
-            .botonera-acciones { display: none !important; }
+            .botonera-acciones, nav { display: none !important; }
             .solo-impresion { display: block !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            body { background-color: white !important; font-size: 12px !important; }
+            body { background-color: white !important; font-size: 11px !important; margin: 0 !important; }
             .container, #area-pdf { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
-            .card { border: 1px solid #000 !important; box-shadow: none !important; page-break-inside: avoid; }
-            h2 { font-size: 18px !important; }
+            /* Forzamos que la tarjeta no deje espacio extra abajo */
+            .card { border: 1px solid #000 !important; box-shadow: none !important; margin-bottom: 0 !important; page-break-inside: avoid; }
+            h2 { font-size: 16px !important; margin-top: 5px !important; }
         }
     </style>
 </head>
@@ -570,40 +571,40 @@
         function generarPDFyWhatsApp() {
             if(!jugadorActual) return;
             
-            // 1. Mostramos los títulos bonitos del PDF
             const titulosImpresion = document.querySelectorAll('.solo-impresion');
             titulosImpresion.forEach(el => el.style.setProperty('display', 'block', 'important'));
             
-            // 2. Ocultamos botones, documentos y asistencia
             const elementosOcultar = document.querySelectorAll('.botonera-acciones, .ocultar-pdf');
             elementosOcultar.forEach(el => el.style.setProperty('display', 'none', 'important'));
 
             const elemento = document.getElementById('area-pdf');
             
             const opciones = {
-                margin: 0.3,
+                margin: [0.2, 0.2, 0, 0.2], // [Arriba, Izquierda, Abajo, Derecha] - Abajo en 0 evita la 2da hoja
                 filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
                     scale: 2, 
                     useCORS: true,
-                    scrollY: 0  // LA CLAVE: Evita el bug de la hoja en blanco al hacer scroll
+                    scrollY: 0,
+                    letterRendering: true
                 }, 
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+                // ESTA LÍNEA ES LA CLAVE: Evita saltos de página automáticos
+                pagebreak: { mode: 'avoid-all' } 
             };
 
             html2pdf().set(opciones).from(elemento).save().then(() => {
-                // 3. Restauramos la vista web normal
                 titulosImpresion.forEach(el => el.style.display = 'none');
                 elementosOcultar.forEach(el => el.style.display = ''); 
                 
                 setTimeout(() => {
-                    alert('📄 ¡El PDF se descargó!\nSe va a abrir WhatsApp para que lo envíes.');
+                    alert('📄 ¡Ficha generada en una sola hoja!\nSe va a abrir WhatsApp.');
                     const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
                     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
                 }, 500); 
             }).catch(err => {
-                console.error("Error al generar PDF:", err);
+                console.error("Error:", err);
                 titulosImpresion.forEach(el => el.style.display = 'none');
                 elementosOcultar.forEach(el => el.style.display = ''); 
             });
