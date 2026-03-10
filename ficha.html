@@ -581,21 +581,19 @@
             } catch (error) { alert('❌ No se pudo conectar con el servidor.'); }
         }
 
-        // --- 4. EXPORTAR PDF Y EMAIL (CORREGIDO) ---
+        // --- 4. EXPORTAR PDF Y EMAIL ---
         function generarPDFyWhatsApp() {
             if(!jugadorActual) return;
             
-            // 1. SOLUCIÓN BUG HOJA BLANCA: Forzar scroll arriba de todo
-            window.scrollTo(0, 0);
-            
-            // 2. Mostrar Títulos y ocultar todo lo demás manualmente
+            // 1. Mostrar títulos de impresión
             const titulosImpresion = document.querySelectorAll('.solo-impresion');
             titulosImpresion.forEach(el => el.style.setProperty('display', 'block', 'important'));
             
+            // 2. Ocultar todo lo que NO queremos en el PDF (botones, documentos, asistencia, fechas, etc.)
             const elementosOcultar = document.querySelectorAll('.botonera-acciones, .no-imprimir, #fechas-club-container, #btn-agregar-kine, #botonera');
             elementosOcultar.forEach(el => el.style.setProperty('display', 'none', 'important'));
 
-            // Ocultar columna de acciones en la tabla de kinesiología
+            // Ocultar la columna de "Acción" en la tabla de Kinesiología
             const thAccion = document.querySelector('#tabla-kinesiologia th:last-child');
             const tdAccion = document.querySelectorAll('#tabla-kinesiologia td:last-child');
             if(thAccion) thAccion.style.setProperty('display', 'none', 'important');
@@ -603,44 +601,44 @@
 
             const elemento = document.getElementById('area-pdf');
             
+            // 3. TUS OPCIONES ORIGINALES QUE FUNCIONAN PERFECTO
             const opciones = {
-                margin: [0.3, 0.2, 0.3, 0.2], 
+                margin: [0.2, 0.2, 0, 0.2], // Abajo en 0 evita la 2da hoja
                 filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
                     scale: 2, 
-                    useCORS: true, 
-                    scrollY: 0, 
-                    windowWidth: 1024 // Esto obliga a que respete el formato horizontal
+                    useCORS: true,
+                    scrollY: 0,
+                    letterRendering: true
                 }, 
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: 'avoid-all' } 
             };
 
-            // 3. EL SECRETO: Le damos 100ms al navegador para que asimile los cambios antes de la foto
-            setTimeout(() => {
-                html2pdf().set(opciones).from(elemento).save().then(() => {
-                    
-                    // 4. Restaurar todo a la normalidad
-                    titulosImpresion.forEach(el => el.style.display = 'none');
-                    elementosOcultar.forEach(el => el.style.display = ''); 
-                    if(thAccion) thAccion.style.display = '';
-                    tdAccion.forEach(td => td.style.display = '');
-                    
-                    setTimeout(() => {
-                        alert('📄 ¡Ficha generada con éxito!\nSe va a abrir WhatsApp.');
-                        const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
-                        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
-                    }, 500); 
-
-                }).catch(err => {
-                    console.error("Error:", err);
-                    // Restaurar si falla
-                    titulosImpresion.forEach(el => el.style.display = 'none');
-                    elementosOcultar.forEach(el => el.style.display = ''); 
-                    if(thAccion) thAccion.style.display = '';
-                    tdAccion.forEach(td => td.style.display = '');
-                });
-            }, 100);
+            // 4. Generar y restaurar
+            html2pdf().set(opciones).from(elemento).save().then(() => {
+                
+                // Restauramos todo a la normalidad
+                titulosImpresion.forEach(el => el.style.display = 'none');
+                elementosOcultar.forEach(el => el.style.display = ''); 
+                if(thAccion) thAccion.style.display = '';
+                tdAccion.forEach(td => td.style.display = '');
+                
+                setTimeout(() => {
+                    alert('📄 ¡Ficha generada en una sola hoja!\nSe va a abrir WhatsApp.');
+                    const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
+                    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
+                }, 500); 
+                
+            }).catch(err => {
+                console.error("Error:", err);
+                // Si hay error, restauramos igual para que no quede la pantalla rota
+                titulosImpresion.forEach(el => el.style.display = 'none');
+                elementosOcultar.forEach(el => el.style.display = ''); 
+                if(thAccion) thAccion.style.display = '';
+                tdAccion.forEach(td => td.style.display = '');
+            });
         }
 
         // --- 5. PERMISOS ---
