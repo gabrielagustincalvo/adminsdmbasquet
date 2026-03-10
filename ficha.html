@@ -12,42 +12,28 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <style>
-        /* ESTILOS PARA PANTALLA (PC/CELULAR) */
+        /* ESTILOS PARA PANTALLA NORMAL */
         body { background-color: #f8f9fa; }
         .baja-style { background-color: #ffe6e6 !important; border: 2px dashed #dc3545 !important; }
         .solo-impresion { display: none; }
 
-        /* ========================================================
-           REGLAS DE ORO PARA IMPRESIÓN (Ctrl+P) Y PDF
-           ======================================================== */
+        /* REGLAS ESTRICTAS PARA IMPRESIÓN (Ctrl+P) */
         @media print {
-            /* 1. OCULTAR TODO LO QUE NO SE NECESITA */
-            nav, 
-            #botonera,
-            .botonera-acciones, 
-            .no-imprimir, 
-            #fechas-club-container, 
-            #btn-agregar-kine { 
-                display: none !important; 
-            }
+            nav, #botonera, .botonera-acciones, .no-imprimir,
+            #fechas-club-container, #btn-agregar-kine { display: none !important; }
             
-            /* Mostrar el encabezado con el logo del club */
             .solo-impresion { display: block !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             
-            /* 2. FORZAR LA HOJA A4 PARA QUE ENTRE EN 1 SOLA CARILLA */
             @page { size: A4 portrait; margin: 1cm; }
             body { background-color: white !important; font-size: 11px !important; margin: 0 !important; padding: 0 !important; }
             .container, #area-pdf { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
             
-            /* 3. FORZAR FORMATO HORIZONTAL CONTRA BOOTSTRAP */
             .forzar-horizontal { display: flex !important; flex-wrap: wrap !important; flex-direction: row !important; }
-            
-            .forzar-33 { flex: 0 0 33.333% !important; max-width: 33.333% !important; }
+            .forzar-33 { flex: 0 0 33.3333% !important; max-width: 33.3333% !important; }
             .forzar-50 { flex: 0 0 50% !important; max-width: 50% !important; }
             .forzar-100 { flex: 0 0 100% !important; max-width: 100% !important; }
-
-            /* 4. ACHICAR MÁRGENES DE LAS TARJETAS */
+            
             .card { border: 1px solid #ccc !important; box-shadow: none !important; page-break-inside: avoid; margin-bottom: 5px !important; }
             .card-body { padding: 10px !important; }
             h2 { font-size: 16px !important; margin: 5px 0 !important; }
@@ -55,35 +41,8 @@
             .p-3 { padding: 8px !important; }
             .mb-4 { margin-bottom: 10px !important; }
             
-            /* Ocultar la columna "Acción" (los tachos de basura) en Kinesiología */
-            #tabla-kinesiologia td:last-child, 
-            thead th:last-child { display: none !important; }
+            #tabla-kinesiologia td:last-child, thead th:last-child { display: none !important; }
         }
-
-        /* REGLAS CLONADAS PARA EL GENERADOR DE PDF DE WHATSAPP */
-        .generando-pdf .no-imprimir, 
-        .generando-pdf nav, 
-        .generando-pdf .botonera-acciones, 
-        .generando-pdf #fechas-club-container, 
-        .generando-pdf #btn-agregar-kine,
-        .generando-pdf #botonera { display: none !important; }
-        
-        .generando-pdf .solo-impresion { display: block !important; }
-        .generando-pdf body { background: white !important; font-size: 11px !important; }
-        
-        .generando-pdf .forzar-horizontal { display: flex !important; flex-wrap: wrap !important; flex-direction: row !important; margin: 0; }
-        .generando-pdf .forzar-33 { flex: 0 0 33.333% !important; max-width: 33.333% !important; }
-        .generando-pdf .forzar-50 { flex: 0 0 50% !important; max-width: 50% !important; }
-        .generando-pdf .forzar-100 { flex: 0 0 100% !important; max-width: 100% !important; }
-
-        .generando-pdf .card { border: 1px solid #ccc !important; box-shadow: none !important; margin-bottom: 5px !important; }
-        .generando-pdf .card-body { padding: 10px !important; }
-        .generando-pdf h2 { font-size: 16px !important; margin: 5px 0 !important; }
-        .generando-pdf h5 { font-size: 13px !important; margin-top: 10px !important; margin-bottom: 5px !important; }
-        .generando-pdf .p-3 { padding: 8px !important; }
-
-        .generando-pdf #tabla-kinesiologia td:last-child, 
-        .generando-pdf thead th:last-child { display: none !important; }
     </style>
 </head>
 <body class="bg-light">
@@ -622,48 +581,66 @@
             } catch (error) { alert('❌ No se pudo conectar con el servidor.'); }
         }
 
-        // --- 4. EXPORTAR PDF Y EMAIL (CORREGIDO Y BLINDADO) ---
+        // --- 4. EXPORTAR PDF Y EMAIL (CORREGIDO) ---
         function generarPDFyWhatsApp() {
             if(!jugadorActual) return;
             
-            // Le ponemos una clase al Body que activa todo el CSS de ocultar y achicar
-            document.body.classList.add('generando-pdf');
+            // 1. SOLUCIÓN BUG HOJA BLANCA: Forzar scroll arriba de todo
+            window.scrollTo(0, 0);
             
+            // 2. Mostrar Títulos y ocultar todo lo demás manualmente
+            const titulosImpresion = document.querySelectorAll('.solo-impresion');
+            titulosImpresion.forEach(el => el.style.setProperty('display', 'block', 'important'));
+            
+            const elementosOcultar = document.querySelectorAll('.botonera-acciones, .no-imprimir, #fechas-club-container, #btn-agregar-kine, #botonera');
+            elementosOcultar.forEach(el => el.style.setProperty('display', 'none', 'important'));
+
+            // Ocultar columna de acciones en la tabla de kinesiología
+            const thAccion = document.querySelector('#tabla-kinesiologia th:last-child');
+            const tdAccion = document.querySelectorAll('#tabla-kinesiologia td:last-child');
+            if(thAccion) thAccion.style.setProperty('display', 'none', 'important');
+            tdAccion.forEach(td => td.style.setProperty('display', 'none', 'important'));
+
             const elemento = document.getElementById('area-pdf');
             
             const opciones = {
-                margin: 0.2, // Margen simple en pulgadas
+                margin: [0.3, 0.2, 0.3, 0.2], 
                 filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
                     scale: 2, 
                     useCORS: true, 
-                    scrollY: 0,
-                    windowWidth: 800 // Simula pantalla de PC para asegurar el formato horizontal
+                    scrollY: 0, 
+                    windowWidth: 1024 // Esto obliga a que respete el formato horizontal
                 }, 
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opciones).from(elemento).save().then(() => {
-                // Quitamos la clase al terminar para que la página vuelva a la normalidad
-                document.body.classList.remove('generando-pdf');
-                
-                setTimeout(() => {
-                    alert('📄 ¡Ficha generada en una sola hoja!\nSe va a abrir WhatsApp.');
-                    const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
-                    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
-                }, 500); 
-            }).catch(err => {
-                console.error("Error:", err);
-                document.body.classList.remove('generando-pdf');
-            });
-        }
+            // 3. EL SECRETO: Le damos 100ms al navegador para que asimile los cambios antes de la foto
+            setTimeout(() => {
+                html2pdf().set(opciones).from(elemento).save().then(() => {
+                    
+                    // 4. Restaurar todo a la normalidad
+                    titulosImpresion.forEach(el => el.style.display = 'none');
+                    elementosOcultar.forEach(el => el.style.display = ''); 
+                    if(thAccion) thAccion.style.display = '';
+                    tdAccion.forEach(td => td.style.display = '');
+                    
+                    setTimeout(() => {
+                        alert('📄 ¡Ficha generada con éxito!\nSe va a abrir WhatsApp.');
+                        const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
+                        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
+                    }, 500); 
 
-        function compartirEmail() {
-            if(!jugadorActual) return;
-            const asunto = `Ficha Médica - ${jugadorActual.nombre} ${jugadorActual.apellido}`;
-            const cuerpo = `Hola,\n\nAdjunto la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.\n\nSaludos.`;
-            window.location.href = `mailto:?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+                }).catch(err => {
+                    console.error("Error:", err);
+                    // Restaurar si falla
+                    titulosImpresion.forEach(el => el.style.display = 'none');
+                    elementosOcultar.forEach(el => el.style.display = ''); 
+                    if(thAccion) thAccion.style.display = '';
+                    tdAccion.forEach(td => td.style.display = '');
+                });
+            }, 100);
         }
 
         // --- 5. PERMISOS ---
