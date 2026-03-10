@@ -12,50 +12,45 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <style>
-        /* ESTILOS PARA LA PANTALLA DEL CELULAR/PC */
+        /* ESTILOS PARA PANTALLA */
         body { background-color: #f8f9fa; }
         .baja-style { background-color: #ffe6e6 !important; border: 2px dashed #dc3545 !important; }
         .solo-impresion { display: none; }
 
-        /* UNIFICACIÓN: REGLAS PARA IMPRESIÓN Y GENERACIÓN DE PDF */
+        /* REGLAS PARA IMPRESIÓN Y PDF */
         @media print {
-            /* 1. Ocultar todo lo que NO queremos en papel o PDF */
+            /* 1. Ocultar todo lo que no queremos ver */
             nav, 
             .botonera-acciones, 
-            .solo-pantalla, 
-            .ocultar-pdf,
+            .seccion-no-imprimir, 
             #fechas-club-container, 
-            #btn-agregar-kine,
-            #tarjeta-principal-ficha .botonera-acciones,
-            .btn-group.shadow-sm { 
+            #btn-agregar-kine { 
                 display: none !important; 
             }
             
-            /* 2. Mostrar encabezados de club y ajustar colores */
             .solo-impresion { display: block !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             
-            /* 3. Configurar hoja y tipografía */
+            /* 2. Ajuste de página y fuente */
             @page { size: A4 portrait; margin: 0.5cm; }
-            body { background-color: white !important; font-size: 10px !important; margin: 0 !important; padding: 0 !important; }
+            body { background-color: white !important; font-size: 11px !important; margin: 0 !important; padding: 0 !important; }
             .container, #area-pdf { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
             
-            /* 4. Forzar que las cajas no se apilen verticalmente */
-            .row { display: flex !important; flex-wrap: nowrap !important; margin-right: 0; margin-left: 0; }
+            /* 3. SOLUCIÓN A LAS LESIONES: Permitir el "wrap" (salto de línea) */
+            .row { display: flex !important; flex-wrap: wrap !important; margin-right: 0; margin-left: 0; }
             
-            /* DNI, Nacimiento y Celular en una sola línea (33% cada uno) */
-            .col-md-4 { width: 33.33% !important; flex: 0 0 33.33% !important; max-width: 33.33% !important; }
-            
-            /* Contacto de Emergencia, Grupo Sanguíneo y Alergias (50% cada uno) */
+            /* Asignación de anchos exactos */
+            .col-md-4 { width: 33.333% !important; flex: 0 0 33.333% !important; max-width: 33.333% !important; }
             .col-md-6 { width: 50% !important; flex: 0 0 50% !important; max-width: 50% !important; }
+            .col-12 { width: 100% !important; flex: 0 0 100% !important; max-width: 100% !important; }
 
-            /* 5. Ajustar tarjetas para evitar saltos de hoja */
+            /* 4. Ajustes visuales de tarjetas */
             .card { border: 1px solid #ddd !important; box-shadow: none !important; page-break-inside: avoid; margin-bottom: 5px !important; }
             .card-body { padding: 10px !important; }
             h2 { font-size: 16px !important; margin: 5px 0 !important; }
-            h5 { font-size: 12px !important; margin-top: 5px !important; margin-bottom: 5px !important; }
+            h5 { font-size: 13px !important; margin-top: 10px !important; margin-bottom: 5px !important; }
             
-            /* Ocultar la columna de 'Acción' en la tabla de kinesiología */
+            /* Ocultar la columna "Acción" de la tabla Kinesiología */
             #tabla-kinesiologia td:last-child, 
             thead th:last-child { display: none !important; }
         }
@@ -170,8 +165,8 @@
                             </div>
                         </div>
                         
-                        <h5 class="text-secondary border-bottom pb-2 mt-4 px-3 d-print-none ocultar-pdf"><i class="bi bi-folder-check text-warning"></i> Documentación Legal y Médica</h5>
-                        <div class="row g-3 px-3 mb-4 d-print-none ocultar-pdf">
+                        <h5 class="text-secondary border-bottom pb-2 mt-4 px-3 seccion-no-imprimir"><i class="bi bi-folder-check text-warning"></i> Documentación Legal y Médica</h5>
+                        <div class="row g-3 px-3 mb-4 seccion-no-imprimir">
                             <div class="col-md-4">
                                 <div class="p-3 bg-light rounded border text-center h-100 shadow-sm">
                                     <small class="fw-bold d-block mb-3 text-uppercase">Apto Médico</small>
@@ -195,8 +190,8 @@
                     </div>
                 </div> 
                 
-                <h5 class="text-secondary border-bottom pb-2 mt-4 d-print-none ocultar-pdf"><i class="bi bi-calendar-check-fill text-success"></i> Seguimiento de Asistencia</h5>
-                <div class="row g-3 mb-4 d-print-none ocultar-pdf">
+                <h5 class="text-secondary border-bottom pb-2 mt-4 seccion-no-imprimir"><i class="bi bi-calendar-check-fill text-success"></i> Seguimiento de Asistencia</h5>
+                <div class="row g-3 mb-4 seccion-no-imprimir">
                     <div class="col-12">
                         <div class="p-3 bg-light rounded border border-info shadow-sm">
                             <h6 class="text-info fw-bold mb-2"><i class="bi bi-bar-chart-line-fill"></i> Reporte General</h6>
@@ -607,7 +602,8 @@
             const titulosImpresion = document.querySelectorAll('.solo-impresion');
             titulosImpresion.forEach(el => el.style.setProperty('display', 'block', 'important'));
             
-            const elementosOcultar = document.querySelectorAll('.botonera-acciones, .ocultar-pdf');
+            // Ocultamos todo lo indeseado para el PDF
+            const elementosOcultar = document.querySelectorAll('.botonera-acciones, .seccion-no-imprimir, #fechas-club-container, #btn-agregar-kine');
             elementosOcultar.forEach(el => el.style.setProperty('display', 'none', 'important'));
 
             const elemento = document.getElementById('area-pdf');
