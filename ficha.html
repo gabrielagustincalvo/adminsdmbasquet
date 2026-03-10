@@ -12,72 +12,21 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <style>
-        /* ESTILOS PARA PANTALLA (No se tocan) */
+        /* ESTILOS PARA PANTALLA */
         .baja-style { background-color: #ffe6e6 !important; border: 2px dashed #dc3545 !important; }
         .solo-impresion { display: none; }
 
-        /* MODO IMPRESIÓN Y GENERACIÓN DE PDF */
+        /* REGLAS PARA IMPRESIÓN FÍSICA (Ctrl+P) */
         @media print {
             nav, .botonera-acciones, .solo-pantalla { display: none !important; }
             .solo-impresion { display: block !important; }
-            
-            * { 
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important; 
-            }
-            
-            html, body { 
-                background-color: white !important; 
-                margin: 0 !important; 
-                padding: 0 !important; 
-                font-size: 11px !important; /* Letra más chica global */
-            }
-            
-            .container, #area-pdf { 
-                max-width: 100% !important; 
-                width: 100% !important; 
-                padding: 0 !important; 
-                margin: 0 !important; 
-            }
-            
-            /* Ajustes a la tarjeta principal */
-            .card { 
-                border: 2px solid #000 !important; 
-                box-shadow: none !important; 
-                page-break-inside: avoid; /* Evita que la tarjeta se parta al medio */
-                margin-bottom: 5px !important; 
-            }
-            
-            .card-header { padding: 5px 10px !important; }
-            .card-body { padding: 10px !important; }
-            
-            /* Achicar títulos y textos */
-            h2 { font-size: 16px !important; margin-bottom: 5px !important; }
-            h3 { font-size: 14px !important; }
-            h5 { font-size: 12px !important; margin-top: 10px !important; margin-bottom: 5px !important; }
-            
-            /* Cajas de datos (DNI, Nacimiento, etc.) más compactas */
-            .p-3 { padding: 5px !important; }
-            .p-2 { padding: 3px !important; }
-            .fs-6 { font-size: 11px !important; }
-            .fs-5 { font-size: 12px !important; }
-            .fs-3 { font-size: 14px !important; }
-            .badge { font-size: 10px !important; padding: 2px 6px !important; }
-            
-            /* Reducir márgenes inferiores */
-            .mb-4, .mb-3 { margin-bottom: 10px !important; }
-            .mt-4, .mt-3 { margin-top: 10px !important; }
-            
-            /* Forzar el grid para que mantenga la estructura horizontal */
-            .row { display: flex !important; flex-wrap: wrap !important; }
-            .col-12 { width: 100% !important; }
-            .col-md-6 { width: 50% !important; }
-            .col-md-4 { width: 33.333% !important; }
-            
-            /* Evitar saltos de página dentro de la ficha */
-            #area-pdf {
-                page-break-inside: avoid;
-            }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            html, body { background-color: white !important; margin: 0 !important; padding: 0 !important; }
+            .container, #area-pdf { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            .card { border: 1px solid #000 !important; box-shadow: none !important; page-break-inside: avoid; }
+            /* Achicamos un poco la letra para que entre en una hoja */
+            body { font-size: 12px !important; }
+            h2 { font-size: 18px !important; }
         }
     </style>
 </head>
@@ -623,46 +572,48 @@
         // --- 4. EXPORTAR PDF Y EMAIL ---
         function generarPDFyWhatsApp() {
             if(!jugadorActual) return;
+
+            // 1. Mostramos temporalmente los títulos de impresión
             const titulosImpresion = document.querySelectorAll('.solo-impresion');
-            titulosImpresion.forEach(el => el.style.display = 'block');
-            const elementosPantalla = document.querySelectorAll('.solo-pantalla');
-            elementosPantalla.forEach(el => el.style.display = 'none');
+            titulosImpresion.forEach(el => el.style.setProperty('display', 'block', 'important'));
+            
+            // 2. Ocultamos lo que NO debe ir en el PDF (botones, etc)
+            const elementosOcultar = document.querySelectorAll('.botonera-acciones, .solo-pantalla');
+            elementosOcultar.forEach(el => el.style.setProperty('display', 'none', 'important'));
 
             const elemento = document.getElementById('area-pdf');
+
             const opciones = {
-                margin: 0.2, // Reducimos el margen de la hoja al mínimo posible
+                margin: 0.3, 
                 filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, windowWidth: 800 }, // Forzamos un ancho de ventana para que respete el diseño
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true,
+                    // windowWidth asegura que la captura se haga con un ancho fijo, evitando hojas en blanco
+                    windowWidth: 1024 
+                },
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
+            // 3. Generamos el PDF
             html2pdf().set(opciones).from(elemento).save().then(() => {
+                // 4. Restauramos la vista original en la pantalla
                 titulosImpresion.forEach(el => el.style.display = 'none');
-                elementosPantalla.forEach(el => el.style.display = ''); 
+                elementosOcultar.forEach(el => el.style.display = ''); 
+
                 setTimeout(() => {
                     alert('📄 ¡El PDF se descargó!\nSe va a abrir WhatsApp para que lo envíes.');
                     const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
                     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
-                }, 500); 
+                }, 500);
+            }).catch(err => {
+                console.error("Error al generar PDF:", err);
+                alert("Hubo un problema al generar el PDF. Reintenta.");
+                // Restaurar en caso de error
+                titulosImpresion.forEach(el => el.style.display = 'none');
+                elementosOcultar.forEach(el => el.style.display = '');
             });
-        }
-
-        function compartirEmail() {
-            if(!jugadorActual) return;
-            const asunto = `Ficha Médica - ${jugadorActual.nombre} ${jugadorActual.apellido}`;
-            const cuerpo = `Hola,\n\nAdjunto la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.\n\nSaludos.`;
-            window.location.href = `mailto:?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
-        }
-
-        // --- 5. PERMISOS ---
-        if (rolUsuario === 'Cuerpo Tecnico') {
-            const btnEditar = document.getElementById('btn-editar-jugador');
-            if (btnEditar) btnEditar.style.display = 'none';
-        }
-        if (rolUsuario === 'Administrativo') {
-            const btnAgregarKine = document.getElementById('btn-agregar-kine');
-            if (btnAgregarKine) btnAgregarKine.style.display = 'none';
         }
 
         // --- 6. ASISTENCIA ---
