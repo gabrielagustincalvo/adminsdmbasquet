@@ -12,61 +12,52 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <style>
-        /* ESTILOS PARA PANTALLA */
+        /* ESTILOS PARA LA PANTALLA DEL CELULAR/PC */
         body { background-color: #f8f9fa; }
         .baja-style { background-color: #ffe6e6 !important; border: 2px dashed #dc3545 !important; }
         .solo-impresion { display: none; }
 
-        /* ESTILOS EXCLUSIVOS PARA LA IMPRESIÓN (Botón Imprimir / Ctrl+P) */
+        /* UNIFICACIÓN: REGLAS PARA IMPRESIÓN Y GENERACIÓN DE PDF */
         @media print {
-            /* 1. Ocultar botones, secciones no deseadas, fecha de ingreso y agregar sesión */
+            /* 1. Ocultar todo lo que NO queremos en papel o PDF */
             nav, 
             .botonera-acciones, 
             .solo-pantalla, 
             .ocultar-pdf,
             #fechas-club-container, 
-            #btn-agregar-kine { 
+            #btn-agregar-kine,
+            #tarjeta-principal-ficha .botonera-acciones,
+            .btn-group.shadow-sm { 
                 display: none !important; 
             }
             
+            /* 2. Mostrar encabezados de club y ajustar colores */
             .solo-impresion { display: block !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             
-            /* 2. Configurar la hoja A4 y achicar letras/márgenes */
-            @page { size: A4 portrait; margin: 1cm; }
-            body { background-color: white !important; font-size: 11px !important; margin: 0 !important; padding: 0 !important; }
+            /* 3. Configurar hoja y tipografía */
+            @page { size: A4 portrait; margin: 0.5cm; }
+            body { background-color: white !important; font-size: 10px !important; margin: 0 !important; padding: 0 !important; }
             .container, #area-pdf { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
             
-            .card { border: 1px solid #ccc !important; box-shadow: none !important; page-break-inside: avoid; margin-bottom: 0 !important; }
-            h2 { font-size: 16px !important; margin: 0 !important; }
-            h5 { font-size: 13px !important; margin-top: 10px !important; margin-bottom: 5px !important; }
+            /* 4. Forzar que las cajas no se apilen verticalmente */
+            .row { display: flex !important; flex-wrap: nowrap !important; margin-right: 0; margin-left: 0; }
             
-            /* Reducir el "aire" (padding) de las cajas grises */
-            .p-3 { padding: 8px !important; }
-            .p-2 { padding: 4px !important; }
-            .mb-4 { margin-bottom: 10px !important; }
-            .mb-3 { margin-bottom: 5px !important; }
+            /* DNI, Nacimiento y Celular en una sola línea (33% cada uno) */
+            .col-md-4 { width: 33.33% !important; flex: 0 0 33.33% !important; max-width: 33.33% !important; }
+            
+            /* Contacto de Emergencia, Grupo Sanguíneo y Alergias (50% cada uno) */
+            .col-md-6 { width: 50% !important; flex: 0 0 50% !important; max-width: 50% !important; }
 
-            /* 3. FORZAR FORMATO HORIZONTAL (Evitar apilamiento vertical) */
-            .row { 
-                display: flex !important; 
-                flex-wrap: wrap !important; 
-                flex-direction: row !important; 
-            }
-            /* Obligamos a que DNI, Nacimiento y Celular ocupen 33.3% cada uno */
-            .col-md-4 { 
-                flex: 0 0 auto !important; 
-                width: 33.333333% !important; 
-            }
-            /* Obligamos a que Contacto Emergencia, Grupo Sang y Alergias ocupen 50% cada uno */
-            .col-md-6 { 
-                flex: 0 0 auto !important; 
-                width: 50% !important; 
-            }
-            .col-12 {
-                flex: 0 0 auto !important; 
-                width: 100% !important; 
-            }
+            /* 5. Ajustar tarjetas para evitar saltos de hoja */
+            .card { border: 1px solid #ddd !important; box-shadow: none !important; page-break-inside: avoid; margin-bottom: 5px !important; }
+            .card-body { padding: 10px !important; }
+            h2 { font-size: 16px !important; margin: 5px 0 !important; }
+            h5 { font-size: 12px !important; margin-top: 5px !important; margin-bottom: 5px !important; }
+            
+            /* Ocultar la columna de 'Acción' en la tabla de kinesiología */
+            #tabla-kinesiologia td:last-child, 
+            thead th:last-child { display: none !important; }
         }
     </style>
 </head>
@@ -622,18 +613,13 @@
             const elemento = document.getElementById('area-pdf');
             
             const opciones = {
-                margin: [0.2, 0.2, 0, 0.2], // [Arriba, Izquierda, Abajo, Derecha] - Abajo en 0 evita la 2da hoja
+                margin: [0.2, 0.2, 0, 0.2], 
                 filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true,
-                    scrollY: 0,
-                    letterRendering: true
-                }, 
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-                // ESTA LÍNEA ES LA CLAVE: Evita saltos de página automáticos
-                pagebreak: { mode: 'avoid-all' } 
+                // Esto le dice a la librería que use las reglas @media print que acabamos de escribir
+                pagebreak: { mode: 'avoid-all' }
             };
 
             html2pdf().set(opciones).from(elemento).save().then(() => {
