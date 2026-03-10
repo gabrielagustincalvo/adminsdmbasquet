@@ -12,20 +12,17 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <style>
-        /* ESTILOS PARA PANTALLA */
+        body { background-color: #f8f9fa; }
         .baja-style { background-color: #ffe6e6 !important; border: 2px dashed #dc3545 !important; }
         .solo-impresion { display: none; }
 
-        /* REGLAS PARA IMPRESIÓN FÍSICA (Ctrl+P) */
         @media print {
-            nav, .botonera-acciones, .solo-pantalla { display: none !important; }
+            .botonera-acciones { display: none !important; }
             .solo-impresion { display: block !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            html, body { background-color: white !important; margin: 0 !important; padding: 0 !important; }
+            body { background-color: white !important; font-size: 12px !important; }
             .container, #area-pdf { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
             .card { border: 1px solid #000 !important; box-shadow: none !important; page-break-inside: avoid; }
-            /* Achicamos un poco la letra para que entre en una hoja */
-            body { font-size: 12px !important; }
             h2 { font-size: 18px !important; }
         }
     </style>
@@ -139,8 +136,8 @@
                             </div>
                         </div>
                         
-                        <h5 class="text-secondary border-bottom pb-2 mt-4 px-3 solo-pantalla"><i class="bi bi-folder-check text-warning"></i> Documentación Legal y Médica</h5>
-                        <div class="row g-3 px-3 mb-4 solo-pantalla">
+                        <h5 class="text-secondary border-bottom pb-2 mt-4 px-3 d-print-none ocultar-pdf"><i class="bi bi-folder-check text-warning"></i> Documentación Legal y Médica</h5>
+                        <div class="row g-3 px-3 mb-4 d-print-none ocultar-pdf">
                             <div class="col-md-4">
                                 <div class="p-3 bg-light rounded border text-center h-100 shadow-sm">
                                     <small class="fw-bold d-block mb-3 text-uppercase">Apto Médico</small>
@@ -164,8 +161,8 @@
                     </div>
                 </div> 
                 
-                <h5 class="text-secondary border-bottom pb-2 mt-4 solo-pantalla"><i class="bi bi-calendar-check-fill text-success"></i> Seguimiento de Asistencia</h5>
-                <div class="row g-3 mb-4 solo-pantalla">
+                <h5 class="text-secondary border-bottom pb-2 mt-4 d-print-none ocultar-pdf"><i class="bi bi-calendar-check-fill text-success"></i> Seguimiento de Asistencia</h5>
+                <div class="row g-3 mb-4 d-print-none ocultar-pdf">
                     <div class="col-12">
                         <div class="p-3 bg-light rounded border border-info shadow-sm">
                             <h6 class="text-info fw-bold mb-2"><i class="bi bi-bar-chart-line-fill"></i> Reporte General</h6>
@@ -572,47 +569,43 @@
         // --- 4. EXPORTAR PDF Y EMAIL ---
         function generarPDFyWhatsApp() {
             if(!jugadorActual) return;
-
-            // 1. Mostramos temporalmente los títulos de impresión
+            
+            // 1. Mostramos los títulos bonitos del PDF
             const titulosImpresion = document.querySelectorAll('.solo-impresion');
             titulosImpresion.forEach(el => el.style.setProperty('display', 'block', 'important'));
             
-            // 2. Ocultamos lo que NO debe ir en el PDF (botones, etc)
-            const elementosOcultar = document.querySelectorAll('.botonera-acciones, .solo-pantalla');
+            // 2. Ocultamos botones, documentos y asistencia
+            const elementosOcultar = document.querySelectorAll('.botonera-acciones, .ocultar-pdf');
             elementosOcultar.forEach(el => el.style.setProperty('display', 'none', 'important'));
 
             const elemento = document.getElementById('area-pdf');
-
+            
             const opciones = {
-                margin: 0.3, 
+                margin: 0.3,
                 filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
                     scale: 2, 
                     useCORS: true,
-                    // windowWidth asegura que la captura se haga con un ancho fijo, evitando hojas en blanco
-                    windowWidth: 1024 
-                },
+                    scrollY: 0  // LA CLAVE: Evita el bug de la hoja en blanco al hacer scroll
+                }, 
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            // 3. Generamos el PDF
             html2pdf().set(opciones).from(elemento).save().then(() => {
-                // 4. Restauramos la vista original en la pantalla
+                // 3. Restauramos la vista web normal
                 titulosImpresion.forEach(el => el.style.display = 'none');
                 elementosOcultar.forEach(el => el.style.display = ''); 
-
+                
                 setTimeout(() => {
                     alert('📄 ¡El PDF se descargó!\nSe va a abrir WhatsApp para que lo envíes.');
                     const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
                     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
-                }, 500);
+                }, 500); 
             }).catch(err => {
                 console.error("Error al generar PDF:", err);
-                alert("Hubo un problema al generar el PDF. Reintenta.");
-                // Restaurar en caso de error
                 titulosImpresion.forEach(el => el.style.display = 'none');
-                elementosOcultar.forEach(el => el.style.display = '');
+                elementosOcultar.forEach(el => el.style.display = ''); 
             });
         }
 
