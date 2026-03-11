@@ -612,52 +612,77 @@
             } catch (error) { alert('❌ No se pudo conectar con el servidor.'); }
         }
 
-        // --- 4. EXPORTAR PDF Y EMAIL ---
+        // --- 4. EXPORTAR PDF Y EMAIL (100% BLINDADO Y PROLIJO) ---
         function generarPDFyWhatsApp() {
             if(!jugadorActual) return;
             
-            // Subimos la pantalla al inicio para evitar hojas blancas
-            window.scrollTo(0, 0);
+            // 1. Forzamos scroll arriba para evitar el bug de la hoja en blanco
+            window.scrollTo(0, 0); 
             
-            // Activamos la clase maestra que clona el diseño de impresión
-            document.body.classList.add('pdf-perfecto');
+            // 2. Mostramos el encabezado bonito del PDF
+            const titulosImpresion = document.querySelectorAll('.solo-impresion');
+            titulosImpresion.forEach(el => el.style.setProperty('display', 'block', 'important'));
+            
+            // 3. Ocultamos lo que no va (usando JS puro, que es lo que no rompe la librería)
+            const elementosOcultar = document.querySelectorAll('.botonera-acciones, .no-imprimir, #fechas-club-container, #btn-agregar-kine, #botonera');
+            elementosOcultar.forEach(el => el.style.setProperty('display', 'none', 'important'));
+
+            // Ocultamos la columna "Acción" de la tabla
+            const thAccion = document.querySelector('thead th:last-child');
+            const tdAccion = document.querySelectorAll('#tabla-kinesiologia td:last-child');
+            if(thAccion) thAccion.style.setProperty('display', 'none', 'important');
+            tdAccion.forEach(td => td.style.setProperty('display', 'none', 'important'));
+
+            // 4. DESTRABAMOS LA TABLA DE KINESIOLOGÍA para que salga entera
+            const tablaCaja = document.querySelector('.table-responsive');
+            const oldMaxHeight = tablaCaja.style.maxHeight;
+            const oldOverflow = tablaCaja.style.overflowY;
+            tablaCaja.style.setProperty('max-height', 'none', 'important');
+            tablaCaja.style.setProperty('overflow-y', 'visible', 'important');
 
             const elemento = document.getElementById('area-pdf');
             
             const opciones = {
-                // Aumentamos los márgenes (0.4 pulgadas = ~1cm) para que respire como en la impresión
-                margin: [0.4, 0.4, 0.1, 0.4], 
+                margin: [0.4, 0.4, 0.1, 0.4], // Márgenes prolijos como en la impresora
                 filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
                     scale: 2, 
                     useCORS: true, 
-                    scrollY: 0, 
-                    letterRendering: true,
-                    windowWidth: 1024 // Clave para mantener el formato horizontal desde el celular
+                    scrollY: 0,
+                    // ESTA ES LA MAGIA: Fuerza a Bootstrap a renderizar en formato Horizontal (y achica las letras al encajar en el A4)
+                    windowWidth: 1024 
                 }, 
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: 'avoid-all' }
             };
 
-            // Damos 100ms para que la tabla de Kinesiología se destrabe antes de sacar la foto
-            setTimeout(() => {
-                html2pdf().set(opciones).from(elemento).save().then(() => {
-                    
-                    // Restauramos la pantalla a la normalidad
-                    document.body.classList.remove('pdf-perfecto');
-                    
-                    setTimeout(() => {
-                        alert('📄 ¡Ficha generada en una sola hoja!\nSe va a abrir WhatsApp.');
-                        const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
-                        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
-                    }, 500); 
-                    
-                }).catch(err => {
-                    console.error("Error:", err);
-                    document.body.classList.remove('pdf-perfecto');
-                });
-            }, 100);
+            html2pdf().set(opciones).from(elemento).save().then(() => {
+                
+                // RESTAURAMOS TODO PARA QUE LA PANTALLA VUELVA A LA NORMALIDAD
+                titulosImpresion.forEach(el => el.style.display = 'none');
+                elementosOcultar.forEach(el => el.style.display = ''); 
+                if(thAccion) thAccion.style.display = '';
+                tdAccion.forEach(td => td.style.display = '');
+                tablaCaja.style.maxHeight = oldMaxHeight;
+                tablaCaja.style.overflowY = oldOverflow;
+                
+                setTimeout(() => {
+                    alert('📄 ¡Ficha generada en una sola hoja!\nSe va a abrir WhatsApp.');
+                    const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
+                    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
+                }, 500); 
+                
+            }).catch(err => {
+                console.error("Error:", err);
+                // Si falla, restauramos todo igual
+                titulosImpresion.forEach(el => el.style.display = 'none');
+                elementosOcultar.forEach(el => el.style.display = ''); 
+                if(thAccion) thAccion.style.display = '';
+                tdAccion.forEach(td => td.style.display = '');
+                tablaCaja.style.maxHeight = oldMaxHeight;
+                tablaCaja.style.overflowY = oldOverflow;
+            });
         }
 
         // --- 5. PERMISOS ---
