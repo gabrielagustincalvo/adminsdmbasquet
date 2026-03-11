@@ -55,8 +55,11 @@
         }
 
         /* =========================================
-           3. CLASE MÁGICA PARA EL PDF (Evita bugs y emula 1 sola hoja)
+           3. CLASE MÁGICA PARA EL PDF (Evita recortes y centra perfecto)
            ========================================= */
+        /* Al body entero lo fijamos a 800px para que la cámara no recorte los bordes */
+        body.modo-pdf { width: 800px !important; min-width: 800px !important; overflow: visible !important; }
+        
         .modo-pdf nav, .modo-pdf #botonera, .modo-pdf .botonera-acciones, .modo-pdf .no-imprimir,
         .modo-pdf #fechas-club-container, .modo-pdf #btn-agregar-kine { display: none !important; }
         
@@ -65,8 +68,17 @@
         .modo-pdf .solo-impresion h3 { font-size: 24px !important; margin-bottom: 5px !important; text-align: center !important; color: #000 !important; }
         .modo-pdf .solo-impresion h5 { font-size: 14px !important; color: #6c757d !important; text-align: center !important; }
 
-        /* Fijamos el ancho de la caja a tamaño PC para que Bootstrap arme las filas sin romper la cámara */
-        .modo-pdf #area-pdf { width: 794px !important; max-width: 794px !important; margin: 0 auto !important; padding: 20px !important; background: white !important;}
+        /* Sacamos límites de Bootstrap para centrar libremente */
+        .modo-pdf .container, .modo-pdf .row, .modo-pdf .col-12 { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+        
+        /* EL SECRETO DEL CENTRADO: Padding igual a izquierda y derecha (40px) */
+        .modo-pdf #area-pdf { 
+            width: 100% !important; 
+            max-width: 100% !important; 
+            background: white !important;
+            padding: 30px 40px !important; 
+            box-sizing: border-box !important;
+        }
         
         .modo-pdf .forzar-horizontal { display: flex !important; flex-wrap: wrap !important; flex-direction: row !important; }
         .modo-pdf .forzar-33 { flex: 0 0 33.3333% !important; max-width: 33.3333% !important; }
@@ -622,11 +634,11 @@
             } catch (error) { alert('❌ No se pudo conectar con el servidor.'); }
         }
 
-        // --- 4. EXPORTAR PDF Y EMAIL (MÉTODO LIMPIO) ---
+        // --- 4. EXPORTAR PDF Y EMAIL (MÉTODO CENTRADO PERFECTO) ---
         function generarPDFyWhatsApp() {
             if(!jugadorActual) return;
             
-            // Subimos arriba de todo para evitar foto en blanco
+            // Subimos arriba y a la izquierda de todo para evitar recortes
             window.scrollTo(0, 0); 
             
             // Le ponemos el "traje de PDF" a toda la página
@@ -634,16 +646,17 @@
 
             const elemento = document.getElementById('area-pdf');
             
-            // Tus opciones originales que funcionan, ajustando los márgenes
             const opciones = {
-                margin: 0.2, // Margen blanco parejo en toda la hoja
+                // [Arriba, Derecha, Abajo, Izquierda] -> Laterales en 0 porque el CSS hace el centrado
+                margin: [0.3, 0, 0.3, 0], 
                 filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, scrollY: 0, letterRendering: true }, 
+                // Agregamos scrollX: 0 para que la "cámara" empiece desde el borde absoluto
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0, scrollX: 0, letterRendering: true }, 
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            // Damos 150 milisegundos para asegurar que todo se acomode antes de la foto
+            // Damos 150 milisegundos para asegurar que el body se expanda a 800px antes de la foto
             setTimeout(() => {
                 html2pdf().set(opciones).from(elemento).save().then(() => {
                     
@@ -651,7 +664,7 @@
                     document.body.classList.remove('modo-pdf');
                     
                     setTimeout(() => {
-                        alert('📄 ¡Ficha generada en una sola hoja!\nSe va a abrir WhatsApp.');
+                        alert('📄 ¡Ficha generada, centrada y en una sola hoja!\nSe va a abrir WhatsApp.');
                         const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
                         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
                     }, 500); 
