@@ -43,6 +43,18 @@
             
             #tabla-kinesiologia td:last-child, thead th:last-child { display: none !important; }
         }
+
+        /* --- AJUSTE DE LETRA FINO PARA EL PDF --- */
+        .pdf-achicado { font-size: 10px !important; }
+        .pdf-achicado h2 { font-size: 15px !important; }
+        .pdf-achicado h3 { font-size: 14px !important; }
+        .pdf-achicado h5 { font-size: 11px !important; margin-top: 5px !important; margin-bottom: 5px !important;}
+        .pdf-achicado .fs-3 { font-size: 14px !important; } /* Grupo Sanguíneo */
+        .pdf-achicado .fs-5 { font-size: 12px !important; } /* Alergias */
+        .pdf-achicado .fs-6 { font-size: 10px !important; } /* DNI, Teléfonos */
+        .pdf-achicado small, .pdf-achicado .text-muted { font-size: 8px !important; }
+        .pdf-achicado .badge { font-size: 9px !important; padding: 3px 6px !important; }
+        .pdf-achicado .p-3, .pdf-achicado .p-2 { padding: 6px !important; }
     </style>
 </head>
 <body class="bg-light">
@@ -585,15 +597,12 @@
         function generarPDFyWhatsApp() {
             if(!jugadorActual) return;
             
-            // 1. Mostrar títulos de impresión
             const titulosImpresion = document.querySelectorAll('.solo-impresion');
             titulosImpresion.forEach(el => el.style.setProperty('display', 'block', 'important'));
             
-            // 2. Ocultar todo lo que NO queremos en el PDF (botones, documentos, asistencia, fechas, etc.)
             const elementosOcultar = document.querySelectorAll('.botonera-acciones, .no-imprimir, #fechas-club-container, #btn-agregar-kine, #botonera');
             elementosOcultar.forEach(el => el.style.setProperty('display', 'none', 'important'));
 
-            // Ocultar la columna de "Acción" en la tabla de Kinesiología
             const thAccion = document.querySelector('#tabla-kinesiologia th:last-child');
             const tdAccion = document.querySelectorAll('#tabla-kinesiologia td:last-child');
             if(thAccion) thAccion.style.setProperty('display', 'none', 'important');
@@ -601,9 +610,11 @@
 
             const elemento = document.getElementById('area-pdf');
             
-            // 3. TUS OPCIONES ORIGINALES QUE FUNCIONAN PERFECTO
+            // MAGIA ACÁ: Le aplicamos la clase que achica la letra a toda la ficha
+            elemento.classList.add('pdf-achicado');
+            
             const opciones = {
-                margin: [0.2, 0.2, 0, 0.2], // Abajo en 0 evita la 2da hoja
+                margin: [0.2, 0.2, 0, 0.2], 
                 filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
@@ -616,10 +627,11 @@
                 pagebreak: { mode: 'avoid-all' } 
             };
 
-            // 4. Generar y restaurar
             html2pdf().set(opciones).from(elemento).save().then(() => {
                 
-                // Restauramos todo a la normalidad
+                // Le sacamos la clase para que en la pantalla vuelva a verse normal
+                elemento.classList.remove('pdf-achicado');
+                
                 titulosImpresion.forEach(el => el.style.display = 'none');
                 elementosOcultar.forEach(el => el.style.display = ''); 
                 if(thAccion) thAccion.style.display = '';
@@ -633,7 +645,8 @@
                 
             }).catch(err => {
                 console.error("Error:", err);
-                // Si hay error, restauramos igual para que no quede la pantalla rota
+                // Si hay error, restauramos todo para que la app siga funcionando
+                elemento.classList.remove('pdf-achicado');
                 titulosImpresion.forEach(el => el.style.display = 'none');
                 elementosOcultar.forEach(el => el.style.display = ''); 
                 if(thAccion) thAccion.style.display = '';
