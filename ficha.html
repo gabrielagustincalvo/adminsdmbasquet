@@ -44,38 +44,51 @@
             #tabla-kinesiologia td:last-child, thead th:last-child { display: none !important; }
         }
 
-        /* --- CLON EXACTO DE LA VISTA IMPRESIÓN PARA EL PDF --- */
+        /* --- CLON DE LA VISTA IMPRESIÓN PARA EL PDF (1 SOLA HOJA) --- */
         .pdf-achicado { font-size: 11px !important; background-color: white !important; }
         
-        /* Encabezado: Escudo más grande y subtítulo centrado */
-        .pdf-achicado .solo-impresion img { width: 85px !important; }
-        .pdf-achicado .solo-impresion h3 { font-size: 22px !important; margin-bottom: 5px !important; }
-        .pdf-achicado .solo-impresion h5 { font-size: 14px !important; color: #6c757d !important; text-align: center !important; display: block !important; }
-        
-        /* Ficha Personal */
+        /* 1. OCULTAMOS EXACTAMENTE LO QUE PEDISTE */
+        .pdf-achicado .botonera-acciones,
+        .pdf-achicado .no-imprimir, /* Esto oculta Documentos (Apto, DNI) y Asistencia (Reporte, Buscador) */
+        .pdf-achicado #fechas-club-container, /* Esto oculta el Ingreso Original */
+        .pdf-achicado #btn-agregar-kine,
+        .pdf-achicado #botonera {
+            display: none !important;
+        }
+
+        /* 2. ENCABEZADO CENTRADO Y PROLIJO */
+        .pdf-achicado .solo-impresion { display: block !important; }
+        .pdf-achicado .solo-impresion img { width: 85px !important; margin: 0 auto !important; }
+        .pdf-achicado .solo-impresion h3 { font-size: 22px !important; margin-bottom: 5px !important; text-align: center !important; }
+        .pdf-achicado .solo-impresion h5 { font-size: 14px !important; color: #6c757d !important; text-align: center !important; }
+
+        /* 3. TEXTOS GENERALES */
         .pdf-achicado h2 { font-size: 16px !important; margin: 5px 0 !important; }
         .pdf-achicado h5 { font-size: 13px !important; margin-top: 10px !important; margin-bottom: 5px !important; }
-        .pdf-achicado .fs-3 { font-size: 18px !important; } 
-        .pdf-achicado .fs-5 { font-size: 15px !important; } 
+        .pdf-achicado .fs-3 { font-size: 16px !important; } 
+        .pdf-achicado .fs-5 { font-size: 14px !important; } 
         .pdf-achicado .fs-6 { font-size: 12px !important; } 
         .pdf-achicado small, .pdf-achicado .text-muted { font-size: 9px !important; }
         .pdf-achicado .badge { font-size: 11px !important; padding: 4px 8px !important; }
         .pdf-achicado .p-3, .pdf-achicado .p-2 { padding: 8px !important; }
         .pdf-achicado .mb-4 { margin-bottom: 10px !important; }
 
-        /* Forzar Columnas Horizontales en PDF (Evita usar el windowWidth en JS que rompe todo) */
-        .pdf-achicado .forzar-horizontal { display: flex !important; flex-wrap: wrap !important; flex-direction: row !important; }
-        .pdf-achicado .forzar-33 { flex: 0 0 33.3333% !important; max-width: 33.3333% !important; width: 33.3333% !important; }
-        .pdf-achicado .forzar-50 { flex: 0 0 50% !important; max-width: 50% !important; width: 50% !important; }
-        .pdf-achicado .forzar-100 { flex: 0 0 100% !important; max-width: 100% !important; width: 100% !important; }
+        /* 4. EL SECRETO PARA 1 SOLA HOJA: Forzar Columnas Horizontales contra Bootstrap */
+        .pdf-achicado .row { display: flex !important; flex-wrap: wrap !important; flex-direction: row !important; }
+        .pdf-achicado .col-md-4, .pdf-achicado .forzar-33 { flex: 0 0 33.3333% !important; max-width: 33.3333% !important; width: 33.3333% !important; }
+        .pdf-achicado .col-md-6, .pdf-achicado .forzar-50 { flex: 0 0 50% !important; max-width: 50% !important; width: 50% !important; }
+        .pdf-achicado .col-12, .pdf-achicado .forzar-100 { flex: 0 0 100% !important; max-width: 100% !important; width: 100% !important; }
         
         .pdf-achicado .card { border: 1px solid #ccc !important; box-shadow: none !important; margin-bottom: 5px !important; }
-        .pdf-achicado .card-body { padding: 10px !important; }
         
-        /* Reparación de la Tabla de Kinesiología para que salga en la foto */
+        /* 5. REPARACIÓN TABLA KINESIOLOGÍA */
         .pdf-achicado .table-responsive { max-height: none !important; overflow: visible !important; }
-        .pdf-achicado .sticky-top { position: static !important; } /* Evita que desaparezcan los títulos */
-        .pdf-achicado table thead th { background-color: #f8f9fa !important; color: #000 !important; font-weight: bold !important; }
+        .pdf-achicado .sticky-top { position: static !important; }
+        .pdf-achicado table thead th { background-color: #f8f9fa !important; color: #000 !important; font-weight: bold !important; border-bottom: 1px solid #ddd !important; }
+        
+        /* Ocultar columna Acción en la tabla (Tachito de basura) */
+        .pdf-achicado #tabla-kinesiologia td:last-child,
+        .pdf-achicado thead th:last-child { display: none !important; }
     </style>
 </head>
 <body class="bg-light">
@@ -614,122 +627,44 @@
             } catch (error) { alert('❌ No se pudo conectar con el servidor.'); }
         }
 
-        // --- 4. EXPORTAR PDF Y EMAIL (SOLUCIÓN DEFINITIVA ANTIFALLOS) ---
+        // --- 4. EXPORTAR PDF Y EMAIL (SÚPER SEGURO Y COMPACTO) ---
         function generarPDFyWhatsApp() {
             if(!jugadorActual) return;
             
-            // 1. Evita hojas blancas por scroll
+            // 1. Evita hojas blancas por scroll de la pantalla
             window.scrollTo(0, 0); 
             
-            // 2. Mostrar encabezado y ocultar botones
-            const titulosImpresion = document.querySelectorAll('.solo-impresion');
-            titulosImpresion.forEach(el => el.style.setProperty('display', 'block', 'important'));
+            const elemento = document.getElementById('area-pdf');
             
-            const elementosOcultar = document.querySelectorAll('.botonera-acciones, .no-imprimir, #fechas-club-container, #btn-agregar-kine, #botonera');
-            elementosOcultar.forEach(el => el.style.setProperty('display', 'none', 'important'));
-
-            // 3. EL TRUCO MAESTRO: Vaciar la columna "Acción" en lugar de ocultarla (Evita el crash de html2canvas)
-            const celdasAccion = document.querySelectorAll('thead th:last-child, #tabla-kinesiologia td:last-child');
-            const cacheCeldas = [];
-            celdasAccion.forEach((celda, i) => {
-                cacheCeldas[i] = celda.innerHTML; // Guardamos los botones temporalmente
-                celda.innerHTML = '';             // Dejamos la celda en blanco para la foto
-            });
-
-            const areaPdf = document.getElementById('area-pdf');
-
-            // 4. APLICAR ESTILOS SEGUROS EN LÍNEA (Iguala a la impresora sin romper)
-            areaPdf.style.setProperty('font-size', '11px', 'important'); // Letra ideal
+            // 2. Activamos la clase maestra. ¡El CSS se encarga de ocultar y acomodar TODO!
+            elemento.classList.add('pdf-achicado');
             
-            const logo = areaPdf.querySelector('.solo-impresion img');
-            if (logo) logo.style.setProperty('width', '85px', 'important'); // Agrandar escudo
-
-            const subtitulo = areaPdf.querySelector('.solo-impresion h5');
-            if (subtitulo) { // Centrar el subtítulo del club
-                subtitulo.style.setProperty('text-align', 'center', 'important');
-                subtitulo.style.setProperty('display', 'block', 'important');
-            }
-
-            // Forzar grilla horizontal (33% y 50%)
-            const rowFlex = areaPdf.querySelectorAll('.row');
-            rowFlex.forEach(el => el.style.setProperty('display', 'flex', 'important'));
-            
-            const col33 = areaPdf.querySelectorAll('.col-md-4');
-            col33.forEach(el => {
-                el.style.setProperty('flex', '0 0 33.3333%', 'important');
-                el.style.setProperty('max-width', '33.3333%', 'important');
-            });
-            const col50 = areaPdf.querySelectorAll('.col-md-6');
-            col50.forEach(el => {
-                el.style.setProperty('flex', '0 0 50%', 'important');
-                el.style.setProperty('max-width', '50%', 'important');
-            });
-
-            // Destrabar tabla de Kinesiología y fijar color a los títulos
-            const tabla = areaPdf.querySelector('.table-responsive');
-            if (tabla) {
-                tabla.style.setProperty('max-height', 'none', 'important');
-                tabla.style.setProperty('overflow', 'visible', 'important');
-            }
-            const thead = areaPdf.querySelector('.sticky-top');
-            if (thead) {
-                thead.style.setProperty('position', 'static', 'important');
-                thead.style.setProperty('background-color', '#f8f9fa', 'important');
-            }
-
-            // 5. Generar PDF (Usando tu configuración original y perfecta)
             const opciones = {
-                margin: [0.4, 0.4, 0.2, 0.4], // Márgenes exactos de la hoja A4
+                margin: [0.4, 0.4, 0.4, 0.4], // Márgenes blancos prolijos
                 filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, scrollY: 0, letterRendering: true }, // Sin configuraciones raras
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: 'avoid-all' }
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, // Sin parámetros experimentales
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            // Damos una micropausa (100ms) para que el navegador pinte los estilos antes de sacar la foto
+            // Le damos 100ms para que el CSS esconda todo y acomode la grilla horizontal
             setTimeout(() => {
-                html2pdf().set(opciones).from(areaPdf).save().then(() => {
-
-                    // 6. RESTAURAR TODO A LA NORMALIDAD AL TERMINAR
-                    titulosImpresion.forEach(el => el.style.display = 'none');
-                    elementosOcultar.forEach(el => el.style.display = '');
+                html2pdf().set(opciones).from(elemento).save().then(() => {
                     
-                    // Devolvemos los botones a la tabla
-                    celdasAccion.forEach((celda, i) => celda.innerHTML = cacheCeldas[i]);
-
-                    // Limpiamos los estilos en línea
-                    areaPdf.style.fontSize = '';
-                    if(logo) logo.style.width = '';
-                    if(subtitulo) { subtitulo.style.textAlign = ''; subtitulo.style.display = ''; }
-                    rowFlex.forEach(el => el.style.display = '');
-                    col33.forEach(el => { el.style.flex = ''; el.style.maxWidth = ''; });
-                    col50.forEach(el => { el.style.flex = ''; el.style.maxWidth = ''; });
-                    if(tabla) { tabla.style.maxHeight = ''; tabla.style.overflow = ''; }
-                    if(thead) { thead.style.position = ''; thead.style.backgroundColor = ''; }
-
+                    // Al terminar la foto, le sacamos la clase y todo vuelve a verse normal en tu PC/Celular
+                    elemento.classList.remove('pdf-achicado');
+                    
                     setTimeout(() => {
-                        alert('📄 ¡Ficha generada con éxito!\nSe va a abrir WhatsApp.');
+                        alert('📄 ¡Ficha generada en una sola hoja!\nSe va a abrir WhatsApp.');
                         const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
                         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
-                    }, 500);
-
+                    }, 500); 
+                    
                 }).catch(err => {
-                    console.error("Error al generar:", err);
-                    // Si algo falla, restauramos igual para no romper la pantalla
-                    titulosImpresion.forEach(el => el.style.display = 'none');
-                    elementosOcultar.forEach(el => el.style.display = '');
-                    celdasAccion.forEach((celda, i) => celda.innerHTML = cacheCeldas[i]);
-                    areaPdf.style.fontSize = '';
-                    if(logo) logo.style.width = '';
-                    if(subtitulo) { subtitulo.style.textAlign = ''; subtitulo.style.display = ''; }
-                    rowFlex.forEach(el => el.style.display = '');
-                    col33.forEach(el => { el.style.flex = ''; el.style.maxWidth = ''; });
-                    col50.forEach(el => { el.style.flex = ''; el.style.maxWidth = ''; });
-                    if(tabla) { tabla.style.maxHeight = ''; tabla.style.overflow = ''; }
-                    if(thead) { thead.style.position = ''; thead.style.backgroundColor = ''; }
+                    console.error("Error al generar PDF:", err);
+                    elemento.classList.remove('pdf-achicado'); // Si falla, restauramos igual
                 });
-            }, 100);
+            }, 100); 
         }
 
         // --- 5. PERMISOS ---
