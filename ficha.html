@@ -44,29 +44,22 @@
             #tabla-kinesiologia td:last-child, thead th:last-child { display: none !important; }
         }
 
-        /* --- AJUSTE DE LETRA Y DISEÑO FINO PARA EL PDF --- */
-        .pdf-achicado { font-size: 12px !important; } /* Subimos el texto base de 10 a 12 */
-        .pdf-achicado h2 { font-size: 18px !important; margin: 8px 0 !important; } /* Nombre del jugador */
-        .pdf-achicado h3 { font-size: 16px !important; } /* Título principal */
-        .pdf-achicado h5 { font-size: 13px !important; margin-top: 10px !important; margin-bottom: 5px !important;} /* Subtítulos */
-        .pdf-achicado .fs-3 { font-size: 18px !important; } /* Grupo Sanguíneo */
-        .pdf-achicado .fs-5 { font-size: 15px !important; } /* Alergias */
-        .pdf-achicado .fs-6 { font-size: 13px !important; } /* Datos DNI, Fecha, Tel */
-        .pdf-achicado small, .pdf-achicado .text-muted { font-size: 10px !important; } /* Textitos grises */
-        .pdf-achicado .badge { font-size: 11px !important; padding: 4px 8px !important; } /* Etiqueta Masculino/Femenino */
-        .pdf-achicado .p-3, .pdf-achicado .p-2 { padding: 8px !important; } /* Cajas un poquito más "gorditas" */
-        .pdf-achicado .mb-4 { margin-bottom: 12px !important; }
-
-        /* MAGIA: Forzamos el mismo formato horizontal de la impresora al PDF */
+        /* --- CLON EXACTO DE LA VISTA IMPRESIÓN PARA EL PDF --- */
+        .pdf-achicado { font-size: 11px !important; }
+        
         .pdf-achicado .forzar-horizontal { display: flex !important; flex-wrap: wrap !important; flex-direction: row !important; }
         .pdf-achicado .forzar-33 { flex: 0 0 33.3333% !important; max-width: 33.3333% !important; width: 33.3333% !important; }
         .pdf-achicado .forzar-50 { flex: 0 0 50% !important; max-width: 50% !important; width: 50% !important; }
         .pdf-achicado .forzar-100 { flex: 0 0 100% !important; max-width: 100% !important; width: 100% !important; }
         
         .pdf-achicado .card { border: 1px solid #ccc !important; box-shadow: none !important; margin-bottom: 5px !important; }
-        .pdf-achicado .card-body { padding: 15px !important; }
+        .pdf-achicado .card-body { padding: 10px !important; }
+        .pdf-achicado h2 { font-size: 16px !important; margin: 5px 0 !important; }
+        .pdf-achicado h5 { font-size: 13px !important; margin-top: 10px !important; margin-bottom: 5px !important; }
+        .pdf-achicado .p-3 { padding: 8px !important; }
+        .pdf-achicado .mb-4 { margin-bottom: 10px !important; }
         
-        /* MAGIA: Destrabamos el scroll de la tabla para que salga entera en la foto */
+        /* Destrabamos la tabla para que salga entera en el PDF */
         .pdf-achicado .table-responsive { max-height: none !important; overflow: visible !important; }
     </style>
 </head>
@@ -616,18 +609,19 @@
             const elementosOcultar = document.querySelectorAll('.botonera-acciones, .no-imprimir, #fechas-club-container, #btn-agregar-kine, #botonera');
             elementosOcultar.forEach(el => el.style.setProperty('display', 'none', 'important'));
 
-            const thAccion = document.querySelector('#tabla-kinesiologia th:last-child');
+            // CORRECCIÓN DEL SELECTOR DE TABLA (para que se oculte bien el texto "Acción")
+            const thAccion = document.querySelector('thead th:last-child');
             const tdAccion = document.querySelectorAll('#tabla-kinesiologia td:last-child');
             if(thAccion) thAccion.style.setProperty('display', 'none', 'important');
             tdAccion.forEach(td => td.style.setProperty('display', 'none', 'important'));
 
             const elemento = document.getElementById('area-pdf');
             
-            // MAGIA ACÁ: Le aplicamos la clase que achica la letra a toda la ficha
+            // Le aplicamos la clase de diseño
             elemento.classList.add('pdf-achicado');
             
             const opciones = {
-                // Aumenté a 0.4 (aprox 1cm) para que tenga el mismo marco blanco que la impresora
+                // Aumentamos los márgenes a 0.4 para imitar el marco blanco de la impresora
                 margin: [0.4, 0.4, 0.2, 0.4], 
                 filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
@@ -635,7 +629,8 @@
                     scale: 2, 
                     useCORS: true,
                     scrollY: 0,
-                    letterRendering: true
+                    letterRendering: true,
+                    windowWidth: 1024 // <-- Clave para que respete el tamaño horizontal en celulares
                 }, 
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: 'avoid-all' } 
@@ -643,7 +638,7 @@
 
             html2pdf().set(opciones).from(elemento).save().then(() => {
                 
-                // Le sacamos la clase para que en la pantalla vuelva a verse normal
+                // Restauramos la pantalla
                 elemento.classList.remove('pdf-achicado');
                 
                 titulosImpresion.forEach(el => el.style.display = 'none');
