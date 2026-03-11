@@ -44,26 +44,20 @@
             #tabla-kinesiologia td:last-child, thead th:last-child { display: none !important; }
         }
 
-        /* --- AJUSTE DE LETRA Y DISEÑO FINO PARA EL PDF --- */
-        .pdf-achicado { font-size: 12px !important; }
+        /* --- CLON EXACTO DE LA VISTA IMPRESIÓN PARA EL PDF --- */
+        .pdf-achicado { font-size: 11px !important; }
         
-        /* 1. Títulos del Encabezado (Gigantes como en la impresora) */
-        .pdf-achicado .solo-impresion img { width: 90px !important; }
-        .pdf-achicado .solo-impresion h3 { font-size: 26px !important; margin-bottom: 5px !important; }
-        .pdf-achicado .solo-impresion h5 { font-size: 16px !important; color: #6c757d !important; }
+        /* Agrandamos levemente el escudo para el PDF */
+        .pdf-achicado .solo-impresion img { width: 85px !important; }
+        .pdf-achicado .solo-impresion h3 { font-size: 22px !important; margin-bottom: 5px !important; }
+        .pdf-achicado .solo-impresion h5 { font-size: 14px !important; color: #6c757d !important; }
         
-        /* 2. Textos del jugador */
-        .pdf-achicado h2 { font-size: 18px !important; margin: 8px 0 !important; }
-        .pdf-achicado h5 { font-size: 14px !important; margin-top: 10px !important; margin-bottom: 5px !important; display: flex !important; }
-        .pdf-achicado .fs-3 { font-size: 18px !important; } 
-        .pdf-achicado .fs-5 { font-size: 15px !important; } 
-        .pdf-achicado .fs-6 { font-size: 13px !important; } 
-        .pdf-achicado small, .pdf-achicado .text-muted { font-size: 10px !important; }
-        .pdf-achicado .badge { font-size: 11px !important; padding: 4px 8px !important; }
-        .pdf-achicado .p-3, .pdf-achicado .p-2 { padding: 8px !important; }
+        .pdf-achicado h2 { font-size: 16px !important; margin: 5px 0 !important; }
+        .pdf-achicado h5 { font-size: 13px !important; margin-top: 10px !important; margin-bottom: 5px !important; }
+        .pdf-achicado .p-3 { padding: 8px !important; }
         .pdf-achicado .mb-4 { margin-bottom: 10px !important; }
 
-        /* 3. Forzamos formato horizontal */
+        /* Forzar formato horizontal como la impresora */
         .pdf-achicado .forzar-horizontal { display: flex !important; flex-wrap: wrap !important; flex-direction: row !important; }
         .pdf-achicado .forzar-33 { flex: 0 0 33.3333% !important; max-width: 33.3333% !important; width: 33.3333% !important; }
         .pdf-achicado .forzar-50 { flex: 0 0 50% !important; max-width: 50% !important; width: 50% !important; }
@@ -72,13 +66,8 @@
         .pdf-achicado .card { border: 1px solid #ccc !important; box-shadow: none !important; margin-bottom: 5px !important; }
         .pdf-achicado .card-body { padding: 10px !important; }
         
-        /* 4. ARREGLO DE TABLA: Destraba el scroll y pinta los títulos para que se vean */
-        .pdf-achicado .table-responsive { max-height: none !important; overflow: visible !important; }
-        .pdf-achicado table thead th { 
-            background-color: #e9ecef !important; /* Gris claro fijo */
-            color: #000 !important; /* Letra negra fija */
-            font-weight: bold !important; 
-        }
+        /* Aseguramos que los títulos de la tabla salgan en la "foto" del PDF */
+        .pdf-achicado table thead th { background-color: #f8f9fa !important; color: #000 !important; font-weight: bold !important; }
     </style>
 </head>
 <body class="bg-light">
@@ -629,31 +618,51 @@
             const elementosOcultar = document.querySelectorAll('.botonera-acciones, .no-imprimir, #fechas-club-container, #btn-agregar-kine, #botonera');
             elementosOcultar.forEach(el => el.style.setProperty('display', 'none', 'important'));
 
-            // Ocultamos tachos de basura
+            // Ocultamos la columna "Acción"
             const thAcciones = document.querySelectorAll('thead th:last-child');
             const tdAcciones = document.querySelectorAll('#tabla-kinesiologia td:last-child');
             thAcciones.forEach(th => th.style.setProperty('display', 'none', 'important'));
             tdAcciones.forEach(td => td.style.setProperty('display', 'none', 'important'));
 
+            // DESTRABAMOS LA TABLA Y EL STICKY PARA LA FOTO
+            const divTabla = document.querySelector('.table-responsive');
+            if(divTabla) {
+                divTabla.style.setProperty('max-height', 'none', 'important');
+                divTabla.style.setProperty('overflow-y', 'visible', 'important');
+            }
+            const theadTabla = document.querySelector('.sticky-top');
+            if(theadTabla) theadTabla.classList.remove('sticky-top');
+
             const elemento = document.getElementById('area-pdf');
-            
-            // Activamos la magia del CSS
             elemento.classList.add('pdf-achicado');
             
             const opciones = {
-                margin: [0.4, 0.4, 0.2, 0.4], 
+                // Ajustamos el margen de arriba a 0.3 para que el historial no se caiga de la hoja
+                margin: [0.3, 0.4, 0.1, 0.4], 
                 filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    scrollY: 0,
+                    letterRendering: true,
+                    windowWidth: 1024 // <-- Clave para el formato en columnas
+                }, 
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: 'avoid-all' }
             };
 
-            // Damos 50ms para que la tabla se destrabe y el escudo crezca sin errores
             setTimeout(() => {
                 html2pdf().set(opciones).from(elemento).save().then(() => {
                     
+                    // RESTAURAMOS TODO
                     elemento.classList.remove('pdf-achicado');
+                    if(divTabla) {
+                        divTabla.style.maxHeight = '250px';
+                        divTabla.style.overflowY = 'auto';
+                    }
+                    if(theadTabla) theadTabla.classList.add('sticky-top');
+                    
                     titulosImpresion.forEach(el => el.style.display = 'none');
                     elementosOcultar.forEach(el => el.style.display = ''); 
                     thAcciones.forEach(th => th.style.display = '');
@@ -668,6 +677,8 @@
                 }).catch(err => {
                     console.error("Error:", err);
                     elemento.classList.remove('pdf-achicado');
+                    if(divTabla) { divTabla.style.maxHeight = '250px'; divTabla.style.overflowY = 'auto'; }
+                    if(theadTabla) theadTabla.classList.add('sticky-top');
                     titulosImpresion.forEach(el => el.style.display = 'none');
                     elementosOcultar.forEach(el => el.style.display = ''); 
                     thAcciones.forEach(th => th.style.display = '');
