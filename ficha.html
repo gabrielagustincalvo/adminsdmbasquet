@@ -45,15 +45,19 @@
         }
 
         /* --- AJUSTE DE LETRA Y DISEÑO FINO PARA EL PDF --- */
-        .pdf-achicado { font-size: 11px !important; }
-        
-        /* 1. ARREGLO DEL LOGO Y TÍTULOS (Compensa el "zoom out" del PDF) */
-        .pdf-achicado .solo-impresion img { width: 95px !important; } /* Agrandamos el escudo */
-        .pdf-achicado .solo-impresion h3 { font-size: 22px !important; margin-bottom: 5px !important; }
-        .pdf-achicado .solo-impresion h5 { font-size: 14px !important; }
-        .pdf-achicado #f-nombre-completo { font-size: 20px !important; margin-bottom: 8px !important; }
+        .pdf-achicado { font-size: 12px !important; }
+        .pdf-achicado h2 { font-size: 18px !important; margin: 5px 0 !important; }
+        .pdf-achicado h3 { font-size: 16px !important; }
+        .pdf-achicado h5 { font-size: 13px !important; margin-top: 10px !important; margin-bottom: 5px !important;}
+        .pdf-achicado .fs-3 { font-size: 16px !important; } 
+        .pdf-achicado .fs-5 { font-size: 14px !important; } 
+        .pdf-achicado .fs-6 { font-size: 12px !important; } 
+        .pdf-achicado small, .pdf-achicado .text-muted { font-size: 10px !important; }
+        .pdf-achicado .badge { font-size: 11px !important; padding: 4px 8px !important; }
+        .pdf-achicado .p-3, .pdf-achicado .p-2 { padding: 8px !important; }
+        .pdf-achicado .mb-4 { margin-bottom: 10px !important; }
 
-        /* 2. FORZAR FORMATO HORIZONTAL */
+        /* Forzamos formato horizontal */
         .pdf-achicado .forzar-horizontal { display: flex !important; flex-wrap: wrap !important; flex-direction: row !important; }
         .pdf-achicado .forzar-33 { flex: 0 0 33.3333% !important; max-width: 33.3333% !important; width: 33.3333% !important; }
         .pdf-achicado .forzar-50 { flex: 0 0 50% !important; max-width: 50% !important; width: 50% !important; }
@@ -61,15 +65,6 @@
         
         .pdf-achicado .card { border: 1px solid #ccc !important; box-shadow: none !important; margin-bottom: 5px !important; }
         .pdf-achicado .card-body { padding: 10px !important; }
-        
-        /* 3. ARREGLO DE LA TABLA KINESIOLÓGICA */
-        .pdf-achicado .table-responsive { max-height: none !important; overflow: visible !important; }
-        /* Soluciona el bug de html2canvas que hacía desaparecer los títulos de la tabla: */
-        .pdf-achicado .sticky-top { position: static !important; }
-        
-        /* Ocultar la columna de 'Acción' (Tacho de basura) en el PDF */
-        .pdf-achicado #tabla-kinesiologia td:last-child, 
-        .pdf-achicado thead th:last-child { display: none !important; }
     </style>
 </head>
 <body class="bg-light">
@@ -618,19 +613,32 @@
             const elementosOcultar = document.querySelectorAll('.botonera-acciones, .no-imprimir, #fechas-club-container, #btn-agregar-kine, #botonera');
             elementosOcultar.forEach(el => el.style.setProperty('display', 'none', 'important'));
 
-            // CORRECCIÓN DEL SELECTOR DE TABLA (para que se oculte bien el texto "Acción")
-            const thAccion = document.querySelector('thead th:last-child');
-            const tdAccion = document.querySelectorAll('#tabla-kinesiologia td:last-child');
-            if(thAccion) thAccion.style.setProperty('display', 'none', 'important');
-            tdAccion.forEach(td => td.style.setProperty('display', 'none', 'important'));
+            // 1. Ocultar la columna Acción de la tabla correctamente
+            const thAcciones = document.querySelectorAll('thead th:last-child');
+            const tdAcciones = document.querySelectorAll('#tabla-kinesiologia td:last-child');
+            thAcciones.forEach(th => th.style.setProperty('display', 'none', 'important'));
+            tdAcciones.forEach(td => td.style.setProperty('display', 'none', 'important'));
 
+            // 2. ARREGLOS MANUALES PARA EVITAR EL BUG DEL PDF EN BLANCO
+            // Agrandamos el escudo del club
+            const logo = document.querySelector('.solo-impresion img');
+            if(logo) logo.style.width = '100px';
+
+            // Destrabamos la tabla quitando la clase que causa problemas
+            const divTabla = document.querySelector('.table-responsive');
+            if(divTabla) {
+                divTabla.classList.remove('table-responsive');
+                divTabla.style.overflow = 'visible';
+            }
+            // Quitamos el "sticky-top" para que aparezcan los títulos de la tabla
+            const theadTabla = document.querySelector('.sticky-top');
+            if(theadTabla) theadTabla.classList.remove('sticky-top');
+
+            // 3. Aplicar diseño
             const elemento = document.getElementById('area-pdf');
-            
-            // Le aplicamos la clase de diseño
             elemento.classList.add('pdf-achicado');
             
             const opciones = {
-                // Aumentamos los márgenes a 0.4 para imitar el marco blanco de la impresora
                 margin: [0.4, 0.4, 0.2, 0.4], 
                 filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
@@ -638,38 +646,50 @@
                     scale: 2, 
                     useCORS: true,
                     scrollY: 0,
-                    letterRendering: true,
-                    windowWidth: 1024 // <-- Clave para que respete el tamaño horizontal en celulares
+                    letterRendering: true
+                    // ELIMINADO windowWidth porque es lo que causa la hoja blanca
                 }, 
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: 'avoid-all' } 
             };
 
-            html2pdf().set(opciones).from(elemento).save().then(() => {
-                
-                // Restauramos la pantalla
-                elemento.classList.remove('pdf-achicado');
-                
-                titulosImpresion.forEach(el => el.style.display = 'none');
-                elementosOcultar.forEach(el => el.style.display = ''); 
-                if(thAccion) thAccion.style.display = '';
-                tdAccion.forEach(td => td.style.display = '');
-                
-                setTimeout(() => {
-                    alert('📄 ¡Ficha generada en una sola hoja!\nSe va a abrir WhatsApp.');
-                    const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
-                    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
-                }, 500); 
-                
-            }).catch(err => {
-                console.error("Error:", err);
-                // Si hay error, restauramos todo para que la app siga funcionando
-                elemento.classList.remove('pdf-achicado');
-                titulosImpresion.forEach(el => el.style.display = 'none');
-                elementosOcultar.forEach(el => el.style.display = ''); 
-                if(thAccion) thAccion.style.display = '';
-                tdAccion.forEach(td => td.style.display = '');
-            });
+            // 4. MICROPAUSA VITAL: Le damos 50ms a la pantalla para acomodarse antes de la foto
+            setTimeout(() => {
+                html2pdf().set(opciones).from(elemento).save().then(() => {
+                    
+                    // RESTAURAMOS TODO AL TERMINAR
+                    elemento.classList.remove('pdf-achicado');
+                    if(logo) logo.style.width = '70px';
+                    if(divTabla) {
+                        divTabla.classList.add('table-responsive');
+                        divTabla.style.overflow = '';
+                    }
+                    if(theadTabla) theadTabla.classList.add('sticky-top');
+
+                    titulosImpresion.forEach(el => el.style.display = 'none');
+                    elementosOcultar.forEach(el => el.style.display = ''); 
+                    thAcciones.forEach(th => th.style.display = '');
+                    tdAcciones.forEach(td => td.style.display = '');
+                    
+                    setTimeout(() => {
+                        alert('📄 ¡Ficha generada en una sola hoja!\nSe va a abrir WhatsApp.');
+                        const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
+                        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
+                    }, 500); 
+                    
+                }).catch(err => {
+                    console.error("Error:", err);
+                    // Si falla, restauramos igual
+                    elemento.classList.remove('pdf-achicado');
+                    if(logo) logo.style.width = '70px';
+                    if(divTabla) divTabla.classList.add('table-responsive');
+                    if(theadTabla) theadTabla.classList.add('sticky-top');
+                    titulosImpresion.forEach(el => el.style.display = 'none');
+                    elementosOcultar.forEach(el => el.style.display = ''); 
+                    thAcciones.forEach(th => th.style.display = '');
+                    tdAcciones.forEach(td => td.style.display = '');
+                });
+            }, 50); 
         }
 
         // --- 5. PERMISOS ---
