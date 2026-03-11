@@ -17,7 +17,7 @@
         .baja-style { background-color: #ffe6e6 !important; border: 2px dashed #dc3545 !important; }
         .solo-impresion { display: none; }
 
-        /* REGLAS PARA IMPRESIÓN (Ctrl+P) */
+        /* REGLAS ESTRICTAS PARA IMPRESIÓN (Ctrl+P) */
         @media print {
             nav, #botonera, .botonera-acciones, .no-imprimir,
             #fechas-club-container, #btn-agregar-kine { display: none !important; }
@@ -42,38 +42,19 @@
             .mb-4 { margin-bottom: 10px !important; }
             
             #tabla-kinesiologia td:last-child, thead th:last-child { display: none !important; }
-            
-            /* Destraba el scroll de la tabla para que se imprima entera */
-            .table-responsive { max-height: none !important; overflow: visible !important; }
         }
 
-        /* --- CLON EXACTO DE IMPRESIÓN PARA EL PDF DE WHATSAPP --- */
-        .pdf-perfecto nav, 
-        .pdf-perfecto #botonera, 
-        .pdf-perfecto .botonera-acciones, 
-        .pdf-perfecto .no-imprimir,
-        .pdf-perfecto #fechas-club-container, 
-        .pdf-perfecto #btn-agregar-kine { display: none !important; }
-        
-        .pdf-perfecto .solo-impresion { display: block !important; }
-        .pdf-perfecto body { background-color: white !important; font-size: 11px !important; margin: 0 !important; padding: 0 !important; }
-        
-        .pdf-perfecto .forzar-horizontal { display: flex !important; flex-wrap: wrap !important; flex-direction: row !important; margin: 0 !important; }
-        .pdf-perfecto .forzar-33 { flex: 0 0 33.3333% !important; max-width: 33.3333% !important; }
-        .pdf-perfecto .forzar-50 { flex: 0 0 50% !important; max-width: 50% !important; }
-        .pdf-perfecto .forzar-100 { flex: 0 0 100% !important; max-width: 100% !important; }
-        
-        .pdf-perfecto .card { border: 1px solid #ccc !important; box-shadow: none !important; margin-bottom: 5px !important; }
-        .pdf-perfecto .card-body { padding: 10px !important; }
-        .pdf-perfecto h2 { font-size: 16px !important; margin: 5px 0 !important; }
-        .pdf-perfecto h5 { font-size: 13px !important; margin-top: 10px !important; margin-bottom: 5px !important; }
-        .pdf-perfecto .p-3 { padding: 8px !important; }
-        
-        .pdf-perfecto #tabla-kinesiologia td:last-child, 
-        .pdf-perfecto thead th:last-child { display: none !important; }
-        
-        /* Destraba la tabla de Kine para que salga en la foto del PDF */
-        .pdf-perfecto .table-responsive { max-height: none !important; overflow: visible !important; }
+        /* --- AJUSTE DE LETRA FINO PARA EL PDF --- */
+        .pdf-achicado { font-size: 10px !important; }
+        .pdf-achicado h2 { font-size: 15px !important; }
+        .pdf-achicado h3 { font-size: 14px !important; }
+        .pdf-achicado h5 { font-size: 11px !important; margin-top: 5px !important; margin-bottom: 5px !important;}
+        .pdf-achicado .fs-3 { font-size: 14px !important; } /* Grupo Sanguíneo */
+        .pdf-achicado .fs-5 { font-size: 12px !important; } /* Alergias */
+        .pdf-achicado .fs-6 { font-size: 10px !important; } /* DNI, Teléfonos */
+        .pdf-achicado small, .pdf-achicado .text-muted { font-size: 8px !important; }
+        .pdf-achicado .badge { font-size: 9px !important; padding: 3px 6px !important; }
+        .pdf-achicado .p-3, .pdf-achicado .p-2 { padding: 6px !important; }
     </style>
 </head>
 <body class="bg-light">
@@ -612,60 +593,49 @@
             } catch (error) { alert('❌ No se pudo conectar con el servidor.'); }
         }
 
-        // --- 4. EXPORTAR PDF Y EMAIL (100% BLINDADO Y PROLIJO) ---
+        // --- 4. EXPORTAR PDF Y EMAIL ---
         function generarPDFyWhatsApp() {
             if(!jugadorActual) return;
             
-            // 1. Forzamos scroll arriba para evitar el bug de la hoja en blanco
-            window.scrollTo(0, 0); 
-            
-            // 2. Mostramos el encabezado bonito del PDF
             const titulosImpresion = document.querySelectorAll('.solo-impresion');
             titulosImpresion.forEach(el => el.style.setProperty('display', 'block', 'important'));
             
-            // 3. Ocultamos lo que no va (usando JS puro, que es lo que no rompe la librería)
             const elementosOcultar = document.querySelectorAll('.botonera-acciones, .no-imprimir, #fechas-club-container, #btn-agregar-kine, #botonera');
             elementosOcultar.forEach(el => el.style.setProperty('display', 'none', 'important'));
 
-            // Ocultamos la columna "Acción" de la tabla
-            const thAccion = document.querySelector('thead th:last-child');
+            const thAccion = document.querySelector('#tabla-kinesiologia th:last-child');
             const tdAccion = document.querySelectorAll('#tabla-kinesiologia td:last-child');
             if(thAccion) thAccion.style.setProperty('display', 'none', 'important');
             tdAccion.forEach(td => td.style.setProperty('display', 'none', 'important'));
 
-            // 4. DESTRABAMOS LA TABLA DE KINESIOLOGÍA para que salga entera
-            const tablaCaja = document.querySelector('.table-responsive');
-            const oldMaxHeight = tablaCaja.style.maxHeight;
-            const oldOverflow = tablaCaja.style.overflowY;
-            tablaCaja.style.setProperty('max-height', 'none', 'important');
-            tablaCaja.style.setProperty('overflow-y', 'visible', 'important');
-
             const elemento = document.getElementById('area-pdf');
             
+            // MAGIA ACÁ: Le aplicamos la clase que achica la letra a toda la ficha
+            elemento.classList.add('pdf-achicado');
+            
             const opciones = {
-                margin: [0.4, 0.4, 0.1, 0.4], // Márgenes prolijos como en la impresora
+                margin: [0.2, 0.2, 0, 0.2], 
                 filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
                     scale: 2, 
-                    useCORS: true, 
+                    useCORS: true,
                     scrollY: 0,
-                    // ESTA ES LA MAGIA: Fuerza a Bootstrap a renderizar en formato Horizontal (y achica las letras al encajar en el A4)
-                    windowWidth: 1024 
+                    letterRendering: true
                 }, 
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: 'avoid-all' }
+                pagebreak: { mode: 'avoid-all' } 
             };
 
             html2pdf().set(opciones).from(elemento).save().then(() => {
                 
-                // RESTAURAMOS TODO PARA QUE LA PANTALLA VUELVA A LA NORMALIDAD
+                // Le sacamos la clase para que en la pantalla vuelva a verse normal
+                elemento.classList.remove('pdf-achicado');
+                
                 titulosImpresion.forEach(el => el.style.display = 'none');
                 elementosOcultar.forEach(el => el.style.display = ''); 
                 if(thAccion) thAccion.style.display = '';
                 tdAccion.forEach(td => td.style.display = '');
-                tablaCaja.style.maxHeight = oldMaxHeight;
-                tablaCaja.style.overflowY = oldOverflow;
                 
                 setTimeout(() => {
                     alert('📄 ¡Ficha generada en una sola hoja!\nSe va a abrir WhatsApp.');
@@ -675,13 +645,12 @@
                 
             }).catch(err => {
                 console.error("Error:", err);
-                // Si falla, restauramos todo igual
+                // Si hay error, restauramos todo para que la app siga funcionando
+                elemento.classList.remove('pdf-achicado');
                 titulosImpresion.forEach(el => el.style.display = 'none');
                 elementosOcultar.forEach(el => el.style.display = ''); 
                 if(thAccion) thAccion.style.display = '';
                 tdAccion.forEach(td => td.style.display = '');
-                tablaCaja.style.maxHeight = oldMaxHeight;
-                tablaCaja.style.overflowY = oldOverflow;
             });
         }
 
@@ -852,3 +821,4 @@
     </script>
 </body>
 </html>
+
