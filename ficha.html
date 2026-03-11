@@ -614,67 +614,122 @@
             } catch (error) { alert('❌ No se pudo conectar con el servidor.'); }
         }
 
-        // --- 4. EXPORTAR PDF Y EMAIL (VERSIÓN 100% SEGURA) ---
+        // --- 4. EXPORTAR PDF Y EMAIL (SOLUCIÓN DEFINITIVA ANTIFALLOS) ---
         function generarPDFyWhatsApp() {
             if(!jugadorActual) return;
             
+            // 1. Evita hojas blancas por scroll
+            window.scrollTo(0, 0); 
+            
+            // 2. Mostrar encabezado y ocultar botones
             const titulosImpresion = document.querySelectorAll('.solo-impresion');
             titulosImpresion.forEach(el => el.style.setProperty('display', 'block', 'important'));
             
             const elementosOcultar = document.querySelectorAll('.botonera-acciones, .no-imprimir, #fechas-club-container, #btn-agregar-kine, #botonera');
             elementosOcultar.forEach(el => el.style.setProperty('display', 'none', 'important'));
 
-            // Ocultamos Acción de la tabla
-            const thAccion = document.querySelector('thead th:last-child');
-            const tdAccion = document.querySelectorAll('#tabla-kinesiologia td:last-child');
-            if(thAccion) thAccion.style.setProperty('display', 'none', 'important');
-            tdAccion.forEach(td => td.style.setProperty('display', 'none', 'important'));
+            // 3. EL TRUCO MAESTRO: Vaciar la columna "Acción" en lugar de ocultarla (Evita el crash de html2canvas)
+            const celdasAccion = document.querySelectorAll('thead th:last-child, #tabla-kinesiologia td:last-child');
+            const cacheCeldas = [];
+            celdasAccion.forEach((celda, i) => {
+                cacheCeldas[i] = celda.innerHTML; // Guardamos los botones temporalmente
+                celda.innerHTML = '';             // Dejamos la celda en blanco para la foto
+            });
 
-            const elemento = document.getElementById('area-pdf');
+            const areaPdf = document.getElementById('area-pdf');
+
+            // 4. APLICAR ESTILOS SEGUROS EN LÍNEA (Iguala a la impresora sin romper)
+            areaPdf.style.setProperty('font-size', '11px', 'important'); // Letra ideal
             
-            // Activamos CSS mágico
-            elemento.classList.add('pdf-achicado');
+            const logo = areaPdf.querySelector('.solo-impresion img');
+            if (logo) logo.style.setProperty('width', '85px', 'important'); // Agrandar escudo
+
+            const subtitulo = areaPdf.querySelector('.solo-impresion h5');
+            if (subtitulo) { // Centrar el subtítulo del club
+                subtitulo.style.setProperty('text-align', 'center', 'important');
+                subtitulo.style.setProperty('display', 'block', 'important');
+            }
+
+            // Forzar grilla horizontal (33% y 50%)
+            const rowFlex = areaPdf.querySelectorAll('.row');
+            rowFlex.forEach(el => el.style.setProperty('display', 'flex', 'important'));
             
+            const col33 = areaPdf.querySelectorAll('.col-md-4');
+            col33.forEach(el => {
+                el.style.setProperty('flex', '0 0 33.3333%', 'important');
+                el.style.setProperty('max-width', '33.3333%', 'important');
+            });
+            const col50 = areaPdf.querySelectorAll('.col-md-6');
+            col50.forEach(el => {
+                el.style.setProperty('flex', '0 0 50%', 'important');
+                el.style.setProperty('max-width', '50%', 'important');
+            });
+
+            // Destrabar tabla de Kinesiología y fijar color a los títulos
+            const tabla = areaPdf.querySelector('.table-responsive');
+            if (tabla) {
+                tabla.style.setProperty('max-height', 'none', 'important');
+                tabla.style.setProperty('overflow', 'visible', 'important');
+            }
+            const thead = areaPdf.querySelector('.sticky-top');
+            if (thead) {
+                thead.style.setProperty('position', 'static', 'important');
+                thead.style.setProperty('background-color', '#f8f9fa', 'important');
+            }
+
+            // 5. Generar PDF (Usando tu configuración original y perfecta)
             const opciones = {
-                // Márgenes iguales a la impresora
-                margin: [0.3, 0.4, 0.2, 0.4], 
+                margin: [0.4, 0.4, 0.2, 0.4], // Márgenes exactos de la hoja A4
                 filename: `Ficha_Medica_${jugadorActual.apellido}_${jugadorActual.nombre}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true,
-                    scrollY: 0,
-                    letterRendering: true
-                    // ¡¡ELIMINADO windowWidth PORQUE ES LO QUE TE CAUSABA LA HOJA EN BLANCO!!
-                }, 
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0, letterRendering: true }, // Sin configuraciones raras
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: 'avoid-all' } 
+                pagebreak: { mode: 'avoid-all' }
             };
 
-            // Ejecuta directo sin setTimeout, como en tu código original que andaba
-            html2pdf().set(opciones).from(elemento).save().then(() => {
-                
-                elemento.classList.remove('pdf-achicado');
-                
-                titulosImpresion.forEach(el => el.style.display = 'none');
-                elementosOcultar.forEach(el => el.style.display = ''); 
-                if(thAccion) thAccion.style.display = '';
-                tdAccion.forEach(td => td.style.display = '');
-                
-                setTimeout(() => {
-                    alert('📄 ¡Ficha generada en una sola hoja!\nSe va a abrir WhatsApp.');
-                    const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
-                    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
-                }, 500); 
-                
-            }).catch(err => {
-                console.error("Error:", err);
-                elemento.classList.remove('pdf-achicado');
-                titulosImpresion.forEach(el => el.style.display = 'none');
-                elementosOcultar.forEach(el => el.style.display = ''); 
-                if(thAccion) thAccion.style.display = '';
-                tdAccion.forEach(td => td.style.display = '');
-            });
+            // Damos una micropausa (100ms) para que el navegador pinte los estilos antes de sacar la foto
+            setTimeout(() => {
+                html2pdf().set(opciones).from(areaPdf).save().then(() => {
+
+                    // 6. RESTAURAR TODO A LA NORMALIDAD AL TERMINAR
+                    titulosImpresion.forEach(el => el.style.display = 'none');
+                    elementosOcultar.forEach(el => el.style.display = '');
+                    
+                    // Devolvemos los botones a la tabla
+                    celdasAccion.forEach((celda, i) => celda.innerHTML = cacheCeldas[i]);
+
+                    // Limpiamos los estilos en línea
+                    areaPdf.style.fontSize = '';
+                    if(logo) logo.style.width = '';
+                    if(subtitulo) { subtitulo.style.textAlign = ''; subtitulo.style.display = ''; }
+                    rowFlex.forEach(el => el.style.display = '');
+                    col33.forEach(el => { el.style.flex = ''; el.style.maxWidth = ''; });
+                    col50.forEach(el => { el.style.flex = ''; el.style.maxWidth = ''; });
+                    if(tabla) { tabla.style.maxHeight = ''; tabla.style.overflow = ''; }
+                    if(thead) { thead.style.position = ''; thead.style.backgroundColor = ''; }
+
+                    setTimeout(() => {
+                        alert('📄 ¡Ficha generada con éxito!\nSe va a abrir WhatsApp.');
+                        const texto = `Hola! Te envío la ficha médica de ${jugadorActual.nombre} ${jugadorActual.apellido}.`;
+                        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
+                    }, 500);
+
+                }).catch(err => {
+                    console.error("Error al generar:", err);
+                    // Si algo falla, restauramos igual para no romper la pantalla
+                    titulosImpresion.forEach(el => el.style.display = 'none');
+                    elementosOcultar.forEach(el => el.style.display = '');
+                    celdasAccion.forEach((celda, i) => celda.innerHTML = cacheCeldas[i]);
+                    areaPdf.style.fontSize = '';
+                    if(logo) logo.style.width = '';
+                    if(subtitulo) { subtitulo.style.textAlign = ''; subtitulo.style.display = ''; }
+                    rowFlex.forEach(el => el.style.display = '');
+                    col33.forEach(el => { el.style.flex = ''; el.style.maxWidth = ''; });
+                    col50.forEach(el => { el.style.flex = ''; el.style.maxWidth = ''; });
+                    if(tabla) { tabla.style.maxHeight = ''; tabla.style.overflow = ''; }
+                    if(thead) { thead.style.position = ''; thead.style.backgroundColor = ''; }
+                });
+            }, 100);
         }
 
         // --- 5. PERMISOS ---
