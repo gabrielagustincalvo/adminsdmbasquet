@@ -44,9 +44,16 @@
             #tabla-kinesiologia td:last-child, thead th:last-child { display: none !important; }
         }
 
-        /* --- CLON EXACTO DE LA VISTA IMPRESIÓN PARA EL PDF --- */
+        /* --- AJUSTE DE LETRA Y DISEÑO FINO PARA EL PDF --- */
         .pdf-achicado { font-size: 11px !important; }
         
+        /* 1. ARREGLO DEL LOGO Y TÍTULOS (Compensa el "zoom out" del PDF) */
+        .pdf-achicado .solo-impresion img { width: 95px !important; } /* Agrandamos el escudo */
+        .pdf-achicado .solo-impresion h3 { font-size: 22px !important; margin-bottom: 5px !important; }
+        .pdf-achicado .solo-impresion h5 { font-size: 14px !important; }
+        .pdf-achicado #f-nombre-completo { font-size: 20px !important; margin-bottom: 8px !important; }
+
+        /* 2. FORZAR FORMATO HORIZONTAL */
         .pdf-achicado .forzar-horizontal { display: flex !important; flex-wrap: wrap !important; flex-direction: row !important; }
         .pdf-achicado .forzar-33 { flex: 0 0 33.3333% !important; max-width: 33.3333% !important; width: 33.3333% !important; }
         .pdf-achicado .forzar-50 { flex: 0 0 50% !important; max-width: 50% !important; width: 50% !important; }
@@ -54,13 +61,15 @@
         
         .pdf-achicado .card { border: 1px solid #ccc !important; box-shadow: none !important; margin-bottom: 5px !important; }
         .pdf-achicado .card-body { padding: 10px !important; }
-        .pdf-achicado h2 { font-size: 16px !important; margin: 5px 0 !important; }
-        .pdf-achicado h5 { font-size: 13px !important; margin-top: 10px !important; margin-bottom: 5px !important; }
-        .pdf-achicado .p-3 { padding: 8px !important; }
-        .pdf-achicado .mb-4 { margin-bottom: 10px !important; }
         
-        /* Destrabamos la tabla para que salga entera en el PDF */
+        /* 3. ARREGLO DE LA TABLA KINESIOLÓGICA */
         .pdf-achicado .table-responsive { max-height: none !important; overflow: visible !important; }
+        /* Soluciona el bug de html2canvas que hacía desaparecer los títulos de la tabla: */
+        .pdf-achicado .sticky-top { position: static !important; }
+        
+        /* Ocultar la columna de 'Acción' (Tacho de basura) en el PDF */
+        .pdf-achicado #tabla-kinesiologia td:last-child, 
+        .pdf-achicado thead th:last-child { display: none !important; }
     </style>
 </head>
 <body class="bg-light">
