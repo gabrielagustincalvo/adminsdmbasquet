@@ -495,7 +495,8 @@
                     tarjetaPrincipal.classList.add('baja-style');
                     headerFicha.classList.replace('bg-primary', 'bg-danger');
 
-                    if (rolUsuario !== 'Cuerpo Tecnico') {
+                    // RESTRICCIÓN: Solo personal administrativo puede reactivar
+                    if (rolUsuario === 'Administrativo' || rolUsuario === 'Admin Principal') {
                         contenedorBotones.innerHTML = `
                             <button onclick="reactivarJugador()" class="btn btn-success btn-sm rounded-circle shadow-sm" title="Reactivar Jugador en el Club">
                                 <i class="bi bi-person-check-fill"></i>
@@ -506,7 +507,8 @@
                     tarjetaPrincipal.classList.remove('baja-style');
                     headerFicha.classList.replace('bg-danger', 'bg-primary');
 
-                    if (rolUsuario !== 'Cuerpo Tecnico') {
+                    // RESTRICCIÓN: Solo personal administrativo puede dar de baja
+                    if (rolUsuario === 'Administrativo' || rolUsuario === 'Admin Principal') {
                         contenedorBotones.innerHTML = `
                             <button onclick="eliminarJugador()" class="btn btn-outline-warning btn-sm rounded-circle shadow-sm" title="Dar de Baja">
                                 <i class="bi bi-person-x-fill text-dark"></i>
