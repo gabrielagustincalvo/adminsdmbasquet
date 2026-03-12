@@ -426,17 +426,35 @@
 
         // --- 2. CARGAR FICHA Y DOCUMENTOS ---
         function renderDoc(campoBD, nombreArchivoGuardado, idHtmlInput) {
+            
+            // Evaluamos si el usuario tiene permiso para cargar documentos
+            const puedeCargar = (rolUsuario === 'Administrativo' || rolUsuario === 'Admin Principal');
+
             if (nombreArchivoGuardado) {
-                return `
+                // Si el archivo ya existe, TODOS pueden ver el botón verde de "Ver Archivo"
+                let html = `
                     <a href="/uploads/${nombreArchivoGuardado}" target="_blank" class="btn btn-sm btn-success w-100 mb-2 shadow-sm">
                         <i class="bi bi-eye"></i> Ver Archivo
                     </a>
+                `;
+                
+                // Pero SOLO los administrativos ven el botón de "Reemplazar"
+                if (puedeCargar) {
+                    html += `
                     <label class="btn btn-outline-secondary btn-sm w-100 mb-0">
                         <i class="bi bi-arrow-repeat"></i> Reemplazar
                         <input type="file" id="${idHtmlInput}" class="d-none" accept=".pdf,.jpg,.jpeg,.png" onchange="subirDocumento('${campoBD}', this)">
                     </label>
-                `;
+                    `;
+                }
+                return html;
             } else {
+                // Si NO hay archivo guardado y NO puede cargar (Kine, Medico, Cuerpo Tecnico)...
+                if (!puedeCargar) {
+                    return `<span class="d-block small text-danger mt-1 fw-bold"><i class="bi bi-x-circle"></i> Documento Faltante</span>`;
+                }
+                
+                // Si NO hay archivo y SÍ puede cargar (Administrativo)...
                 return `
                     <label class="btn btn-outline-primary btn-sm w-100 mb-2 shadow-sm">
                         <i class="bi bi-upload"></i> Subir Archivo
