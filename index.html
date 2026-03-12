@@ -87,10 +87,10 @@
                     <i class="bi bi-person-badge"></i> Nuevo Empleado
                 </a>
                 
-                <a href="pagos.html" class="btn-tesoreria btn btn-success shadow-sm fw-bold btn-responsivo" style="background-color: #198754;">
+                <a href="pagos.html" id="btn-ingresos" class="btn-tesoreria btn btn-success shadow-sm fw-bold btn-responsivo" style="background-color: #198754;">
                     <i class="bi bi-box-arrow-in-right"></i> Ingresos
                 </a>
-                <a href="egresos.html" class="btn-tesoreria btn btn-danger shadow-sm fw-bold btn-responsivo">
+                <a href="egresos.html" id="btn-egresos" class="btn-tesoreria btn btn-danger shadow-sm fw-bold btn-responsivo">
                     <i class="bi bi-box-arrow-right"></i> Egresos
                 </a>
 
@@ -697,22 +697,39 @@
         // --- LÓGICA DE PERMISOS ---
         const rolUsuario = sessionStorage.getItem('usuarioRol');
 
+        // 1. Permisos del Administrativo
         if (rolUsuario === 'Administrativo') {
             const btnAsistencia = document.getElementById('btn-asistencia');
             if (btnAsistencia) btnAsistencia.style.display = 'none';
         }
 
+        // 2. Permisos de Creación de Usuarios (Solo Admin Principal)
         const btnCrearUsuario = document.getElementById('btn-crear-usuario');
         if (btnCrearUsuario && rolUsuario !== 'Admin Principal') {
             btnCrearUsuario.style.display = 'none';
         }
         
+        // 3. Permisos del Cuerpo Técnico
         if (rolUsuario === 'Cuerpo Tecnico') {
             const btnNuevoJugador = document.querySelector('a[href="alta.html"]');
             if (btnNuevoJugador) btnNuevoJugador.style.display = 'none';
 
             const botonesTesoreria = document.querySelectorAll('.btn-tesoreria');
             botonesTesoreria.forEach(btn => btn.style.display = 'none');
+        }
+
+        // 4. NUEVO: PERMISOS DEL CUERPO MÉDICO (Kinesiólogo / Médico)
+        // Solo pueden ver jugadores. Se les oculta todo lo administrativo y deportivo.
+        if (rolUsuario === 'Kinesiologo' || rolUsuario === 'Medico') {
+            const btnNuevoJugador = document.querySelector('a[href="alta.html"]');
+            const btnAsistencia = document.getElementById('btn-asistencia');
+            const btnIngresos = document.getElementById('btn-ingresos');
+            const btnEgresos = document.getElementById('btn-egresos');
+
+            if (btnNuevoJugador) btnNuevoJugador.style.display = 'none';
+            if (btnAsistencia) btnAsistencia.style.display = 'none';
+            if (btnIngresos) btnIngresos.style.display = 'none';
+            if (btnEgresos) btnEgresos.style.display = 'none';
         }
 
         // ==========================================
