@@ -678,14 +678,14 @@
 
         // --- 5. PERMISOS ---
         
-        // El Cuerpo Técnico no edita la información personal del jugador
-        if (rolUsuario === 'Cuerpo Tecnico') {
+        // 1. DATOS PERSONALES: Solo Administrativos y Admin Principal pueden editar.
+        // Se lo bloqueamos al Cuerpo Técnico, Kinesiólogo y Médico.
+        if (rolUsuario === 'Cuerpo Tecnico' || rolUsuario === 'Kinesiologo' || rolUsuario === 'Medico') {
             const btnEditar = document.getElementById('btn-editar-jugador');
             if (btnEditar) btnEditar.style.display = 'none';
         }
 
-        // KINESIOLOGÍA: Solo Médicos y Kinesiólogos pueden agregar nuevas sesiones.
-        // Si el rol NO es uno de esos dos, ocultamos el botón de agregar.
+        // 2. KINESIOLOGÍA: Solo Médicos y Kinesiólogos pueden agregar nuevas sesiones.
         if (rolUsuario !== 'Medico' && rolUsuario !== 'Kinesiologo') {
             const btnAgregarKine = document.getElementById('btn-agregar-kine');
             if (btnAgregarKine) btnAgregarKine.style.display = 'none';
