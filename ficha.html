@@ -677,11 +677,16 @@
         }
 
         // --- 5. PERMISOS ---
+        
+        // El Cuerpo Técnico no edita la información personal del jugador
         if (rolUsuario === 'Cuerpo Tecnico') {
             const btnEditar = document.getElementById('btn-editar-jugador');
             if (btnEditar) btnEditar.style.display = 'none';
         }
-        if (rolUsuario === 'Administrativo') {
+
+        // KINESIOLOGÍA: Solo Médicos y Kinesiólogos pueden agregar nuevas sesiones.
+        // Si el rol NO es uno de esos dos, ocultamos el botón de agregar.
+        if (rolUsuario !== 'Medico' && rolUsuario !== 'Kinesiologo') {
             const btnAgregarKine = document.getElementById('btn-agregar-kine');
             if (btnAgregarKine) btnAgregarKine.style.display = 'none';
         }
@@ -739,7 +744,9 @@
                     const obsHtml = reg.observaciones ? `<br><small class="text-muted fst-italic">Obs: ${reg.observaciones}</small>` : '';
 
                     let botonesAccion = `<td></td>`;
-                    if (sessionStorage.getItem('usuarioRol') !== 'Administrativo') {
+                    
+                    // Solo Médicos y Kinesiólogos ven los botones de Editar y Eliminar en cada fila
+                    if (rolUsuario === 'Medico' || rolUsuario === 'Kinesiologo') {
                         botonesAccion = `
                             <td class="text-center">
                                 <div class="btn-group shadow-sm">
