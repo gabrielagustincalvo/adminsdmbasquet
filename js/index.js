@@ -383,7 +383,6 @@
         inicializarPanel();
 
         // --- LÓGICA DE PERMISOS ---
-        const rolUsuario = sessionStorage.getItem('usuarioRol');
 
         // 1. Permisos del Administrativo
         if (rolUsuario === 'Administrativo') {
