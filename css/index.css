@@ -1,0 +1,19 @@
+.card-categoria { transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; border-radius: 12px; }
+.card-categoria:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
+.badge-rama { font-size: 0.8em; }
+
+/* Ajuste responsivo para los botones del menú */
+@media (max-width: 768px) {
+    .botonera-mobile { width: 100%; margin-top: 10px; }
+    .btn-responsivo {
+        flex: 1 1 45% !important; 
+        margin: 0 !important; 
+        text-align: center;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 5px; 
+    }
+}
