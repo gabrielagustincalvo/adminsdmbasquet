@@ -1,14 +1,3 @@
-// --- 1. SEGURIDAD ---
-        const usuarioLogueado = sessionStorage.getItem('usuarioLogueado');
-        if (!usuarioLogueado) window.location.href = 'login.html';
-        else document.getElementById('usuario-nombre').innerText = usuarioLogueado;
-
-        function cerrarSesion() {
-            sessionStorage.removeItem('usuarioLogueado');
-            sessionStorage.removeItem('usuarioRol');
-            window.location.href = 'login.html';
-        }
-
         let todosLosJugadores = [];
         let todosLosEmpleados = [];
         let todosLosPagos = [];
