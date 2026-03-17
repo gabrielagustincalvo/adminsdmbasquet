@@ -1,0 +1,84 @@
+/* =========================================
+1. ESTILOS PARA PANTALLA NORMAL
+========================================= */
+body { background-color: #f8f9fa; }
+.baja-style { background-color: #ffe6e6 !important; border: 2px dashed #dc3545 !important; }
+.solo-impresion { display: none; }
+
+/* =========================================
+2. VISTA PRELIMINAR DE IMPRESIÓN (RESTAURADA A LA VERSIÓN PERFECTA)
+========================================= */
+@media print {
+    nav, #botonera, .botonera-acciones, .no-imprimir,
+    #fechas-club-container, #btn-agregar-kine { display: none !important; }
+            
+    .solo-impresion { display: block !important; }
+    .solo-impresion img { width: 90px !important; margin: 0 auto !important; display: block; }
+    .solo-impresion h3 { font-size: 24px !important; margin-bottom: 5px !important; text-align: center !important; }
+    .solo-impresion h5 { font-size: 14px !important; color: #6c757d !important; text-align: center !important; }
+
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    @page { size: A4 portrait; margin: 1cm; }
+    body { background-color: white !important; font-size: 11px !important; margin: 0 !important; padding: 0 !important; }
+    .container, #area-pdf { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            
+    .forzar-horizontal { display: flex !important; flex-wrap: wrap !important; flex-direction: row !important; }
+    .forzar-33 { flex: 0 0 33.3333% !important; max-width: 33.3333% !important; }
+    .forzar-50 { flex: 0 0 50% !important; max-width: 50% !important; }
+    .forzar-100 { flex: 0 0 100% !important; max-width: 100% !important; }
+            
+    .card { border: 1px solid #ccc !important; box-shadow: none !important; page-break-inside: avoid; margin-bottom: 5px !important; }
+    .card-body { padding: 10px !important; }
+    h2 { font-size: 18px !important; margin: 5px 0 !important; text-align: center !important; width: 100%; }
+    h5 { font-size: 13px !important; margin-top: 10px !important; margin-bottom: 5px !important; }
+    .p-3 { padding: 8px !important; }
+    .mb-4 { margin-bottom: 10px !important; }
+            
+    #tabla-kinesiologia td:last-child, thead th:last-child { display: none !important; }
+    .table-responsive { max-height: none !important; overflow: visible !important; }
+    .sticky-top { position: static !important; }
+    table thead th { background-color: #f8f9fa !important; color: #000 !important; font-weight: bold !important; }
+}
+
+/* =========================================
+3. CLASE MÁGICA PARA EL PDF (Evita recortes y centra perfecto)
+========================================= */
+/* Al body entero lo fijamos a 800px para que la cámara no recorte los bordes */
+body.modo-pdf { width: 800px !important; min-width: 800px !important; overflow: visible !important; }
+        
+.modo-pdf nav, .modo-pdf #botonera, .modo-pdf .botonera-acciones, .modo-pdf .no-imprimir,
+.modo-pdf #fechas-club-container, .modo-pdf #btn-agregar-kine { display: none !important; }
+        
+.modo-pdf .solo-impresion { display: block !important; }
+.modo-pdf .solo-impresion img { width: 90px !important; margin: 0 auto !important; display: block; }
+.modo-pdf .solo-impresion h3 { font-size: 24px !important; margin-bottom: 5px !important; text-align: center !important; color: #000 !important; }
+.modo-pdf .solo-impresion h5 { font-size: 14px !important; color: #6c757d !important; text-align: center !important; }
+
+/* Sacamos límites de Bootstrap para centrar libremente */
+.modo-pdf .container, .modo-pdf .row, .modo-pdf .col-12 { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+        
+/* EL SECRETO DEL CENTRADO: Padding igual a izquierda y derecha (40px) */
+.modo-pdf #area-pdf { 
+    width: 100% !important; 
+    max-width: 100% !important; 
+    background: white !important;
+    padding: 30px 40px !important; 
+    box-sizing: border-box !important;
+}
+        
+.modo-pdf .forzar-horizontal { display: flex !important; flex-wrap: wrap !important; flex-direction: row !important; }
+.modo-pdf .forzar-33 { flex: 0 0 33.3333% !important; max-width: 33.3333% !important; }
+.modo-pdf .forzar-50 { flex: 0 0 50% !important; max-width: 50% !important; }
+.modo-pdf .forzar-100 { flex: 0 0 100% !important; max-width: 100% !important; }
+        
+.modo-pdf .card { border: 1px solid #ccc !important; box-shadow: none !important; margin-bottom: 5px !important; }
+.modo-pdf .card-body { padding: 10px !important; }
+.modo-pdf h2 { font-size: 18px !important; margin: 5px 0 !important; text-align: center !important; width: 100%; }
+.modo-pdf h5 { font-size: 13px !important; margin-top: 10px !important; margin-bottom: 5px !important; }
+.modo-pdf .p-3 { padding: 8px !important; }
+.modo-pdf .mb-4 { margin-bottom: 10px !important; }
+        
+.modo-pdf #tabla-kinesiologia td:last-child, .modo-pdf thead th:last-child { display: none !important; }
+.modo-pdf .table-responsive { max-height: none !important; overflow: visible !important; }
+.modo-pdf .sticky-top { position: static !important; }
+.modo-pdf table thead th { background-color: #f8f9fa !important; color: #000 !important; font-weight: bold !important; }
