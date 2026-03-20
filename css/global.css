@@ -1,0 +1,14 @@
+/* =========================================
+   ESTILOS GLOBALES - CLUB SOL DE MAYO
+========================================= */
+
+/* Color de fondo para todas las pantallas del sistema */
+body { 
+    background-color: #f8f9fa; 
+}
+
+/* Tarjetas estándar con bordes redondeados y sombra suave */
+.card-panel { 
+    border-radius: 15px; 
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); 
+}
